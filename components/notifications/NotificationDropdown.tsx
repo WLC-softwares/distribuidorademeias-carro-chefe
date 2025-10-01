@@ -277,7 +277,7 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
           ))}
         </DropdownSection>
 
-        {notifications && notifications.length > 0 && (
+        {notifications && notifications.length > 0 ? (
           <DropdownSection>
             <DropdownItem
               key="view-all"
@@ -291,7 +291,7 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
               Ver todas as notificações
             </DropdownItem>
           </DropdownSection>
-        )}
+        ) : null}
       </DropdownMenu>
     </Dropdown>
   );

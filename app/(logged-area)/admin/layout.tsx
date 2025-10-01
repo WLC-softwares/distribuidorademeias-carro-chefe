@@ -123,10 +123,11 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${isActive
-                    ? "bg-yellow-100 text-yellow-700 font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
-                  }
+                                    ${
+                                      isActive
+                                        ? "bg-yellow-100 text-yellow-700 font-semibold"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                    }
                                 `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
@@ -150,12 +151,12 @@ export default function AdminLayout({
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           role="button"
           tabIndex={0}
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               setSidebarOpen(false);
             }
           }}

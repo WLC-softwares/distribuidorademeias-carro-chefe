@@ -15,9 +15,10 @@ export class AuthRepository {
     return {
       user: {
         id: "1",
-        name: "Usuário Teste",
+        nome: "Usuário Teste",
         email: credentials.email,
-        role: "admin",
+        role: "ADMIN",
+        ativo: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

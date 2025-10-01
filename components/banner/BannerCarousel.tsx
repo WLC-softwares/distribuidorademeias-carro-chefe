@@ -73,15 +73,16 @@ export function BannerCarousel({
           {banners.map((banner, index) => (
             <div
               key={banner.id}
-              role="button"
-              tabIndex={index === currentIndex ? 0 : -1}
-              className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentIndex
+              className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                index === currentIndex
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-95"
-                }`}
+              }`}
+              role="button"
+              tabIndex={index === currentIndex ? 0 : -1}
               onClick={() => handleBannerClick(banner)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   handleBannerClick(banner);
                 }
@@ -111,10 +112,11 @@ export function BannerCarousel({
               <button
                 key={index}
                 aria-label={`Ir para banner ${index + 1}`}
-                className={`rounded-full transition-all duration-300 ${index === currentIndex
+                className={`rounded-full transition-all duration-300 ${
+                  index === currentIndex
                     ? "w-6 h-1.5 bg-blue-600"
                     : "w-1.5 h-1.5 bg-gray-400 hover:bg-gray-600"
-                  }`}
+                }`}
                 disabled={isTransitioning}
                 onClick={() => goToSlide(index)}
               />

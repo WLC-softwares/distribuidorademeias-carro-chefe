@@ -260,23 +260,29 @@ export default function CheckoutPage() {
               <Divider />
               <CardBody className="space-y-4">
                 <div>
-                  <label htmlFor="checkout-nome" className="text-sm font-medium text-gray-700 mb-1 block">
+                  <label
+                    className="text-sm font-medium text-gray-700 mb-1 block"
+                    htmlFor="checkout-nome"
+                  >
                     Nome Completo
                   </label>
                   <Input
-                    id="checkout-nome"
                     isReadOnly
+                    id="checkout-nome"
                     value={user?.nome || ""}
                     variant="bordered"
                   />
                 </div>
                 <div>
-                  <label htmlFor="checkout-email" className="text-sm font-medium text-gray-700 mb-1 block">
+                  <label
+                    className="text-sm font-medium text-gray-700 mb-1 block"
+                    htmlFor="checkout-email"
+                  >
                     Email
                   </label>
                   <Input
-                    id="checkout-email"
                     isReadOnly
+                    id="checkout-email"
                     value={user?.email || ""}
                     variant="bordered"
                   />
@@ -388,10 +394,11 @@ export default function CheckoutPage() {
                             {item.product.nome}
                           </h4>
                           <Chip
-                            className={`mt-1 ${item.tipoVenda === "atacado"
+                            className={`mt-1 ${
+                              item.tipoVenda === "atacado"
                                 ? "bg-purple-100 text-purple-700"
                                 : "bg-green-100 text-green-700"
-                              }`}
+                            }`}
                             size="sm"
                             variant="flat"
                           >

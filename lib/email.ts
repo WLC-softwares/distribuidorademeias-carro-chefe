@@ -8,72 +8,72 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface SendEmailParams {
-    to: string;
-    subject: string;
-    html: string;
+  to: string;
+  subject: string;
+  html: string;
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailParams) {
-    try {
-        // Se não houver API key, faz fallback para console.log (desenvolvimento)
-        if (!process.env.RESEND_API_KEY) {
-            console.log("⚠️  RESEND_API_KEY não configurada - modo desenvolvimento");
-            console.log("📧 Email simulado:");
-            console.log("Para:", to);
-            console.log("Assunto:", subject);
-            console.log("Conteúdo:", html);
+  try {
+    // Se não houver API key, faz fallback para console.log (desenvolvimento)
+    if (!process.env.RESEND_API_KEY) {
+      console.log("⚠️  RESEND_API_KEY não configurada - modo desenvolvimento");
+      console.log("📧 Email simulado:");
+      console.log("Para:", to);
+      console.log("Assunto:", subject);
+      console.log("Conteúdo:", html);
 
-            return { success: true };
-        }
-
-        // Enviar email real usando Resend
-        const { data, error } = await resend.emails.send({
-            from: "Distribuidora Carro Chefe <onboarding@resend.dev>",
-            to,
-            subject,
-            html,
-        });
-
-        if (error) {
-            console.error("Erro ao enviar email:", error);
-            throw new Error("Erro ao enviar email");
-        }
-
-        console.log("✅ Email enviado com sucesso:", data?.id);
-
-        return { success: true, data };
-    } catch (error) {
-        console.error("Erro ao enviar email:", error);
-        throw new Error("Erro ao enviar email");
+      return { success: true };
     }
+
+    // Enviar email real usando Resend
+    const { data, error } = await resend.emails.send({
+      from: "Distribuidora Carro Chefe <onboarding@resend.dev>",
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error("Erro ao enviar email:", error);
+      throw new Error("Erro ao enviar email");
+    }
+
+    console.log("✅ Email enviado com sucesso:", data?.id);
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Erro ao enviar email:", error);
+    throw new Error("Erro ao enviar email");
+  }
 }
 
 export function generateOrderConfirmationEmail(
-    userName: string,
-    orderNumber: string,
-    orderDetails: {
-        items: Array<{
-            name: string;
-            quantity: number;
-            price: number;
-            total: number;
-        }>;
-        subtotal: number;
-        discount: number;
-        total: number;
-        paymentMethod: string;
-    },
+  userName: string,
+  orderNumber: string,
+  orderDetails: {
+    items: Array<{
+      name: string;
+      quantity: number;
+      price: number;
+      total: number;
+    }>;
+    subtotal: number;
+    discount: number;
+    total: number;
+    paymentMethod: string;
+  },
 ) {
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-        }).format(value);
-    };
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
 
-    const itemsHtml = orderDetails.items
-        .map(
-            (item) => `
+  const itemsHtml = orderDetails.items
+    .map(
+      (item) => `
             <tr>
                 <td style="padding: 12px 8px; border-bottom: 1px solid #e9e9e9;">
                     <strong>${item.name}</strong>
@@ -89,10 +89,10 @@ export function generateOrderConfirmationEmail(
                 </td>
             </tr>
         `,
-        )
-        .join("");
+    )
+    .join("");
 
-    return `
+  return `
         <!DOCTYPE html>
         <html>
         <head>
@@ -152,15 +152,16 @@ export function generateOrderConfirmationEmail(
                             <span>Subtotal:</span>
                             <span>${formatCurrency(orderDetails.subtotal)}</span>
                         </div>
-                        ${orderDetails.discount > 0
-            ? `
+                        ${
+                          orderDetails.discount > 0
+                            ? `
                         <div class="summary-row">
                             <span>Desconto:</span>
                             <span style="color: #10b981;">-${formatCurrency(orderDetails.discount)}</span>
                         </div>
                         `
-            : ""
-        }
+                            : ""
+                        }
                         <div class="summary-row total">
                             <span>TOTAL:</span>
                             <span>${formatCurrency(orderDetails.total)}</span>
@@ -195,7 +196,7 @@ export function generateOrderConfirmationEmail(
 }
 
 export function generatePasswordResetEmail(name: string, resetUrl: string) {
-    return `
+  return `
         <!DOCTYPE html>
         <html>
         <head>
@@ -239,23 +240,23 @@ export function generatePasswordResetEmail(name: string, resetUrl: string) {
 }
 
 export function generateOrderStatusUpdateEmail(
-    userName: string,
-    orderNumber: string,
-    newStatus: string,
-    statusMessage: { emoji: string; title: string; description: string },
+  userName: string,
+  orderNumber: string,
+  newStatus: string,
+  statusMessage: { emoji: string; title: string; description: string },
 ) {
-    const statusColors: Record<string, string> = {
-        PROCESSANDO: "#f59e0b",
-        PAGA: "#10b981",
-        ENVIADA: "#3b82f6",
-        ENTREGUE: "#22c55e",
-        CANCELADA: "#ef4444",
-        REEMBOLSADA: "#f97316",
-    };
+  const statusColors: Record<string, string> = {
+    PROCESSANDO: "#f59e0b",
+    PAGA: "#10b981",
+    ENVIADA: "#3b82f6",
+    ENTREGUE: "#22c55e",
+    CANCELADA: "#ef4444",
+    REEMBOLSADA: "#f97316",
+  };
 
-    const color = statusColors[newStatus] || "#6b7280";
+  const color = statusColors[newStatus] || "#6b7280";
 
-    return `
+  return `
         <!DOCTYPE html>
         <html>
         <head>

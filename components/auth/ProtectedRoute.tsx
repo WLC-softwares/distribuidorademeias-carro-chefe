@@ -5,6 +5,8 @@
 
 "use client";
 
+import type { Role } from "@prisma/client";
+
 import { Spinner } from "@heroui/spinner";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -13,7 +15,7 @@ import { useSession } from "@/hooks";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  allowedRoles?: ("admin" | "user" | "guest")[];
+  allowedRoles?: Role[];
 }
 
 export function ProtectedRoute({

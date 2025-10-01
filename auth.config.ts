@@ -9,8 +9,8 @@ import bcrypt from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
-import { isValidEmail } from "@/utils";
 import { prisma } from "@/lib/prisma";
+import { isValidEmail } from "@/utils";
 
 export default {
   providers: [
@@ -64,7 +64,7 @@ export default {
           name: usuario.nome,
           email: usuario.email,
           role: usuario.role,
-          avatar: usuario.avatar,
+          avatar: usuario.avatar ?? undefined,
         };
       },
     }),

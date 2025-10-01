@@ -1,6 +1,8 @@
+import type { TipoNotificacao } from "@prisma/client";
+
 export interface Notification {
   id: string;
-  tipo: NotificationType;
+  tipo: TipoNotificacao;
   titulo: string;
   mensagem: string;
   lida: boolean;
@@ -10,19 +12,11 @@ export interface Notification {
   usuarioId: string;
 }
 
-export enum NotificationType {
-  PEDIDO_CRIADO = "PEDIDO_CRIADO",
-  PEDIDO_PROCESSANDO = "PEDIDO_PROCESSANDO",
-  PEDIDO_PAGO = "PEDIDO_PAGO",
-  PEDIDO_ENVIADO = "PEDIDO_ENVIADO",
-  PEDIDO_ENTREGUE = "PEDIDO_ENTREGUE",
-  PEDIDO_CANCELADO = "PEDIDO_CANCELADO",
-  SISTEMA = "SISTEMA",
-}
+export type NotificationType = TipoNotificacao;
 
 export interface CreateNotificationDTO {
   usuarioId: string;
-  tipo: NotificationType;
+  tipo: TipoNotificacao;
   titulo: string;
   mensagem: string;
   link?: string;
