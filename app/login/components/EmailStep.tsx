@@ -1,54 +1,60 @@
-import { Button } from '@heroui/button';
-import { Input } from '@heroui/input';
-import { Link } from '@heroui/link';
-import { ChevronRight, Shield } from 'lucide-react';
-import NextLink from 'next/link';
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Link } from "@heroui/link";
+import { ChevronRight, Shield } from "lucide-react";
+import NextLink from "next/link";
 
 interface EmailStepProps {
-    email: string;
-    setEmail: (value: string) => void;
-    onSubmit: (e: React.FormEvent) => void;
-    onGoogleLogin: () => void;
+  email: string;
+  setEmail: (value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  onGoogleLogin: () => void;
 }
 
-export function EmailStep({ email, setEmail, onSubmit, onGoogleLogin }: EmailStepProps) {
-    return (
-        <form onSubmit={onSubmit} className="flex flex-col gap-6">
-            <Input
-                type="email"
-                label="E-mail"
-                placeholder=""
-                value={email}
-                onValueChange={setEmail}
-                variant="bordered"
-                size="lg"
-                isRequired
-                classNames={{
-                    input: 'text-base',
-                    inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                    label: 'text-gray-600',
-                }}
-            />
+export function EmailStep({
+  email,
+  setEmail,
+  onSubmit,
+  onGoogleLogin,
+}: EmailStepProps) {
+  return (
+    <form className="flex flex-col gap-6" onSubmit={onSubmit}>
+      <Input
+        isRequired
+        classNames={{
+          input: "text-base",
+          inputWrapper:
+            "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+          label: "text-gray-600",
+        }}
+        label="E-mail"
+        placeholder=""
+        size="lg"
+        type="email"
+        value={email}
+        variant="bordered"
+        onValueChange={setEmail}
+      />
 
-            <Button
-                type="submit"
-                size="lg"
-                className="w-full font-semibold bg-blue-500 hover:bg-blue-600 text-white"
-            >
-                Continuar
-            </Button>
+      <Button
+        className="w-full font-semibold bg-blue-500 hover:bg-blue-600 text-white"
+        size="lg"
+        type="submit"
+      >
+        Continuar
+      </Button>
 
-            <div className="text-center">
-                <Link
-                    as={NextLink}
-                    href="/cadastro"
-                    className="text-blue-500 hover:text-blue-600 font-medium"
-                >
-                    Criar conta
-                </Link>
-            </div>
+      <div className="text-center">
+        <Link
+          as={NextLink}
+          className="text-blue-500 hover:text-blue-600 font-medium"
+          href="/cadastro"
+        >
+          Criar conta
+        </Link>
+      </div>
 
-            {/* <div className="relative">
+      {/* <div className="relative">
                 <Divider />
                 <div className="absolute inset-0 flex items-center justify-center">
                     <span className="bg-white px-4 text-sm text-gray-500">OU</span>
@@ -85,16 +91,15 @@ export function EmailStep({ email, setEmail, onSubmit, onGoogleLogin }: EmailSte
                 Fazer Login com o Google
             </Button> */}
 
-            <Link
-                as={NextLink}
-                href="/seguranca"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm"
-            >
-                <Shield size={18} />
-                Tenho um problema de segurança
-                <ChevronRight size={16} />
-            </Link>
-        </form>
-    );
+      <Link
+        as={NextLink}
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm"
+        href="/seguranca"
+      >
+        <Shield size={18} />
+        Tenho um problema de segurança
+        <ChevronRight size={16} />
+      </Link>
+    </form>
+  );
 }
-

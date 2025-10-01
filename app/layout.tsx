@@ -1,12 +1,12 @@
 import "@/styles/globals.css";
 import clsx from "clsx";
 import { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
 
 import { Providers } from "./providers";
 
 import Header from "@/components/header/header";
 import { fontSans } from "@/config/fonts";
-import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: {
@@ -20,9 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-  ],
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "white" }],
 };
 
 export default function RootLayout({
@@ -31,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en" className="overflow-x-hidden">
+    <html suppressHydrationWarning className="overflow-x-hidden" lang="en">
       <head />
       <body
         className={clsx(
@@ -40,15 +38,16 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
-          <Toaster position="top-right" richColors />
+          <Toaster richColors position="top-right" />
           <div className="relative flex flex-col min-h-screen w-full overflow-x-hidden">
             <Header />
-            <main className="flex-grow w-full">
-              {children}
-            </main>
+            <main className="flex-grow w-full">{children}</main>
             <footer className="w-full bg-white border-t border-gray-200 py-6">
               <div className="container mx-auto px-2 sm:px-4 text-center text-sm text-gray-600">
-                <p>© 2025 Distribuidora de Meias Carro Chefe - Todos os direitos reservados</p>
+                <p>
+                  © 2025 Distribuidora de Meias Carro Chefe - Todos os direitos
+                  reservados
+                </p>
               </div>
             </footer>
           </div>

@@ -3,4 +3,4 @@
  * Exportação centralizada de todas as constantes
  */
 
-export * from './routes';
+export * from "./routes";

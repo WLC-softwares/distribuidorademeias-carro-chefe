@@ -1,159 +1,163 @@
-import { Button } from '@heroui/button';
-import { Input } from '@heroui/input';
-import { Link } from '@heroui/link';
-import { Eye, EyeOff } from 'lucide-react';
-import NextLink from 'next/link';
-import { RegisterData } from '../hooks/useRegister';
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Link } from "@heroui/link";
+import { Eye, EyeOff } from "lucide-react";
+import NextLink from "next/link";
+
+import { RegisterData } from "../hooks/useRegister";
 
 interface PersonalInfoStepProps {
-    formData: RegisterData;
-    isPasswordVisible: boolean;
-    isConfirmPasswordVisible: boolean;
-    updateFormData: (field: keyof RegisterData, value: string) => void;
-    onSubmit: (e: React.FormEvent) => void;
-    onTogglePasswordVisibility: () => void;
-    onToggleConfirmPasswordVisibility: () => void;
+  formData: RegisterData;
+  isPasswordVisible: boolean;
+  isConfirmPasswordVisible: boolean;
+  updateFormData: (field: keyof RegisterData, value: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  onTogglePasswordVisibility: () => void;
+  onToggleConfirmPasswordVisibility: () => void;
 }
 
 export function PersonalInfoStep({
-    formData,
-    isPasswordVisible,
-    isConfirmPasswordVisible,
-    updateFormData,
-    onSubmit,
-    onTogglePasswordVisibility,
-    onToggleConfirmPasswordVisibility,
+  formData,
+  isPasswordVisible,
+  isConfirmPasswordVisible,
+  updateFormData,
+  onSubmit,
+  onTogglePasswordVisibility,
+  onToggleConfirmPasswordVisibility,
 }: PersonalInfoStepProps) {
-    return (
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4">
-                <Input
-                    type="text"
-                    label="Nome"
-                    placeholder="Digite seu nome"
-                    value={formData.firstName}
-                    onValueChange={(value) => updateFormData('firstName', value)}
-                    variant="bordered"
-                    size="lg"
-                    isRequired
-                    classNames={{
-                        input: 'text-base',
-                        inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                        label: 'text-gray-600',
-                    }}
-                />
+  return (
+    <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          isRequired
+          classNames={{
+            input: "text-base",
+            inputWrapper:
+              "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+            label: "text-gray-600",
+          }}
+          label="Nome"
+          placeholder="Digite seu nome"
+          size="lg"
+          type="text"
+          value={formData.firstName}
+          variant="bordered"
+          onValueChange={(value) => updateFormData("firstName", value)}
+        />
 
-                <Input
-                    type="text"
-                    label="Sobrenome"
-                    placeholder="Digite seu sobrenome"
-                    value={formData.lastName}
-                    onValueChange={(value) => updateFormData('lastName', value)}
-                    variant="bordered"
-                    size="lg"
-                    isRequired
-                    classNames={{
-                        input: 'text-base',
-                        inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                        label: 'text-gray-600',
-                    }}
-                />
-            </div>
+        <Input
+          isRequired
+          classNames={{
+            input: "text-base",
+            inputWrapper:
+              "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+            label: "text-gray-600",
+          }}
+          label="Sobrenome"
+          placeholder="Digite seu sobrenome"
+          size="lg"
+          type="text"
+          value={formData.lastName}
+          variant="bordered"
+          onValueChange={(value) => updateFormData("lastName", value)}
+        />
+      </div>
 
-            <Input
-                type="email"
-                label="E-mail"
-                placeholder="seu@email.com"
-                value={formData.email}
-                onValueChange={(value) => updateFormData('email', value)}
-                variant="bordered"
-                size="lg"
-                isRequired
-                classNames={{
-                    input: 'text-base',
-                    inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                    label: 'text-gray-600',
-                }}
-            />
+      <Input
+        isRequired
+        classNames={{
+          input: "text-base",
+          inputWrapper:
+            "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+          label: "text-gray-600",
+        }}
+        label="E-mail"
+        placeholder="seu@email.com"
+        size="lg"
+        type="email"
+        value={formData.email}
+        variant="bordered"
+        onValueChange={(value) => updateFormData("email", value)}
+      />
 
-            <Input
-                type={isPasswordVisible ? 'text' : 'password'}
-                label="Senha"
-                placeholder="Mínimo 6 caracteres"
-                value={formData.password}
-                onValueChange={(value) => updateFormData('password', value)}
-                variant="bordered"
-                size="lg"
-                isRequired
-                endContent={
-                    <button
-                        className="focus:outline-none"
-                        type="button"
-                        onClick={onTogglePasswordVisibility}
-                    >
-                        {isPasswordVisible ? (
-                            <EyeOff size={20} className="text-gray-400 hover:text-gray-600" />
-                        ) : (
-                            <Eye size={20} className="text-gray-400 hover:text-gray-600" />
-                        )}
-                    </button>
-                }
-                classNames={{
-                    input: 'text-base',
-                    inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                    label: 'text-gray-600',
-                }}
-            />
+      <Input
+        isRequired
+        classNames={{
+          input: "text-base",
+          inputWrapper:
+            "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+          label: "text-gray-600",
+        }}
+        endContent={
+          <button
+            className="focus:outline-none"
+            type="button"
+            onClick={onTogglePasswordVisibility}
+          >
+            {isPasswordVisible ? (
+              <EyeOff className="text-gray-400 hover:text-gray-600" size={20} />
+            ) : (
+              <Eye className="text-gray-400 hover:text-gray-600" size={20} />
+            )}
+          </button>
+        }
+        label="Senha"
+        placeholder="Mínimo 6 caracteres"
+        size="lg"
+        type={isPasswordVisible ? "text" : "password"}
+        value={formData.password}
+        variant="bordered"
+        onValueChange={(value) => updateFormData("password", value)}
+      />
 
-            <Input
-                type={isConfirmPasswordVisible ? 'text' : 'password'}
-                label="Confirmar Senha"
-                placeholder="Digite a senha novamente"
-                value={formData.confirmPassword}
-                onValueChange={(value) => updateFormData('confirmPassword', value)}
-                variant="bordered"
-                size="lg"
-                isRequired
-                endContent={
-                    <button
-                        className="focus:outline-none"
-                        type="button"
-                        onClick={onToggleConfirmPasswordVisibility}
-                    >
-                        {isConfirmPasswordVisible ? (
-                            <EyeOff size={20} className="text-gray-400 hover:text-gray-600" />
-                        ) : (
-                            <Eye size={20} className="text-gray-400 hover:text-gray-600" />
-                        )}
-                    </button>
-                }
-                classNames={{
-                    input: 'text-base',
-                    inputWrapper: 'border-gray-300 hover:border-blue-400 focus-within:border-blue-500',
-                    label: 'text-gray-600',
-                }}
-            />
+      <Input
+        isRequired
+        classNames={{
+          input: "text-base",
+          inputWrapper:
+            "border-gray-300 hover:border-blue-400 focus-within:border-blue-500",
+          label: "text-gray-600",
+        }}
+        endContent={
+          <button
+            className="focus:outline-none"
+            type="button"
+            onClick={onToggleConfirmPasswordVisibility}
+          >
+            {isConfirmPasswordVisible ? (
+              <EyeOff className="text-gray-400 hover:text-gray-600" size={20} />
+            ) : (
+              <Eye className="text-gray-400 hover:text-gray-600" size={20} />
+            )}
+          </button>
+        }
+        label="Confirmar Senha"
+        placeholder="Digite a senha novamente"
+        size="lg"
+        type={isConfirmPasswordVisible ? "text" : "password"}
+        value={formData.confirmPassword}
+        variant="bordered"
+        onValueChange={(value) => updateFormData("confirmPassword", value)}
+      />
 
-            <Button
-                type="submit"
-                size="lg"
-                className="w-full font-semibold bg-blue-500 hover:bg-blue-600 text-white mt-2"
-            >
-                Continuar
-            </Button>
+      <Button
+        className="w-full font-semibold bg-blue-500 hover:bg-blue-600 text-white mt-2"
+        size="lg"
+        type="submit"
+      >
+        Continuar
+      </Button>
 
-            <div className="text-center text-sm">
-                <span className="text-gray-600">Já tem uma conta? </span>
-                <Link
-                    as={NextLink}
-                    href="/login"
-                    className="text-blue-500 hover:text-blue-600 font-medium"
-                >
-                    Fazer login
-                </Link>
-            </div>
-        </form>
-    );
+      <div className="text-center text-sm">
+        <span className="text-gray-600">Já tem uma conta? </span>
+        <Link
+          as={NextLink}
+          className="text-blue-500 hover:text-blue-600 font-medium"
+          href="/login"
+        >
+          Fazer login
+        </Link>
+      </div>
+    </form>
+  );
 }
-
-

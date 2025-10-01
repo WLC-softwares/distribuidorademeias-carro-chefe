@@ -3,5 +3,5 @@
  * Exportação centralizada de todos os utilitários
  */
 
-export * from './formatters';
-export * from './validators';
+export * from "./formatters";
+export * from "./validators";

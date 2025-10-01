@@ -3,5 +3,4 @@
  * Exportação centralizada dos componentes de banner
  */
 
-export * from './BannerCarousel';
-
+export * from "./BannerCarousel";

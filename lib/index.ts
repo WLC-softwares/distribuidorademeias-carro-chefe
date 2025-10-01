@@ -3,6 +3,5 @@
  * Exportação centralizada de todas as bibliotecas
  */
 
-export * from './api';
-export * from './prisma';
-
+export * from "./api";
+export * from "./prisma";

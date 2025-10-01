@@ -3,6 +3,5 @@
  * Exportação centralizada dos componentes de produtos
  */
 
-export * from './ImageCarousel';
-export * from './ProductCard';
-
+export * from "./ImageCarousel";
+export * from "./ProductCard";

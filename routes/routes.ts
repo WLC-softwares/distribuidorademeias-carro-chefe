@@ -4,29 +4,29 @@
  */
 
 export const ROUTES = {
-    // Públicas
-    HOME: '/',
-    LOGIN: '/login',
-    REGISTER: '/register',
-    CHECKOUT: '/checkout',
+  // Públicas
+  HOME: "/",
+  LOGIN: "/login",
+  REGISTER: "/register",
+  CHECKOUT: "/checkout",
 
-    // Admin
-    ADMIN: {
-        DASHBOARD: '/admin/dashboard',
-        USUARIOS: '/admin/usuarios',
-        PRODUTOS: '/admin/produtos',
-        VENDAS: '/admin/vendas',
-    },
+  // Admin
+  ADMIN: {
+    DASHBOARD: "/admin/dashboard",
+    USUARIOS: "/admin/usuarios",
+    PRODUTOS: "/admin/produtos",
+    VENDAS: "/admin/vendas",
+  },
 
-    // User
-    USER: {
-        DASHBOARD: '/user/dashboard',
-        PERFIL: '/user/perfil',
-        PEDIDOS: '/user/pedidos',
-        CARRINHO: '/user/carrinho',
-        CHECKOUT: '/user/checkout',
-        PAGAMENTO: '/user/pagamento',
-    },
+  // User
+  USER: {
+    DASHBOARD: "/user/dashboard",
+    PERFIL: "/user/perfil",
+    PEDIDOS: "/user/pedidos",
+    CARRINHO: "/user/carrinho",
+    CHECKOUT: "/user/checkout",
+    PAGAMENTO: "/user/pagamento",
+  },
 } as const;
 
 export const PUBLIC_ROUTES = [ROUTES.HOME, ROUTES.LOGIN, ROUTES.REGISTER];

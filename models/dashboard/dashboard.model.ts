@@ -4,30 +4,30 @@
  */
 
 export interface DashboardMetric {
-    title: string;
-    value: string;
-    change: string;
-    icon: string;
-    color: string;
-    bgColor: string;
+  title: string;
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
+  bgColor: string;
 }
 
 export interface RecentSale {
-    id: string;
-    customer: string;
-    total: string;
-    status: 'Finalizada' | 'Pendente' | 'Cancelada';
-    date: string;
+  id: string;
+  customer: string;
+  total: string;
+  status: "Finalizada" | "Pendente" | "Cancelada";
+  date: string;
 }
 
 export interface DashboardData {
-    metrics: DashboardMetric[];
-    recentSales: RecentSale[];
+  metrics: DashboardMetric[];
+  recentSales: RecentSale[];
 }
 
 export interface DashboardStats {
-    totalSales: number;
-    totalRevenue: number;
-    totalProducts: number;
-    activeCustomers: number;
+  totalSales: number;
+  totalRevenue: number;
+  totalProducts: number;
+  activeCustomers: number;
 }

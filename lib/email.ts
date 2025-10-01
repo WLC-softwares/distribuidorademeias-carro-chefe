@@ -3,7 +3,7 @@
  * Serviço para envio de emails usando Resend
  */
 
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -17,32 +17,34 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     try {
         // Se não houver API key, faz fallback para console.log (desenvolvimento)
         if (!process.env.RESEND_API_KEY) {
-            console.log('⚠️  RESEND_API_KEY não configurada - modo desenvolvimento');
-            console.log('📧 Email simulado:');
-            console.log('Para:', to);
-            console.log('Assunto:', subject);
-            console.log('Conteúdo:', html);
+            console.log("⚠️  RESEND_API_KEY não configurada - modo desenvolvimento");
+            console.log("📧 Email simulado:");
+            console.log("Para:", to);
+            console.log("Assunto:", subject);
+            console.log("Conteúdo:", html);
+
             return { success: true };
         }
 
         // Enviar email real usando Resend
         const { data, error } = await resend.emails.send({
-            from: 'Distribuidora Carro Chefe <onboarding@resend.dev>',
+            from: "Distribuidora Carro Chefe <onboarding@resend.dev>",
             to,
             subject,
             html,
         });
 
         if (error) {
-            console.error('Erro ao enviar email:', error);
-            throw new Error('Erro ao enviar email');
+            console.error("Erro ao enviar email:", error);
+            throw new Error("Erro ao enviar email");
         }
 
-        console.log('✅ Email enviado com sucesso:', data?.id);
+        console.log("✅ Email enviado com sucesso:", data?.id);
+
         return { success: true, data };
     } catch (error) {
-        console.error('Erro ao enviar email:', error);
-        throw new Error('Erro ao enviar email');
+        console.error("Erro ao enviar email:", error);
+        throw new Error("Erro ao enviar email");
     }
 }
 
@@ -50,17 +52,22 @@ export function generateOrderConfirmationEmail(
     userName: string,
     orderNumber: string,
     orderDetails: {
-        items: Array<{ name: string; quantity: number; price: number; total: number }>;
+        items: Array<{
+            name: string;
+            quantity: number;
+            price: number;
+            total: number;
+        }>;
         subtotal: number;
         discount: number;
         total: number;
         paymentMethod: string;
-    }
+    },
 ) {
     const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
+        return new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
         }).format(value);
     };
 
@@ -81,9 +88,9 @@ export function generateOrderConfirmationEmail(
                     <strong>${formatCurrency(item.total)}</strong>
                 </td>
             </tr>
-        `
+        `,
         )
-        .join('');
+        .join("");
 
     return `
         <!DOCTYPE html>
@@ -152,7 +159,7 @@ export function generateOrderConfirmationEmail(
                             <span style="color: #10b981;">-${formatCurrency(orderDetails.discount)}</span>
                         </div>
                         `
-            : ''
+            : ""
         }
                         <div class="summary-row total">
                             <span>TOTAL:</span>
@@ -161,7 +168,7 @@ export function generateOrderConfirmationEmail(
                     </div>
 
                     <center>
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/user/pedidos" class="button">
+                        <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/user/pedidos" class="button">
                             Acompanhar Pedido
                         </a>
                     </center>
@@ -235,18 +242,18 @@ export function generateOrderStatusUpdateEmail(
     userName: string,
     orderNumber: string,
     newStatus: string,
-    statusMessage: { emoji: string; title: string; description: string }
+    statusMessage: { emoji: string; title: string; description: string },
 ) {
     const statusColors: Record<string, string> = {
-        PROCESSANDO: '#f59e0b',
-        PAGA: '#10b981',
-        ENVIADA: '#3b82f6',
-        ENTREGUE: '#22c55e',
-        CANCELADA: '#ef4444',
-        REEMBOLSADA: '#f97316',
+        PROCESSANDO: "#f59e0b",
+        PAGA: "#10b981",
+        ENVIADA: "#3b82f6",
+        ENTREGUE: "#22c55e",
+        CANCELADA: "#ef4444",
+        REEMBOLSADA: "#f97316",
     };
 
-    const color = statusColors[newStatus] || '#6b7280';
+    const color = statusColors[newStatus] || "#6b7280";
 
     return `
         <!DOCTYPE html>
@@ -288,7 +295,7 @@ export function generateOrderStatusUpdateEmail(
                     </div>
 
                     <center>
-                        <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/user/pedidos" class="button">
+                        <a href="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/user/pedidos" class="button">
                             Ver Detalhes do Pedido
                         </a>
                     </center>
@@ -307,4 +314,3 @@ export function generateOrderStatusUpdateEmail(
         </html>
     `;
 }
-

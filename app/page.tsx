@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { BannerCarousel } from '@/components/banner';
-import { ProductCard } from '@/components/products';
-import { useProducts } from '@/hooks';
-import { CategoriaProduto } from '@/models';
-import { Button } from '@heroui/button';
-import { Input } from '@heroui/input';
-import { Select, SelectItem } from '@heroui/select';
-import { Spinner } from '@heroui/spinner';
-import { Switch } from '@heroui/switch';
-import { Package, Search, ShoppingBag, Store } from 'lucide-react';
+import { Button } from "@heroui/button";
+import { Input } from "@heroui/input";
+import { Select, SelectItem } from "@heroui/select";
+import { Spinner } from "@heroui/spinner";
+import { Switch } from "@heroui/switch";
+import { Package, Search, ShoppingBag, Store } from "lucide-react";
+
+import { BannerCarousel } from "@/components/banner";
+import { ProductCard } from "@/components/products";
+import { useProducts } from "@/hooks";
+import { CategoriaProduto } from "@/models";
 
 export default function Home() {
   const {
@@ -25,29 +26,29 @@ export default function Home() {
   } = useProducts();
 
   const categorias = [
-    { value: 'TODOS', label: 'Todas as Categorias' },
-    { value: 'MEIAS_MASCULINAS', label: 'Meias Masculinas' },
-    { value: 'MEIAS_FEMININAS', label: 'Meias Femininas' },
-    { value: 'MEIAS_INFANTIS', label: 'Meias Infantis' },
-    { value: 'MEIAS_ESPORTIVAS', label: 'Meias Esportivas' },
-    { value: 'MEIAS_SOCIAIS', label: 'Meias Sociais' },
-    { value: 'MEIAS_TERMICAS', label: 'Meias Térmicas' },
-    { value: 'ACESSORIOS', label: 'Acessórios' },
-    { value: 'OUTROS', label: 'Outros' },
+    { value: "TODOS", label: "Todas as Categorias" },
+    { value: "MEIAS_MASCULINAS", label: "Meias Masculinas" },
+    { value: "MEIAS_FEMININAS", label: "Meias Femininas" },
+    { value: "MEIAS_INFANTIS", label: "Meias Infantis" },
+    { value: "MEIAS_ESPORTIVAS", label: "Meias Esportivas" },
+    { value: "MEIAS_SOCIAIS", label: "Meias Sociais" },
+    { value: "MEIAS_TERMICAS", label: "Meias Térmicas" },
+    { value: "ACESSORIOS", label: "Acessórios" },
+    { value: "OUTROS", label: "Outros" },
   ];
 
   const banners = [
     {
-      id: '1',
-      image: '/banners-apresentacao/carro-chefe-apresentacao1.jpeg',
-      alt: 'Promoção 1 - Distribuidora de Meias',
-      link: '/',
+      id: "1",
+      image: "/banners-apresentacao/carro-chefe-apresentacao1.jpeg",
+      alt: "Promoção 1 - Distribuidora de Meias",
+      link: "/",
     },
     {
-      id: '2',
-      image: '/banners-apresentacao/carro-chefe-apresentacao2.webp',
-      alt: 'Promoção 2 - Ofertas Especiais',
-      link: '/',
+      id: "2",
+      image: "/banners-apresentacao/carro-chefe-apresentacao2.webp",
+      alt: "Promoção 2 - Ofertas Especiais",
+      link: "/",
     },
     // Adicione mais banners aqui conforme necessário
   ];
@@ -55,7 +56,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Carrossel de Banners */}
-      <BannerCarousel banners={banners} autoPlayInterval={5000} />
+      <BannerCarousel autoPlayInterval={5000} banners={banners} />
 
       {/* Filtros - Estilo ML */}
       <section className="bg-white border-b border-gray-200 shadow-sm">
@@ -64,24 +65,42 @@ export default function Home() {
           <div className="flex items-center justify-center mb-4 pb-4 border-b border-gray-200">
             <div className="flex items-center gap-3 bg-gray-50 rounded-full px-4 py-2 border border-gray-200">
               <div className="flex items-center gap-2">
-                <Store size={18} className={tipoVenda === 'varejo' ? 'text-blue-600' : 'text-gray-400'} />
-                <span className={`text-sm font-medium transition-all ${tipoVenda === 'varejo' ? 'text-blue-600' : 'text-gray-500'}`}>
+                <Store
+                  className={
+                    tipoVenda === "varejo" ? "text-blue-600" : "text-gray-400"
+                  }
+                  size={18}
+                />
+                <span
+                  className={`text-sm font-medium transition-all ${tipoVenda === "varejo" ? "text-blue-600" : "text-gray-500"}`}
+                >
                   Varejo
                 </span>
               </div>
 
               <Switch
-                isSelected={tipoVenda === 'atacado'}
-                onValueChange={(checked: boolean) => setTipoVenda(checked ? 'atacado' : 'varejo')}
-                size="sm"
                 color="secondary"
+                isSelected={tipoVenda === "atacado"}
+                size="sm"
+                onValueChange={(checked: boolean) =>
+                  setTipoVenda(checked ? "atacado" : "varejo")
+                }
               />
 
               <div className="flex items-center gap-2">
-                <span className={`text-sm font-medium transition-all ${tipoVenda === 'atacado' ? 'text-purple-600' : 'text-gray-500'}`}>
+                <span
+                  className={`text-sm font-medium transition-all ${tipoVenda === "atacado" ? "text-purple-600" : "text-gray-500"}`}
+                >
                   Atacado
                 </span>
-                <Package size={18} className={tipoVenda === 'atacado' ? 'text-purple-600' : 'text-gray-400'} />
+                <Package
+                  className={
+                    tipoVenda === "atacado"
+                      ? "text-purple-600"
+                      : "text-gray-400"
+                  }
+                  size={18}
+                />
               </div>
             </div>
           </div>
@@ -90,33 +109,37 @@ export default function Home() {
             {/* Busca */}
             <div className="flex-1 w-full">
               <Input
+                classNames={{
+                  input: "text-sm",
+                  inputWrapper:
+                    "bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-none",
+                }}
                 placeholder="Buscar produtos..."
+                radius="sm"
+                startContent={<Search className="text-gray-400" size={18} />}
                 value={searchTerm}
                 onValueChange={setSearchTerm}
-                startContent={<Search size={18} className="text-gray-400" />}
-                classNames={{
-                  input: 'text-sm',
-                  inputWrapper: 'bg-gray-50 border border-gray-300 hover:border-gray-400 shadow-none',
-                }}
-                radius="sm"
               />
             </div>
 
             {/* Filtro de Categoria */}
             <div className="w-full md:w-64">
               <Select
-                placeholder="Categoria"
-                selectedKeys={[categoriaFiltro]}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategoriaFiltro(e.target.value as CategoriaProduto | 'TODOS')}
                 classNames={{
-                  trigger: 'bg-gray-50 border border-gray-300 hover:border-gray-400',
+                  trigger:
+                    "bg-gray-50 border border-gray-300 hover:border-gray-400",
                 }}
+                placeholder="Categoria"
                 radius="sm"
+                selectedKeys={[categoriaFiltro]}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setCategoriaFiltro(
+                    e.target.value as CategoriaProduto | "TODOS",
+                  )
+                }
               >
                 {categorias.map((cat) => (
-                  <SelectItem key={cat.value}>
-                    {cat.label}
-                  </SelectItem>
+                  <SelectItem key={cat.value}>{cat.label}</SelectItem>
                 ))}
               </Select>
             </div>
@@ -125,18 +148,19 @@ export default function Home() {
           {/* Indicadores */}
           <div className="flex items-center justify-between mt-3">
             <div className="flex items-center gap-2">
-              <ShoppingBag size={16} className="text-gray-500" />
+              <ShoppingBag className="text-gray-500" size={16} />
               <span className="text-sm text-gray-600">
-                {products.length} {products.length === 1 ? 'resultado' : 'resultados'}
+                {products.length}{" "}
+                {products.length === 1 ? "resultado" : "resultados"}
               </span>
             </div>
 
             {searchTerm && (
               <Button
+                className="text-blue-600"
                 size="sm"
                 variant="light"
-                onPress={() => setSearchTerm('')}
-                className="text-blue-600"
+                onPress={() => setSearchTerm("")}
               >
                 Limpar busca
               </Button>
@@ -149,29 +173,26 @@ export default function Home() {
       <section className="container mx-auto px-2 sm:px-4 py-6 max-w-7xl">
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <Spinner size="lg" color="primary" />
+            <Spinner color="primary" size="lg" />
             <span className="ml-3 text-gray-600">Carregando produtos...</span>
           </div>
         ) : error ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <p className="text-red-600 text-lg font-medium mb-4">{error}</p>
-            <Button
-              color="primary"
-              onPress={() => window.location.reload()}
-            >
+            <Button color="primary" onPress={() => window.location.reload()}>
               Tentar novamente
             </Button>
           </div>
         ) : products.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <Package size={64} className="mx-auto text-gray-300 mb-4" />
+            <Package className="mx-auto text-gray-300 mb-4" size={64} />
             <h3 className="text-xl font-medium text-gray-800 mb-2">
               Nenhum produto encontrado
             </h3>
             <p className="text-gray-600">
-              {searchTerm || categoriaFiltro !== 'TODOS'
-                ? 'Tente ajustar os filtros ou buscar por outros termos.'
-                : 'Nenhum produto disponível no momento.'}
+              {searchTerm || categoriaFiltro !== "TODOS"
+                ? "Tente ajustar os filtros ou buscar por outros termos."
+                : "Nenhum produto disponível no momento."}
             </p>
           </div>
         ) : (

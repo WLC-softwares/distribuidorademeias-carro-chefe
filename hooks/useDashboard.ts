@@ -3,11 +3,13 @@
  * Hook customizado para gerenciar estado do dashboard
  */
 
-'use client';
+"use client";
 
-import { getDashboardDataAction } from '@/controllers';
-import type { DashboardData } from '@/models';
-import { useEffect, useState } from 'react';
+import type { DashboardData } from "@/models";
+
+import { useEffect, useState } from "react";
+
+import { getDashboardDataAction } from "@/controllers";
 
 export function useDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -19,10 +21,11 @@ export function useDashboard() {
       setLoading(true);
       setError(null);
       const dashboardData = await getDashboardDataAction();
+
       setData(dashboardData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
-      console.error('Erro ao buscar dados do dashboard:', err);
+      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+      console.error("Erro ao buscar dados do dashboard:", err);
     } finally {
       setLoading(false);
     }

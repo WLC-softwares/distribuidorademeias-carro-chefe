@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useCart } from '@/hooks';
 import { Button } from '@heroui/button';
@@ -16,15 +16,22 @@ interface CartDrawerProps {
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const router = useRouter();
-    const { items, removeItem, updateQuantity, getTotal, getTotalItems, clearCart } = useCart();
+    const {
+        items,
+        removeItem,
+        updateQuantity,
+        getTotal,
+        getTotalItems,
+        clearCart,
+    } = useCart();
 
     const handleCheckout = () => {
         onClose();
-        router.push('/checkout');
+        router.push("/checkout");
     };
 
     const handleClearCart = () => {
-        if (confirm('Deseja realmente limpar o carrinho?')) {
+        if (confirm("Deseja realmente limpar o carrinho?")) {
             clearCart();
         }
     };
@@ -33,15 +40,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     const total = getTotal();
 
     return (
-        <Drawer isOpen={isOpen} onClose={onClose} placement="right" size="md">
+        <Drawer isOpen={isOpen} placement="right" size="md" onClose={onClose}>
             <DrawerContent>
                 <DrawerHeader className="flex items-center justify-between border-b border-gray-200">
                     <div className="flex items-center gap-2">
                         <ShoppingCart size={20} />
                         <h2 className="text-xl font-semibold">Carrinho</h2>
                         {totalItems > 0 && (
-                            <Chip size="sm" variant="flat" color="primary">
-                                {totalItems} {totalItems === 1 ? 'item' : 'itens'}
+                            <Chip color="primary" size="sm" variant="flat">
+                                {totalItems} {totalItems === 1 ? "item" : "itens"}
                             </Chip>
                         )}
                     </div>
@@ -59,7 +66,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <DrawerBody className="p-0">
                     {items.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                            <ShoppingCart size={64} className="text-gray-300 mb-4" />
+                            <ShoppingCart className="text-gray-300 mb-4" size={64} />
                             <h3 className="text-lg font-medium text-gray-800 mb-2">
                                 Carrinho vazio
                             </h3>
@@ -73,11 +80,16 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     ) : (
                         <div className="divide-y divide-gray-200">
                             {items.map((item) => {
-                                const imagemPrincipal = item.product.imagens?.find((img) => img.principal)?.url || '/placeholder-product.png';
+                                const imagemPrincipal =
+                                    item.product.imagens?.find((img) => img.principal)?.url ||
+                                    "/placeholder-product.png";
                                 const precoTotal = item.product.preco * item.quantidade;
 
                                 return (
-                                    <div key={`${item.product.id}-${item.tipoVenda}`} className="p-4 hover:bg-gray-50 transition">
+                                    <div
+                                        key={`${item.product.id}-${item.tipoVenda}`}
+                                        className="p-4 hover:bg-gray-50 transition"
+                                    >
                                         <div className="flex gap-3">
                                             {/* Imagem */}
                                             <div className="w-20 h-20 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -97,12 +109,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                 <Chip
                                                     size="sm"
                                                     variant="flat"
-                                                    className={`mb-2 ${item.tipoVenda === 'atacado'
-                                                            ? 'bg-purple-100 text-purple-700'
-                                                            : 'bg-green-100 text-green-700'
+                                                    className={`mb-2 ${item.tipoVenda === "atacado"
+                                                        ? "bg-purple-100 text-purple-700"
+                                                        : "bg-green-100 text-green-700"
                                                         }`}
                                                 >
-                                                    {item.tipoVenda === 'atacado' ? 'Atacado' : 'Varejo'}
+                                                    {item.tipoVenda === "atacado" ? "Atacado" : "Varejo"}
                                                 </Chip>
 
                                                 <div className="flex items-center justify-between">
@@ -110,10 +122,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                     <div className="flex items-center gap-2">
                                                         <Button
                                                             isIconOnly
+                                                            isDisabled={item.quantidade <= 1}
                                                             size="sm"
                                                             variant="flat"
                                                             onPress={() => updateQuantity(item.product.id, item.tipoVenda, item.quantidade - 1)}
-                                                            isDisabled={item.quantidade <= 1}
+                                                            aria-label="Diminuir quantidade"
                                                         >
                                                             <Minus size={14} />
                                                         </Button>
@@ -124,8 +137,17 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                             isIconOnly
                                                             size="sm"
                                                             variant="flat"
-                                                            onPress={() => updateQuantity(item.product.id, item.tipoVenda, item.quantidade + 1)}
-                                                            isDisabled={item.quantidade >= item.product.quantidade}
+                                                            onPress={() =>
+                                                                updateQuantity(
+                                                                    item.product.id,
+                                                                    item.tipoVenda,
+                                                                    item.quantidade + 1,
+                                                                )
+                                                            }
+                                                            isDisabled={
+                                                                item.quantidade >= item.product.quantidade
+                                                            }
+                                                            aria-label="Aumentar quantidade"
                                                         >
                                                             <Plus size={14} />
                                                         </Button>
@@ -151,7 +173,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                                                 size="sm"
                                                 variant="light"
                                                 color="danger"
-                                                onPress={() => removeItem(item.product.id, item.tipoVenda)}
+                                                onPress={() =>
+                                                    removeItem(item.product.id, item.tipoVenda)
+                                                }
                                                 aria-label="Remover"
                                             >
                                                 <Trash2 size={16} />
@@ -181,7 +205,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                         {/* Total */}
                         <div className="flex justify-between items-center w-full">
-                            <span className="text-lg font-semibold text-gray-900">Total:</span>
+                            <span className="text-lg font-semibold text-gray-900">
+                                Total:
+                            </span>
                             <span className="text-2xl font-bold text-gray-900">
                                 R$ {total.toFixed(2)}
                             </span>
@@ -212,4 +238,3 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </Drawer>
     );
 }
-
