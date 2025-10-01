@@ -262,7 +262,7 @@ export default function SalesPage() {
                                                     }}
                                                 >
                                                     {statusOptions.map((status) => (
-                                                        <SelectItem key={status.value} value={status.value}>
+                                                        <SelectItem key={status.value}>
                                                             {status.label}
                                                         </SelectItem>
                                                     ))}
