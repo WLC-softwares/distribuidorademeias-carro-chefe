@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USUÁRIO ====================
+model Usuario {
+  id              String    @id @default(uuid())
+  nome            String
+  email           String    @unique
+  senha           String // Hash da senha
+  telefone        String?
+  cpf             String?   @unique
+  role            Role      @default(USER)
+  avatar          String?
+  ativo           Boolean   @default(true)
+  resetToken      String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relações
+  enderecos     Endereco[]
+  vendas        Venda[]
+  notificacoes  Notificacao[]
+
+  @@map("usuarios")
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+// ==================== ENDEREÇO ====================
+model Endereco {
+  id          String   @id @default(uuid())
+  cep         String
+  logradouro  String
+  numero      String
+  complemento String?
+  bairro      String
+  cidade      String
+  estado      String
+  pais        String   @default("Brasil")
+  principal   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  usuarioId String   @map("usuario_id")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("enderecos")
+  @@index([usuarioId])
+}
+
+// ==================== PRODUTO ====================
+model Produto {
+  id          String          @id @default(uuid())
+  nome        String
+  descricao   String?
+  preco       Decimal         @db.Decimal(10, 2)
+  quantidade  Int             @default(0)
+  status      StatusProduto   @default(ATIVO)
+  categoria   CategoriaProduto
+  sku         String?         @unique
+  ativo       Boolean         @default(true)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  // Relações
+  imagens     ImagemProduto[]
+  itensVenda  ItemVenda[]
+
+  @@map("produtos")
+  @@index([categoria])
+  @@index([status])
+}
+
+// ==================== IMAGEM PRODUTO ====================
+model ImagemProduto {
+  id        String   @id @default(uuid())
+  url       String
+  alt       String?
+  ordem     Int      @default(0)
+  principal Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relações
+  produtoId String  @map("produto_id")
+  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+
+  @@map("imagens_produto")
+  @@index([produtoId])
+  @@index([principal])
+}
+
+enum StatusProduto {
+  ATIVO
+  INATIVO
+  ESGOTADO
+  DESCONTINUADO
+}
+
+enum CategoriaProduto {
+  MEIAS_MASCULINAS
+  MEIAS_FEMININAS
+  MEIAS_INFANTIS
+  MEIAS_ESPORTIVAS
+  MEIAS_SOCIAIS
+  MEIAS_TERMICAS
+  ACESSORIOS
+  OUTROS
+}
+
+// ==================== VENDA ====================
+model Venda {
+  id              String       @id @default(uuid())
+  numeroVenda     String       @unique @map("numero_venda")
+  status          StatusVenda  @default(PENDENTE)
+  subtotal        Decimal      @db.Decimal(10, 2)
+  desconto        Decimal      @default(0) @db.Decimal(10, 2)
+  total           Decimal      @db.Decimal(10, 2)
+  formaPagamento  FormaPagamento @map("forma_pagamento")
+  observacoes     String?
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  finalizadaEm    DateTime?    @map("finalizada_em")
+  canceladaEm     DateTime?    @map("cancelada_em")
+
+  // Relações
+  usuarioId String    @map("usuario_id")
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
+  itens     ItemVenda[]
+
+  @@map("vendas")
+  @@index([usuarioId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum StatusVenda {
+  PENDENTE
+  PROCESSANDO
+  PAGA
+  ENVIADA
+  ENTREGUE
+  CANCELADA
+  REEMBOLSADA
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  PIX
+  BOLETO
+  TRANSFERENCIA
+}
+
+// ==================== ITEM VENDA ====================
+model ItemVenda {
+  id         String      @id @default(uuid())
+  quantidade Int
+  precoUnit  Decimal     @db.Decimal(10, 2) @map("preco_unitario")
+  subtotal   Decimal     @db.Decimal(10, 2)
+  desconto   Decimal     @default(0) @db.Decimal(10, 2)
+  total      Decimal     @db.Decimal(10, 2)
+  tipoVenda  TipoVenda   @default(VAREJO) @map("tipo_venda")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  // Relações
+  vendaId   String  @map("venda_id")
+  venda     Venda   @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  produtoId String  @map("produto_id")
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  @@map("itens_venda")
+  @@index([vendaId])
+  @@index([produtoId])
+}
+
+enum TipoVenda {
+  VAREJO
+  ATACADO
+}
+
+// ==================== NOTIFICAÇÃO ====================
+model Notificacao {
+  id        String            @id @default(uuid())
+  tipo      TipoNotificacao
+  titulo    String
+  mensagem  String
+  lida      Boolean           @default(false)
+  link      String?           // Link opcional para redirecionar (ex: /user/pedidos/123)
+  metadata  Json?             // Dados adicionais (ex: vendaId, statusAnterior, statusNovo)
+  createdAt DateTime          @default(now()) @map("created_at")
+  
+  // Relações
+  usuarioId String   @map("usuario_id")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("notificacoes")
+  @@index([usuarioId])
+  @@index([lida])
+  @@index([createdAt])
+}
+
+enum TipoNotificacao {
+  PEDIDO_CRIADO
+  PEDIDO_PROCESSANDO
+  PEDIDO_PAGO
+  PEDIDO_ENVIADO
+  PEDIDO_ENTREGUE
+  PEDIDO_CANCELADO
+  SISTEMA
+}

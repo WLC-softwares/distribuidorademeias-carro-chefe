@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@config "../tailwind.config.js";
+
+/* Previne overflow horizontal */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Garante que todos os elementos respeitem a largura da viewport */
+* {
+    box-sizing: border-box;
+}
+
+/* Previne que imagens causem overflow */
+img {
+    max-width: 100%;
+    height: auto;
+}
