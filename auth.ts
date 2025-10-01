@@ -73,11 +73,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   callbacks: {
+    // Extender callbacks do authConfig
+    ...authConfig.callbacks,
     async jwt({ token, user, trigger, session }) {
       // Primeiro login
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role || "user";
+        token.role = (user as any).role || "USER";
         token.avatar = (user as any).avatar;
       }
 

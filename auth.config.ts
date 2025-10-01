@@ -16,4 +16,20 @@ export default {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      // Adicionar role do usuário ao token
+      if (user) {
+        token.role = (user as any).role || "USER";
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Adicionar role à sessão
+      if (session.user) {
+        (session.user as any).role = token.role || "USER";
+      }
+      return session;
+    },
+  },
 } satisfies NextAuthConfig;
