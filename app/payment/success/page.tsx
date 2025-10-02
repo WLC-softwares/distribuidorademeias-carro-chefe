@@ -2,9 +2,10 @@
 
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
-import { CheckCircle2, Package, ShoppingBag } from "lucide-react";
+import { Spinner } from "@heroui/spinner";
+import { CheckCircle2, Package, ShoppingBag, XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function PaymentSuccessContent() {
   const router = useRouter();
@@ -12,11 +13,119 @@ function PaymentSuccessContent() {
   const paymentId = searchParams.get("payment_id");
   const externalReference = searchParams.get("external_reference");
 
-  useEffect(() => {
-    // Limpar carrinho após pagamento bem-sucedido
-    localStorage.removeItem("cart");
-  }, []);
+  const [isValidating, setIsValidating] = useState(true);
+  const [isValid, setIsValid] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    const validatePayment = async () => {
+      // Se não tem referência, não é válido
+      if (!externalReference) {
+        setErrorMessage("Pedido não encontrado");
+        setIsValid(false);
+        setIsValidating(false);
+        return;
+      }
+
+      try {
+        // Verificar o status real do pedido no backend
+        const response = await fetch(
+          `/api/sale/check-status?saleId=${externalReference}`
+        );
+
+        if (!response.ok) {
+          setErrorMessage("Não foi possível verificar o status do pedido");
+          setIsValid(false);
+          setIsValidating(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        // Apenas permitir acesso se o status for PAGA
+        if (data.status === "PAGA") {
+          setIsValid(true);
+          // Limpar carrinho apenas após validar que o pagamento foi aprovado
+          localStorage.removeItem("cart");
+        } else {
+          // Se não estiver pago, redirecionar para a página apropriada
+          setErrorMessage(`Status do pedido: ${data.status}`);
+          setIsValid(false);
+
+          // Redirecionar baseado no status
+          setTimeout(() => {
+            if (data.status === "PENDENTE") {
+              router.push(`/payment/pending?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
+            } else if (data.status === "CANCELADA") {
+              router.push(`/payment/failure?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
+            } else {
+              router.push("/user/pedidos");
+            }
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Erro ao validar pagamento:", error);
+        setErrorMessage("Erro ao validar pagamento");
+        setIsValid(false);
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    validatePayment();
+  }, [externalReference, paymentId, router]);
+
+  // Exibir carregamento enquanto valida
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardBody className="flex flex-col items-center gap-4 py-12">
+            <Spinner size="lg" color="primary" />
+            <p className="text-lg font-semibold">Validando pagamento...</p>
+            <p className="text-sm text-gray-600 text-center">
+              Aguarde enquanto verificamos o status do seu pedido
+            </p>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  // Se não for válido, mostrar erro
+  if (!isValid) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="flex flex-col items-center gap-4 pt-8">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+              <XCircle className="text-red-600" size={48} />
+            </div>
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-red-600 mb-2">
+                Acesso Negado
+              </h1>
+              <p className="text-gray-600">
+                {errorMessage || "Este pedido ainda não foi aprovado"}
+              </p>
+            </div>
+          </CardHeader>
+          <CardBody className="pb-8">
+            <Button
+              className="w-full"
+              color="primary"
+              size="lg"
+              onPress={() => router.push("/user/pedidos")}
+            >
+              Ver Meus Pedidos
+            </Button>
+          </CardBody>
+        </Card>
+      </div>
+    );
+  }
+
+  // Apenas mostrar sucesso se for válido
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full">
