@@ -31,10 +31,12 @@ export async function POST(request: NextRequest) {
     // Buscar dados completos do usuário
     const userData = await userRepository.findById(session.user.id!);
 
-    // Obter URL base (funciona tanto local quanto em produção)
-    const host = request.headers.get("host") || "localhost:3000";
-    const protocol = host.includes("localhost") ? "http" : "https";
-    const baseUrl = process.env.NEXTAUTH_URL || `${protocol}://${host}`;
+    // Obter URL base - SEMPRE usar domínio de produção fixo
+    const productionUrl = "https://distribuidorademeias-carro-chefe.vercel.app";
+    const isLocal = request.headers.get("host")?.includes("localhost");
+    const baseUrl = isLocal
+      ? "http://localhost:3000"
+      : (process.env.NEXTAUTH_URL || productionUrl);
 
     // console.log("🔗 Base URL para MP:", baseUrl);
 
