@@ -2,15 +2,79 @@
 
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Spinner } from "@heroui/spinner";
 import { Clock, Package, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 function PaymentPendingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id");
   const externalReference = searchParams.get("external_reference");
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [statusMessage, setStatusMessage] = useState("Verificando status do pagamento...");
+
+  // Polling: verificar status do pagamento a cada 3 segundos
+  useEffect(() => {
+    if (!externalReference) {
+      setCheckingStatus(false);
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 40; // 40 tentativas x 3 segundos = 2 minutos
+
+    const checkPaymentStatus = async () => {
+      try {
+        const response = await fetch(
+          `/api/sale/check-status?saleId=${externalReference}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.status === "PAGO") {
+            setStatusMessage("Pagamento confirmado! Redirecionando...");
+            setTimeout(() => {
+              router.push(`/payment/success?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
+            }, 1000);
+            return true;
+          }
+        }
+
+        return false;
+      } catch (error) {
+        console.error("Erro ao verificar status:", error);
+        return false;
+      }
+    };
+
+    const intervalId = setInterval(async () => {
+      attempts++;
+
+      const isPaid = await checkPaymentStatus();
+
+      if (isPaid || attempts >= maxAttempts) {
+        clearInterval(intervalId);
+        setCheckingStatus(false);
+        
+        if (!isPaid) {
+          setStatusMessage("Ainda aguardando confirmação do pagamento");
+        }
+      }
+    }, 3000);
+
+    // Verificar imediatamente na montagem
+    checkPaymentStatus().then((isPaid) => {
+      if (isPaid) {
+        clearInterval(intervalId);
+        setCheckingStatus(false);
+      }
+    });
+
+    return () => clearInterval(intervalId);
+  }, [externalReference, paymentId, router]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -30,6 +94,19 @@ function PaymentPendingContent() {
         </CardHeader>
 
         <CardBody className="space-y-6 pb-8">
+          {/* Indicador de verificação automática */}
+          {checkingStatus && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
+              <Spinner size="sm" color="primary" />
+              <div>
+                <p className="font-semibold text-blue-900">{statusMessage}</p>
+                <p className="text-sm text-blue-700">
+                  Se você já pagou o Pix, aguarde alguns segundos. A página será atualizada automaticamente.
+                </p>
+              </div>
+            </div>
+          )}
+
           {paymentId && (
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm text-gray-600 mb-1">ID do Pagamento</p>
