@@ -14,7 +14,7 @@ import {
   MapPin,
   Package,
   ShoppingBag,
-  User as UserIcon
+  User as UserIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,8 +25,7 @@ import { useAuth, useCart } from "@/hooks";
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const { items, getTotal, getTotalItems, isInitialized, clearCart } =
-    useCart();
+  const { items, getTotal, getTotalItems, isInitialized } = useCart();
   const [loading, setLoading] = useState(false);
   const [observacoes, setObservacoes] = useState("");
   const [userAddress, setUserAddress] = useState<Address | null>(null);
@@ -46,7 +45,7 @@ export default function CheckoutPage() {
 
     // Redirecionar para home se carrinho estiver vazio
     if (isAuthenticated && items.length === 0) {
-      console.log("Carrinho vazio, redirecionando para home");
+      // console.log("Carrinho vazio, redirecionando para home");
       router.push("/");
     }
   }, [isAuthenticated, authLoading, items.length, router, isInitialized]);
@@ -71,6 +70,7 @@ export default function CheckoutPage() {
   const handleMercadoPagoCheckout = async () => {
     if (!user?.id) {
       alert("Usuário não identificado. Por favor, faça login novamente.");
+
       return;
     }
 
@@ -109,7 +109,7 @@ export default function CheckoutPage() {
       // 3. Redirecionar para o Mercado Pago
       window.location.href = initPoint;
     } catch (err) {
-      console.error("Erro ao processar pedido:", err);
+      // console.error("Erro ao processar pedido:", err);
       alert("Erro ao processar pedido. Tente novamente.");
     } finally {
       setLoading(false);
@@ -301,10 +301,11 @@ export default function CheckoutPage() {
                             {item.product.nome}
                           </h4>
                           <Chip
-                            className={`mt-1 ${item.tipoVenda === "atacado"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                              }`}
+                            className={`mt-1 ${
+                              item.tipoVenda === "atacado"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
                             size="sm"
                             variant="flat"
                           >
@@ -361,12 +362,12 @@ export default function CheckoutPage() {
                 <div className="flex items-start gap-3 mb-4">
                   <svg
                     className="flex-shrink-0 mt-1"
-                    width="24"
+                    fill="none"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill="none"
+                    width="24"
                   >
-                    <rect width="24" height="24" rx="4" fill="#009EE3" />
+                    <rect fill="#009EE3" height="24" rx="4" width="24" />
                     <path d="M13 8h3v8h-3V8z" fill="#fff" />
                     <path d="M8 12h3v4H8v-4z" fill="#fff" />
                   </svg>

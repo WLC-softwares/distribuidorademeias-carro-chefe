@@ -22,6 +22,7 @@ export default {
       if (user) {
         token.role = (user as any).role || "USER";
       }
+
       return token;
     },
     async session({ session, token }) {
@@ -29,6 +30,7 @@ export default {
       if (session.user) {
         (session.user as any).role = token.role || "USER";
       }
+
       return session;
     },
   },

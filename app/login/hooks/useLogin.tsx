@@ -16,12 +16,12 @@ export function useLogin() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // Lógica de login aqui
-    console.log("Login:", { email, password });
+    // console.log("Login:", { email, password });
   };
 
   const handleGoogleLogin = () => {
     // Lógica para login com Google
-    console.log("Login com Google");
+    // console.log("Login com Google");
   };
 
   const handleChangeAccount = () => {

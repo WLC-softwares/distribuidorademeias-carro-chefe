@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { formatCurrency } from "@/utils";
 import { getDashboardStatsAction, getRecentSalesAction } from "@/controllers";
+import { formatCurrency } from "@/utils";
 
 interface DashboardStats {
   totalSales: number;
@@ -64,7 +64,7 @@ export default function Dashboard() {
         setStats(statsData);
         setRecentSales(salesData as any);
       } catch (error) {
-        console.error("Erro ao buscar dados do dashboard:", error);
+        // console.error("Erro ao buscar dados do dashboard:", error);
       } finally {
         setLoading(false);
       }

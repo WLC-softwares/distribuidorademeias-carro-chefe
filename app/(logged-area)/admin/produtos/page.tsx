@@ -15,12 +15,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ProductDrawer } from "./components";
 
-import { formatCurrency } from "@/utils";
 import {
   deleteProductAction,
   getProductsAction,
   getProductStatsAction,
 } from "@/controllers";
+import { formatCurrency } from "@/utils";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,7 +48,7 @@ export default function ProductsPage() {
       setProducts(productsData);
       setStats(statsData);
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+      // console.error("Erro ao carregar dados:", error);
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export default function ProductsPage() {
       await deleteProductAction(id);
       await loadData();
     } catch (error) {
-      console.error("Erro ao deletar produto:", error);
+      // console.error("Erro ao deletar produto:", error);
       alert("Erro ao deletar produto");
     }
   };
