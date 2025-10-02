@@ -39,11 +39,11 @@ export async function POST(request: NextRequest) {
     if (saleId) {
       const newStatus =
         status === "approved"
-          ? "PAGO"
+          ? "PAGA"
           : status === "pending"
             ? "PENDENTE"
             : status === "rejected"
-              ? "CANCELADO"
+              ? "CANCELADA"
               : "PENDENTE";
 
       await prisma.venda.update({
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
               venda.usuarioId,
               venda.numeroVenda,
               saleId,
-              "PAGO",
+              "PAGA",
               "PENDENTE",
             );
 
