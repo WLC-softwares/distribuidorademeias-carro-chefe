@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const sale = await prisma.venda.findFirst({
       where: saleId
         ? { id: saleId }
-        : { numeroVenda: parseInt(saleNumber!) },
+        : { numeroVenda: saleNumber! },
       select: {
         id: true,
         numeroVenda: true,
