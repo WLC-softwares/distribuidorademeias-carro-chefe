@@ -74,6 +74,12 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (items.length === 0) {
+      alert("Seu carrinho está vazio. Adicione produtos antes de finalizar.");
+
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -83,6 +89,10 @@ export default function CheckoutPage() {
         items,
         observacoes: observacoes || undefined,
       });
+
+      if (!sale || !sale.id) {
+        throw new Error("Erro ao criar venda no banco de dados");
+      }
 
       // 2. Criar preferência no Mercado Pago
       const response = await fetch("/api/mercadopago/create-preference", {
@@ -101,17 +111,25 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao criar preferência de pagamento");
+        const errorData = await response.json().catch(() => ({}));
+
+        console.error("Erro MP:", errorData);
+        throw new Error(errorData.error || "Erro ao criar preferência de pagamento");
       }
 
       const { initPoint } = await response.json();
 
+      if (!initPoint) {
+        throw new Error("Link de pagamento não foi gerado");
+      }
+
       // 3. Redirecionar para o Mercado Pago
       window.location.href = initPoint;
     } catch (err) {
-      // console.error("Erro ao processar pedido:", err);
-      alert("Erro ao processar pedido. Tente novamente.");
-    } finally {
+      console.error("Erro ao processar pedido:", err);
+      alert(
+        `Erro ao processar pedido: ${err instanceof Error ? err.message : "Tente novamente."}`,
+      );
       setLoading(false);
     }
   };
@@ -301,11 +319,10 @@ export default function CheckoutPage() {
                             {item.product.nome}
                           </h4>
                           <Chip
-                            className={`mt-1 ${
-                              item.tipoVenda === "atacado"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
+                            className={`mt-1 ${item.tipoVenda === "atacado"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-green-100 text-green-700"
+                              }`}
                             size="sm"
                             variant="flat"
                           >
@@ -384,11 +401,16 @@ export default function CheckoutPage() {
                 <Button
                   className="w-full font-semibold"
                   color="primary"
+                  isDisabled={loading || items.length === 0 || !user?.id}
                   isLoading={loading}
                   size="lg"
                   onPress={handleMercadoPagoCheckout}
                 >
-                  Finalizar Pedido
+                  {loading
+                    ? "Processando..."
+                    : items.length === 0
+                      ? "Carrinho Vazio"
+                      : "Finalizar Pedido"}
                 </Button>
               </CardBody>
             </Card>
