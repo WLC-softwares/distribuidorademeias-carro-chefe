@@ -18,7 +18,6 @@ export function ProductCard({ product, tipoVenda }: ProductCardProps) {
     product.imagens?.find((img) => img.principal)?.url ||
     "/placeholder-product.png";
 
-  // Preço sem desconto (checkout via WhatsApp)
   const preco = product.preco;
 
   const categoriaLabels: Record<string, string> = {
@@ -55,11 +54,10 @@ export function ProductCard({ product, tipoVenda }: ProductCardProps) {
           {/* Badge de Tipo de Venda - Sempre Visível */}
           <div className="absolute top-2 left-2">
             <Chip
-              className={`text-xs font-semibold ${
-                tipoVenda === "atacado"
+              className={`text-xs font-semibold ${tipoVenda === "atacado"
                   ? "bg-purple-600 text-white"
                   : "bg-green-600 text-white"
-              }`}
+                }`}
               size="sm"
               variant="solid"
             >

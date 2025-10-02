@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { mercadoPagoPreference } from "@/lib/mercadopago";
+import { userRepository } from "@/repositories";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +28,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Buscar dados completos do usuário
+    const userData = await userRepository.findById(session.user.id!);
+
     // Obter URL base (funciona tanto local quanto em produção)
     const host = request.headers.get("host") || "localhost:3000";
     const protocol = host.includes("localhost") ? "http" : "https";
@@ -42,6 +46,37 @@ export async function POST(request: NextRequest) {
 
     // console.log("🔙 Back URLs:", backUrls);
 
+    // Preparar telefone (extrair DDD e número)
+    let areaCode = "11";
+    let phoneNumber = "999999999";
+
+    if (userData?.telefone) {
+      const cleanPhone = userData.telefone.replace(/\D/g, "");
+
+      if (cleanPhone.length >= 10) {
+        areaCode = cleanPhone.substring(0, 2);
+        phoneNumber = cleanPhone.substring(2);
+      }
+    }
+
+    // Preparar endereço
+    let address: any = {
+      zip_code: "01310-100",
+      street_name: "Av Paulista",
+      street_number: 1000,
+    };
+
+    if (userData?.enderecos && userData.enderecos.length > 0) {
+      const primaryAddress =
+        userData.enderecos.find((e) => e.principal) || userData.enderecos[0];
+
+      address = {
+        zip_code: primaryAddress.cep.replace(/\D/g, ""),
+        street_name: primaryAddress.logradouro,
+        street_number: parseInt(primaryAddress.numero) || 0,
+      };
+    }
+
     // Preparar dados da preferência
     const preferenceData: any = {
       items: items.map((item: any) => ({
@@ -54,8 +89,18 @@ export async function POST(request: NextRequest) {
       payer: {
         name: session.user.name || "",
         email: session.user.email || "",
+        phone: {
+          area_code: areaCode,
+          number: phoneNumber,
+        },
+        identification: {
+          type: "CPF",
+          number: userData?.cpf?.replace(/\D/g, "") || "12345678909",
+        },
+        address: address,
       },
       back_urls: backUrls,
+      auto_return: "approved",
       external_reference: saleId || saleNumber || "",
       notification_url: `${baseUrl}/api/mercadopago/webhook`,
       statement_descriptor: "DISTRIBUIDORA MEIAS",
