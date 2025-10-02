@@ -34,7 +34,7 @@ function PaymentPendingContent() {
         if (response.ok) {
           const data = await response.json();
 
-          if (data.status === "PAGO") {
+          if (data.status === "PAGA") {
             setStatusMessage("Pagamento confirmado! Redirecionando...");
             setTimeout(() => {
               router.push(`/payment/success?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
@@ -58,7 +58,7 @@ function PaymentPendingContent() {
       if (isPaid || attempts >= maxAttempts) {
         clearInterval(intervalId);
         setCheckingStatus(false);
-        
+
         if (!isPaid) {
           setStatusMessage("Ainda aguardando confirmação do pagamento");
         }
