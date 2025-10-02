@@ -4,8 +4,9 @@ import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Clock, Package, ShoppingBag } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function PaymentPendingPage() {
+function PaymentPendingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const paymentId = searchParams.get("payment_id");
@@ -114,5 +115,13 @@ export default function PaymentPendingPage() {
         </CardBody>
       </Card>
     </div>
+  );
+}
+
+export default function PaymentPendingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>}>
+      <PaymentPendingContent />
+    </Suspense>
   );
 }
