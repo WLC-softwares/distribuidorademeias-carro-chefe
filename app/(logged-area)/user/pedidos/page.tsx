@@ -9,9 +9,9 @@ import { Spinner } from "@heroui/spinner";
 import { Calendar, Package, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { formatCurrency } from "@/utils";
-import { useSession } from "@/hooks";
 import { getUserSalesAction } from "@/controllers";
+import { useSession } from "@/hooks";
+import { formatCurrency } from "@/utils";
 
 // Simulação de pedidos - depois você pode conectar com a API real
 interface Pedido {
@@ -35,12 +35,14 @@ const statusMap: Record<
   string,
   { color: "default" | "warning" | "success" | "danger"; label: string }
 > = {
-  PENDENTE: { color: "warning", label: "Pendente" },
+  PENDENTE: { color: "warning", label: "Aguardando Pagamento" },
   PROCESSANDO: { color: "warning", label: "Processando" },
-  PAGA: { color: "success", label: "Paga" },
+  PAGO: { color: "success", label: "Pago" },
+  PAGA: { color: "success", label: "Paga" }, // Compatibilidade
   ENVIADA: { color: "success", label: "Enviada" },
   ENTREGUE: { color: "success", label: "Entregue" },
-  CANCELADA: { color: "danger", label: "Cancelada" },
+  CANCELADO: { color: "danger", label: "Cancelado" },
+  CANCELADA: { color: "danger", label: "Cancelada" }, // Compatibilidade
   REEMBOLSADA: { color: "default", label: "Reembolsada" },
 };
 

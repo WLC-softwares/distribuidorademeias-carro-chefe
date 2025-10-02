@@ -11,12 +11,10 @@ import { Input, Textarea } from "@heroui/input";
 import { Spinner } from "@heroui/spinner";
 import {
   ArrowLeft,
-  CheckCircle2,
   MapPin,
-  MessageCircle,
   Package,
   ShoppingBag,
-  User as UserIcon,
+  User as UserIcon
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -33,8 +31,6 @@ export default function CheckoutPage() {
   const [observacoes, setObservacoes] = useState("");
   const [userAddress, setUserAddress] = useState<Address | null>(null);
   const [addressLoaded, setAddressLoaded] = useState(false);
-  const [saleCreated, setSaleCreated] = useState(false);
-  const [saleNumber, setSaleNumber] = useState("");
 
   // Effect para redirecionamentos
   useEffect(() => {
@@ -48,19 +44,12 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Redirecionar para home se carrinho estiver vazio (mas não se a venda já foi criada)
-    if (isAuthenticated && items.length === 0 && !saleCreated) {
+    // Redirecionar para home se carrinho estiver vazio
+    if (isAuthenticated && items.length === 0) {
       console.log("Carrinho vazio, redirecionando para home");
       router.push("/");
     }
-  }, [
-    isAuthenticated,
-    authLoading,
-    items.length,
-    router,
-    isInitialized,
-    saleCreated,
-  ]);
+  }, [isAuthenticated, authLoading, items.length, router, isInitialized]);
 
   // Effect separado para buscar endereço do usuário
   useEffect(() => {
@@ -79,10 +68,9 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, user?.id, addressLoaded]);
 
-  const handleWhatsAppCheckout = async () => {
+  const handleMercadoPagoCheckout = async () => {
     if (!user?.id) {
       alert("Usuário não identificado. Por favor, faça login novamente.");
-
       return;
     }
 
@@ -96,114 +84,33 @@ export default function CheckoutPage() {
         observacoes: observacoes || undefined,
       });
 
-      setSaleNumber(sale.numeroVenda);
-      setSaleCreated(true);
-
-      // 2. Montar mensagem para WhatsApp
-      const separator = "----------------------------";
-      let message = "";
-
-      // Cabeçalho com número do pedido
-      message += `*NOVO PEDIDO #${sale.numeroVenda}*\n`;
-      message += `${separator}\n\n`;
-
-      // Dados do Cliente
-      message += `*DADOS DO CLIENTE*\n\n`;
-      message += `Nome: ${user?.nome || "Não informado"}\n`;
-      message += `Email: ${user?.email}\n`;
-
-      if (user?.telefone) {
-        message += `Telefone: ${user.telefone}\n`;
-      }
-
-      if (user?.cpf) {
-        message += `CPF: ${user.cpf}\n`;
-      }
-
-      message += `\n${separator}\n\n`;
-
-      // Endereço
-      message += `*ENDERECO DE ENTREGA*\n\n`;
-      if (userAddress) {
-        message += `${userAddress.logradouro}, ${userAddress.numero}\n`;
-        if (userAddress.complemento) {
-          message += `${userAddress.complemento}\n`;
-        }
-        message += `${userAddress.bairro}\n`;
-        message += `${userAddress.cidade} - ${userAddress.estado}\n`;
-        message += `CEP: ${userAddress.cep}\n`;
-      } else {
-        message += `Endereco nao cadastrado\n`;
-        message += `Por favor, informe o endereco de entrega\n`;
-      }
-      message += `\n${separator}\n\n`;
-
-      // Itens do Pedido
-      message += `*ITENS DO PEDIDO*\n\n`;
-
-      items.forEach((item, index) => {
-        const subtotal = Number(item.product.preco) * item.quantidade;
-
-        message += `${index + 1}. ${item.product.nome}\n`;
-        message += `Tipo: ${item.tipoVenda === "atacado" ? "Atacado" : "Varejo"}\n`;
-        message += `Quantidade: ${item.quantidade}x\n`;
-        message += `Preco Unit.: R$ ${Number(item.product.preco).toFixed(2)}\n`;
-        message += `Subtotal: R$ ${subtotal.toFixed(2)}\n\n`;
+      // 2. Criar preferência no Mercado Pago
+      const response = await fetch("/api/mercadopago/create-preference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            nome: item.product.nome,
+            descricao: item.product.descricao,
+            quantidade: item.quantidade,
+            preco: item.product.preco,
+          })),
+          saleId: sale.id,
+          saleNumber: sale.numeroVenda,
+        }),
       });
 
-      message += `${separator}\n\n`;
-
-      // Total
-      const totalItems = getTotalItems();
-      const total = getTotal();
-
-      message += `*RESUMO DO PEDIDO*\n\n`;
-      message += `Total de itens: ${totalItems}\n`;
-      message += `*VALOR TOTAL: R$ ${total.toFixed(2)}*\n\n`;
-
-      message += `${separator}\n\n`;
-
-      // Observações (se houver)
-      if (observacoes) {
-        message += `*OBSERVACOES*\n\n`;
-        message += `${observacoes}\n\n`;
-        message += `${separator}\n\n`;
+      if (!response.ok) {
+        throw new Error("Erro ao criar preferência de pagamento");
       }
 
-      // Rodapé
-      const now = new Date();
-      const dataHora = now.toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      const { initPoint } = await response.json();
 
-      message += `Data/Hora: ${dataHora}\n`;
-      message += `Loja: Distribuidora de Meias Carro Chefe\n`;
-      message += `Pedido: #${sale.numeroVenda}\n`;
-      message += `\nAguardando confirmacao para finalizar o pedido!`;
-
-      const phoneNumber = "5511961667767";
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`;
-
-      // 3. Abrir WhatsApp em nova aba
-      window.open(whatsappUrl, "_blank");
-
-      // 4. Limpar carrinho após 2 segundos (dar tempo para o WhatsApp abrir)
-      setTimeout(() => {
-        clearCart();
-        // Redirecionar para página de confirmação ou home após 3 segundos
-        setTimeout(() => {
-          router.push("/");
-        }, 3000);
-      }, 2000);
+      // 3. Redirecionar para o Mercado Pago
+      window.location.href = initPoint;
     } catch (err) {
       console.error("Erro ao processar pedido:", err);
       alert("Erro ao processar pedido. Tente novamente.");
-      setSaleCreated(false);
     } finally {
       setLoading(false);
     }
@@ -394,11 +301,10 @@ export default function CheckoutPage() {
                             {item.product.nome}
                           </h4>
                           <Chip
-                            className={`mt-1 ${
-                              item.tipoVenda === "atacado"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
+                            className={`mt-1 ${item.tipoVenda === "atacado"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-green-100 text-green-700"
+                              }`}
                             size="sm"
                             variant="flat"
                           >
@@ -449,56 +355,42 @@ export default function CheckoutPage() {
               </CardBody>
             </Card>
 
-            {/* Botão de Finalizar ou Mensagem de Sucesso */}
-            {saleCreated ? (
-              <Card className="bg-green-50 border-2 border-green-600">
-                <CardBody className="p-6 text-center space-y-3">
-                  <CheckCircle2 className="mx-auto text-green-600" size={48} />
-                  <h3 className="text-lg font-bold text-green-900">
-                    Pedido Criado com Sucesso!
-                  </h3>
-                  <p className="text-sm text-green-700">
-                    Número do pedido:{" "}
-                    <span className="font-mono font-bold">#{saleNumber}</span>
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Continue a conversa no WhatsApp para confirmar o pagamento.
-                    <br />
-                    Redirecionando para a página inicial...
-                  </p>
-                </CardBody>
-              </Card>
-            ) : (
-              <Card className="bg-green-50 border-2 border-green-600">
-                <CardBody className="p-4">
-                  <div className="flex items-start gap-3 mb-4">
-                    <MessageCircle
-                      className="text-green-600 flex-shrink-0 mt-1"
-                      size={24}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-green-900 mb-1">
-                        Checkout via WhatsApp
-                      </h3>
-                      <p className="text-sm text-green-700">
-                        Finalize seu pedido diretamente com nossa equipe pelo
-                        WhatsApp. Confirmaremos detalhes de entrega e pagamento.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    className="w-full font-semibold"
-                    color="success"
-                    isLoading={loading}
-                    size="lg"
-                    startContent={<MessageCircle size={20} />}
-                    onPress={handleWhatsAppCheckout}
+            {/* Finalizar Pedido */}
+            <Card className="border-2 border-blue-600 bg-blue-50">
+              <CardBody className="p-4">
+                <div className="flex items-start gap-3 mb-4">
+                  <svg
+                    className="flex-shrink-0 mt-1"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
                   >
-                    Finalizar no WhatsApp
-                  </Button>
-                </CardBody>
-              </Card>
-            )}
+                    <rect width="24" height="24" rx="4" fill="#009EE3" />
+                    <path d="M13 8h3v8h-3V8z" fill="#fff" />
+                    <path d="M8 12h3v4H8v-4z" fill="#fff" />
+                  </svg>
+                  <div>
+                    <h3 className="font-semibold text-blue-900 mb-1">
+                      Mercado Pago
+                    </h3>
+                    <p className="text-sm text-blue-800">
+                      Pague com cartão, Pix ou boleto. Seguro e rápido.
+                      Parcelamento em até 12x.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  className="w-full font-semibold"
+                  color="primary"
+                  isLoading={loading}
+                  size="lg"
+                  onPress={handleMercadoPagoCheckout}
+                >
+                  Finalizar Pedido
+                </Button>
+              </CardBody>
+            </Card>
           </div>
         </div>
       </div>

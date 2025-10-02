@@ -5,7 +5,7 @@
 
 import type { CartItem } from "@/hooks/useCart";
 
-import { generateOrderConfirmationEmail, sendEmail } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { NotificationService } from "@/services/notification/notification.service";
 
@@ -94,50 +94,7 @@ class SaleService {
         // Não bloqueia a criação da venda
       }
 
-      // 📧 Enviar email de confirmação
-      try {
-        const usuario = await prisma.usuario.findUnique({
-          where: { id: data.usuarioId },
-        });
-
-        if (usuario) {
-          const formaPagamentoMap: Record<string, string> = {
-            PIX: "PIX",
-            DINHEIRO: "Dinheiro",
-            CARTAO_CREDITO: "Cartão de Crédito",
-            CARTAO_DEBITO: "Cartão de Débito",
-            BOLETO: "Boleto",
-            TRANSFERENCIA: "Transferência Bancária",
-          };
-
-          const emailHtml = generateOrderConfirmationEmail(
-            usuario.nome,
-            venda.numeroVenda,
-            {
-              items: venda.itens.map((item) => ({
-                name: item.produto.nome,
-                quantity: item.quantidade,
-                price: Number(item.precoUnit),
-                total: Number(item.total),
-              })),
-              subtotal: Number(venda.subtotal),
-              discount: Number(venda.desconto),
-              total: Number(venda.total),
-              paymentMethod:
-                formaPagamentoMap[venda.formaPagamento] || venda.formaPagamento,
-            },
-          );
-
-          await sendEmail({
-            to: usuario.email,
-            subject: `Pedido Confirmado - #${venda.numeroVenda} - Distribuidora Carro Chefe`,
-            html: emailHtml,
-          });
-        }
-      } catch (error) {
-        console.error("Erro ao enviar email de confirmação:", error);
-        // Não bloqueia a criação da venda
-      }
+      // 📧 Email será enviado apenas após confirmação de pagamento via webhook
 
       return {
         id: venda.id,
