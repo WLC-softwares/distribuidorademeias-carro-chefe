@@ -9,24 +9,24 @@ import { MapPin, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { useSession } from "@/hooks";
 import { getUserWithAddressesAction } from "@/controllers";
+import { useSession } from "@/hooks";
 
-interface Endereco {
+interface Address {
   id: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  principal: boolean;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  primary: boolean;
 }
 
 export default function EnderecosPage() {
   const { user, isLoading } = useSession();
-  const [enderecos, setEnderecos] = useState<Endereco[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,8 +44,8 @@ export default function EnderecosPage() {
         const userData = await getUserWithAddressesAction(user.id);
 
         if (mounted) {
-          if (userData && "enderecos" in userData) {
-            setEnderecos(userData.enderecos as Endereco[]);
+          if (userData && "addresses" in userData) {
+            setAddresses(userData.addresses as Address[]);
           }
           setLoading(false);
         }
@@ -103,7 +103,7 @@ export default function EnderecosPage() {
       </div>
 
       {/* Lista de Endereços */}
-      {enderecos.length === 0 ? (
+      {addresses.length === 0 ? (
         <Card>
           <CardBody className="text-center py-12">
             <div className="flex flex-col items-center gap-4">
@@ -131,12 +131,11 @@ export default function EnderecosPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {enderecos.map((endereco) => (
+          {addresses.map((address) => (
             <Card
-              key={endereco.id}
-              className={`hover:shadow-lg transition-shadow ${
-                endereco.principal ? "border-2 border-yellow-400" : ""
-              }`}
+              key={address.id}
+              className={`hover:shadow-lg transition-shadow ${address.primary ? "border-2 border-yellow-400" : ""
+                }`}
             >
               <CardHeader className="flex justify-between items-start">
                 <div className="flex gap-3 items-start">
@@ -145,9 +144,9 @@ export default function EnderecosPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800">
-                      {endereco.logradouro}, {endereco.numero}
+                      {address.street}, {address.number}
                     </h3>
-                    {endereco.principal && (
+                    {address.primary && (
                       <Chip
                         className="mt-1"
                         color="warning"
@@ -163,23 +162,23 @@ export default function EnderecosPage() {
               <Divider />
               <CardBody className="p-4">
                 <div className="space-y-1 text-sm text-gray-600">
-                  {endereco.complemento && <p>{endereco.complemento}</p>}
-                  <p>{endereco.bairro}</p>
+                  {address.complement && <p>{address.complement}</p>}
+                  <p>{address.neighborhood}</p>
                   <p>
-                    {endereco.cidade} - {endereco.estado}
+                    {address.city} - {address.state}
                   </p>
-                  <p className="font-semibold">CEP: {endereco.cep}</p>
+                  <p className="font-semibold">CEP: {address.zipCode}</p>
                 </div>
 
                 {/* Ações */}
                 <div className="flex gap-2 mt-4">
-                  {!endereco.principal && (
+                  {!address.primary && (
                     <Button
                       className="flex-1"
                       color="warning"
                       size="sm"
                       variant="flat"
-                      onPress={() => handleSetPrincipal(endereco.id)}
+                      onPress={() => handleSetPrincipal(address.id)}
                     >
                       Definir como Principal
                     </Button>
@@ -189,7 +188,7 @@ export default function EnderecosPage() {
                     color="danger"
                     size="sm"
                     variant="light"
-                    onPress={() => handleDelete(endereco.id)}
+                    onPress={() => handleDelete(address.id)}
                   >
                     <Trash2 size={18} />
                   </Button>

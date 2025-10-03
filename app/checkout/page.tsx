@@ -57,11 +57,11 @@ export default function CheckoutPage() {
       getUserWithAddressesAction(user.id).then((userData) => {
         if (userData && userData.addresses && userData.addresses.length > 0) {
           // Pegar endereço principal ou o primeiro
-          const enderecoPrincipal =
+          const primaryAddress =
             userData.addresses.find((e: Address) => e.primary) ||
             userData.addresses[0];
 
-          setUserAddress(enderecoPrincipal);
+          setUserAddress(primaryAddress);
         }
       });
     }
