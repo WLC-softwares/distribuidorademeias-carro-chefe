@@ -9,11 +9,13 @@ import {
   Store,
   User as UserIcon,
   X,
+  Check,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { Card, CardBody } from "@heroui/card";
 
 const menuItems = [
   {
@@ -64,13 +66,13 @@ export default function UserLayout({
       {/* Sidebar */}
       <aside
         className={`
-                    fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-50 transition-transform duration-300
-                    lg:translate-x-0
-                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-                `}
+          fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-50 transition-transform duration-300
+          lg:translate-x-0
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
       >
         {/* Logo/Header */}
-        <div className="h-16 bg-yellow-400 flex items-center justify-center">
+        <div className="h-16 bg-yellow-400 flex items-center justify-center px-4">
           <h1 className="text-xl font-bold text-gray-800">Minha Conta</h1>
         </div>
 
@@ -142,9 +144,23 @@ export default function UserLayout({
       )}
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen bg-gray-50">
+      <main className="lg:ml-64 pt-20 lg:pt-8 min-h-screen bg-gray-50">
         <div className="p-6">{children}</div>
       </main>
+
+      {/* Features/Characteristics */}
+      <Card className="mt-6">
+        <CardBody className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Características</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center gap-2">
+              <Check className="text-green-600" size={20} />
+              <span>Material de qualidade</span>
+            </div>
+            {/* ... mais features */}
+          </div>
+        </CardBody>
+      </Card>
     </>
   );
 }

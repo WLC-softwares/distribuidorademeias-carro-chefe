@@ -35,15 +35,13 @@ const statusMap: Record<
   string,
   { color: "default" | "warning" | "success" | "danger"; label: string }
 > = {
-  PENDENTE: { color: "warning", label: "Aguardando Pagamento" },
-  PROCESSANDO: { color: "warning", label: "Processando" },
-  PAGO: { color: "success", label: "Pago" },
-  PAGA: { color: "success", label: "Paga" }, // Compatibilidade
-  ENVIADA: { color: "success", label: "Enviada" },
-  ENTREGUE: { color: "success", label: "Entregue" },
-  CANCELADO: { color: "danger", label: "Cancelado" },
-  CANCELADA: { color: "danger", label: "Cancelada" }, // Compatibilidade
-  REEMBOLSADA: { color: "default", label: "Reembolsada" },
+  PENDING: { color: "warning", label: "Aguardando Pagamento" },
+  PROCESSING: { color: "warning", label: "Processando" },
+  PAID: { color: "success", label: "Pago" },
+  SHIPPED: { color: "success", label: "Enviado" },
+  DELIVERED: { color: "success", label: "Entregue" },
+  CANCELED: { color: "danger", label: "Cancelado" },
+  REFUNDED: { color: "default", label: "Reembolsado" },
 };
 
 export default function PedidosPage() {
@@ -121,8 +119,8 @@ export default function PedidosPage() {
         <div className="space-y-4">
           {pedidos.map((pedido) => (
             <Card key={pedido.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="flex justify-between items-start">
-                <div className="flex gap-4 items-start">
+              <CardHeader className="flex flex-row justify-between items-center p-6">
+                <div className="flex gap-4 items-center">
                   <div className="p-3 bg-yellow-100 rounded-lg">
                     <Package className="text-yellow-600" size={24} />
                   </div>

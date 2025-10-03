@@ -205,9 +205,9 @@ export default function ProductDetailPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Column 1: Images */}
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Column 1: Images - 3 colunas */}
+          <div className="lg:col-span-3">
             <Card className="p-4">
               <CardBody>
                 <ImageCarousel
@@ -218,24 +218,14 @@ export default function ProductDetailPage() {
             </Card>
           </div>
 
-          {/* Column 2: Information and Purchase */}
-          <div className="space-y-4">
+          {/* Column 2: Information and Purchase - 2 colunas */}
+          <div className="lg:col-span-2 space-y-4">
             {/* Information Card */}
             <Card>
-              <CardBody className="p-6 space-y-4">
-                {/* Status and Category */}
+              <CardBody className="p-6 space-y-6">
+                {/* Category and SKU */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Chip
-                    className={`font-semibold ${saleType === "atacado"
-                      ? "bg-purple-600 text-white"
-                      : "bg-green-600 text-white"
-                      }`}
-                    size="sm"
-                    variant="solid"
-                  >
-                    {saleType === "atacado" ? "Atacado" : "Varejo"}
-                  </Chip>
-                  <Chip size="sm" variant="flat">
+                  <Chip size="sm" color="warning" variant="flat">
                     {categoryLabels[product.category]}
                   </Chip>
                   {product.sku && (
@@ -246,71 +236,125 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-xl font-medium text-gray-900">
-                  {product.name}
-                </h1>
-
-                {/* Price */}
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-normal">R$</span>
-                    <span className="text-5xl font-light">
-                      {Math.floor(price)}
-                    </span>
-                    <span className="text-2xl font-light">
-                      {(price % 1).toFixed(2).substring(1)}
-                    </span>
-                  </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    {product.name}
+                  </h1>
+                  {/* Stock Badge */}
+                  {hasStock && product.quantity < 10 && (
+                    <Chip size="sm" color="warning" variant="flat">
+                      ⚠️ Apenas {product.quantity} disponíveis
+                    </Chip>
+                  )}
                 </div>
 
                 {/* Retail/Wholesale Toggle */}
-                <div className="border-t border-gray-200 pt-4">
-                  <p className="text-sm text-gray-600 mb-3">
-                    Selecione o tipo de compra:
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-3">
+                    Tipo de compra:
                   </p>
-                  <div className="flex gap-2">
-                    <Button
-                      className={`flex-1 ${saleType === "varejo" ? "bg-green-600 text-white" : ""}`}
-                      variant={saleType === "varejo" ? "solid" : "bordered"}
-                      onPress={() => setSaleType("varejo")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      className={`p-4 rounded-lg border-2 transition-all ${saleType === "varejo"
+                        ? "border-green-600 bg-green-50"
+                        : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      onClick={() => setSaleType("varejo")}
                     >
-                      Varejo
-                    </Button>
-                    <Button
-                      className={`flex-1 ${saleType === "atacado" ? "bg-purple-600 text-white" : ""}`}
-                      variant={saleType === "atacado" ? "solid" : "bordered"}
-                      onPress={() => setSaleType("atacado")}
+                      <div className="text-center">
+                        <p className="font-semibold text-gray-900">Varejo</p>
+                        <p className="text-lg font-bold text-green-600 mt-1">
+                          R$ {product.retailPrice.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Preço unitário
+                        </p>
+                      </div>
+                    </button>
+                    <button
+                      className={`p-4 rounded-lg border-2 transition-all ${saleType === "atacado"
+                        ? "border-purple-600 bg-purple-50"
+                        : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      onClick={() => setSaleType("atacado")}
                     >
-                      Atacado
-                    </Button>
+                      <div className="text-center">
+                        <p className="font-semibold text-gray-900">Atacado</p>
+                        <p className="text-lg font-bold text-purple-600 mt-1">
+                          R$ {product.wholesalePrice.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Por unidade
+                        </p>
+                      </div>
+                    </button>
                   </div>
+                </div>
+
+                {/* Price Display */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 mb-1">Preço</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-normal text-gray-700">R$</span>
+                    <span className="text-4xl font-bold text-gray-900">
+                      {Math.floor(price)}
+                    </span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {(price % 1).toFixed(2).substring(1)}
+                    </span>
+                  </div>
+
+                  {/* Parcelamento Simples */}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                        <rect fill="#009EE3" height="24" rx="4" width="24" />
+                        <path d="M13 8h3v8h-3V8z" fill="#fff" />
+                        <path d="M8 12h3v4H8v-4z" fill="#fff" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          Parcele em até 12x no Mercado Pago
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          * Sujeito a juros
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {quantity > 1 && (
+                    <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">
+                      Subtotal:{" "}
+                      <span className="font-bold text-gray-900">
+                        R$ {totalPrice.toFixed(2)}
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Quantity */}
                 {hasStock && (
-                  <div className="border-t border-gray-200 pt-4">
-                    <p className="text-sm text-gray-600 mb-3">
-                      Quantidade:
-                      <span className="text-gray-500 ml-2">
-                        ({product.quantity} disponíveis)
-                      </span>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-3">
+                      Quantidade
                     </p>
                     <div className="flex items-center gap-3">
                       <Button
                         isIconOnly
                         isDisabled={quantity <= 1}
-                        size="sm"
+                        size="lg"
                         variant="bordered"
                         onPress={() => handleQuantityChange(-1)}
                       >
-                        <Minus size={16} />
+                        <Minus size={18} />
                       </Button>
                       <Input
-                        className="w-20"
+                        className="w-24"
                         classNames={{
-                          input: "text-center",
+                          input: "text-center text-lg font-semibold",
                         }}
-                        size="sm"
+                        size="lg"
                         type="number"
                         value={quantity.toString()}
                         onChange={(e) => {
@@ -324,56 +368,46 @@ export default function ProductDetailPage() {
                       <Button
                         isIconOnly
                         isDisabled={quantity >= product.quantity}
-                        size="sm"
+                        size="lg"
                         variant="bordered"
                         onPress={() => handleQuantityChange(1)}
                       >
-                        <Plus size={16} />
+                        <Plus size={18} />
                       </Button>
                     </div>
-
-                    {quantity > 1 && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        Total:{" "}
-                        <span className="font-semibold">
-                          R$ {totalPrice.toFixed(2)}
-                        </span>
-                      </p>
-                    )}
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="space-y-2 pt-4">
+                <div className="space-y-3 pt-2">
                   {hasStock ? (
                     <>
                       <Button
-                        className="w-full font-semibold"
+                        className="w-full font-bold text-base"
                         color="primary"
                         size="lg"
-                        startContent={<ShoppingCart size={20} />}
+                        startContent={<ShoppingCart size={22} />}
                         onPress={handleAddToCart}
                       >
                         Adicionar ao carrinho
                       </Button>
                       <Button
-                        className="w-full font-semibold"
-                        color="secondary"
+                        className="w-full font-bold text-base bg-purple-600 text-white"
                         size="lg"
-                        variant="flat"
                         onPress={handleBuyNow}
                       >
                         Comprar agora
                       </Button>
                     </>
                   ) : (
-                    <Chip
-                      className="w-full justify-center py-6"
-                      color="danger"
-                      variant="flat"
-                    >
-                      Produto indisponível
-                    </Chip>
+                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 text-center">
+                      <p className="font-semibold text-red-700">
+                        Produto indisponível
+                      </p>
+                      <p className="text-sm text-red-600 mt-1">
+                        Entre em contato para saber quando estará disponível
+                      </p>
+                    </div>
                   )}
                 </div>
               </CardBody>
@@ -385,10 +419,10 @@ export default function ProductDetailPage() {
         {product.description && (
           <Card className="mt-6">
             <CardBody className="p-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Descrição do produto
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Descrição do Produto
               </h2>
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
                 {product.description}
               </p>
             </CardBody>
@@ -398,7 +432,7 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Você também pode gostar
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
