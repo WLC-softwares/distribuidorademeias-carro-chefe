@@ -39,12 +39,12 @@ export async function POST(request: NextRequest) {
     if (saleId) {
       const newStatus =
         status === "approved"
-          ? "PAGA"
+          ? "PAID"
           : status === "pending"
-            ? "PENDENTE"
+            ? "PENDING"
             : status === "rejected"
-              ? "CANCELADA"
-              : "PENDENTE";
+              ? "CANCELED"
+              : "PENDING";
 
       await prisma.sale.update({
         where: { id: saleId },
@@ -79,31 +79,31 @@ export async function POST(request: NextRequest) {
           });
 
           if (sale) {
-            // 📦 Atualizar estoque dos produtos
+            // 📦 Update product stock
             for (const item of sale.items) {
-              const produto = await prisma.product.findUnique({
+              const product = await prisma.product.findUnique({
                 where: { id: item.productId },
                 select: { quantity: true, name: true },
               });
 
-              if (produto) {
-                const novaQuantidade = Math.max(
+              if (product) {
+                const newQuantity = Math.max(
                   0,
-                  produto.quantity - item.quantity,
+                  product.quantity - item.quantity,
                 );
 
                 await prisma.product.update({
                   where: { id: item.productId },
                   data: {
-                    quantity: novaQuantidade,
+                    quantity: newQuantity,
                   },
                 });
 
-                // console.log(`📦 Estoque do produto ${item.produto.nome} atualizado: ${produto.quantidade} -> ${novaQuantidade}`);
+                // console.log(`📦 Product stock ${product.name} updated: ${product.quantity} -> ${newQuantity}`);
               }
             }
 
-            // 📧 Enviar email de confirmação se houver usuário
+            // 📧 Send confirmation email if user exists
             if (sale.user) {
               // 📧 Enviar email de confirmação de pagamento
               const emailHtml = generateOrderConfirmationEmail(
