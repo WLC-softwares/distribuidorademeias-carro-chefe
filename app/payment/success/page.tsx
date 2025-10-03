@@ -45,7 +45,7 @@ function PaymentSuccessContent() {
         const data = await response.json();
 
         // Apenas permitir acesso se o status for PAGA
-        if (data.status === "PAGA") {
+        if (data.status === "PAID") {
           setIsValid(true);
           // Limpar carrinho apenas após validar que o pagamento foi aprovado
           localStorage.removeItem("cart");
@@ -56,11 +56,11 @@ function PaymentSuccessContent() {
 
           // Redirecionar baseado no status
           setTimeout(() => {
-            if (data.status === "PENDENTE") {
+            if (data.status === "PENDING") {
               router.push(
                 `/payment/pending?external_reference=${externalReference}&payment_id=${paymentId || ""}`,
               );
-            } else if (data.status === "CANCELADA") {
+            } else if (data.status === "CANCELED") {
               router.push(
                 `/payment/failure?external_reference=${externalReference}&payment_id=${paymentId || ""}`,
               );
