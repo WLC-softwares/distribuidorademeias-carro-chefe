@@ -46,7 +46,7 @@ export default function Home() {
     },
     {
       id: "2",
-      image: "/banners-apresentacao/desktop/carro-chefe-desktop.png",
+      image: "/banners-apresentacao/desktop/carro-chefe-desktop-2.png",
       imageMobile: "/banners-apresentacao/mobile/carro-chefe-mobile-2.png",
       alt: "Promoção 2 - Ofertas Especiais",
       link: "/",
