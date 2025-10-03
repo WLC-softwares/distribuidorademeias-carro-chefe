@@ -37,7 +37,7 @@ function PaymentPendingContent() {
         if (response.ok) {
           const data = await response.json();
 
-          if (data.status === "PAGA") {
+          if (data.status === "PAID") {
             setStatusMessage("Pagamento confirmado! Redirecionando...");
             setTimeout(() => {
               router.push(

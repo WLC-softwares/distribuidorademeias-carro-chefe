@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
         failure: backUrls.failure,
         pending: backUrls.pending,
       },
+      auto_return: "approved",
       notification_url: `${baseUrl}/api/mercadopago/webhook`,
       external_reference: saleId || saleNumber || "",
       statement_descriptor: "DISTRIBUIDORA MEIAS",
