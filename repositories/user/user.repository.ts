@@ -1,6 +1,6 @@
 /**
  * Repository: User
- * Responsável pelo acesso direto aos dados de usuários
+ * Responsible for direct access to user data
  */
 
 import type { Prisma, Role } from "@prisma/client";
@@ -9,10 +9,10 @@ import { prisma } from "@/lib/prisma";
 
 export class UserRepository {
   /**
-   * Busca todos os usuários
+   * Find all users
    */
   async findAll() {
-    return await prisma.usuario.findMany({
+    return await prisma.user.findMany({
       orderBy: {
         createdAt: "desc",
       },
@@ -20,68 +20,93 @@ export class UserRepository {
   }
 
   /**
-   * Busca usuário por ID
+   * Find user by ID
    */
   async findById(id: string) {
-    return await prisma.usuario.findUnique({
+    return await prisma.user.findUnique({
       where: { id },
       include: {
-        enderecos: true,
+        addresses: true,
       },
     });
   }
 
   /**
-   * Busca usuário por email
+   * Find user by email
    */
   async findByEmail(email: string) {
-    return await prisma.usuario.findUnique({
+    return await prisma.user.findUnique({
       where: { email },
     });
   }
 
   /**
-   * Cria novo usuário
+   * Create new user
    */
-  async create(data: Prisma.UsuarioCreateInput) {
-    return await prisma.usuario.create({
+  async create(data: Prisma.UserCreateInput) {
+    return await prisma.user.create({
       data,
     });
   }
 
   /**
-   * Atualiza usuário
+   * Update user
    */
-  async update(id: string, data: Prisma.UsuarioUpdateInput) {
-    return await prisma.usuario.update({
+  async update(id: string, data: Prisma.UserUpdateInput) {
+    return await prisma.user.update({
       where: { id },
       data,
     });
   }
 
   /**
-   * Deleta usuário
+   * Delete user
    */
   async delete(id: string) {
-    return await prisma.usuario.delete({
+    return await prisma.user.delete({
       where: { id },
     });
   }
 
   /**
-   * Conta usuários por status
+   * Count all users
    */
-  async countByStatus(ativo: boolean) {
-    return await prisma.usuario.count({
-      where: { ativo },
+  async count() {
+    return await prisma.user.count();
+  }
+
+  /**
+   * Count active users
+   */
+  async countActive() {
+    return await prisma.user.count({
+      where: { active: true },
     });
   }
 
   /**
-   * Conta usuários por role
+   * Count admin users
+   */
+  async countAdmins() {
+    return await prisma.user.count({
+      where: { role: "ADMIN" },
+    });
+  }
+
+  /**
+   * Count users by status
+   */
+  async countByStatus(active: boolean) {
+    return await prisma.user.count({
+      where: { active },
+    });
+  }
+
+  /**
+   * Count users by role
    */
   async countByRole(role: Role) {
-    return await prisma.usuario.count({
+    return await prisma.user.count({
       where: { role },
     });
   }

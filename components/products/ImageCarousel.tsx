@@ -16,21 +16,21 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-  // Ordenar imagens (principal primeiro)
+  // Sort images (primary first)
   const sortedImages = [...images].sort((a, b) => {
-    if (a.principal) return -1;
-    if (b.principal) return 1;
+    if (a.primary) return -1;
+    if (b.primary) return 1;
 
-    return a.ordem - b.ordem;
+    return a.order - b.order;
   });
 
-  // Auto-play do carrossel
+  // Carousel auto-play
   useEffect(() => {
     if (!isAutoPlaying || sortedImages.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedImages.length);
-    }, 4000); // Troca a cada 4 segundos
+    }, 4000); // Change every 4 seconds
 
     return () => clearInterval(interval);
   }, [isAutoPlaying, sortedImages.length]);
@@ -67,7 +67,7 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
 
   return (
     <div className="relative w-full">
-      {/* Imagem Principal */}
+      {/* Main Image */}
       <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden">
         <Image
           removeWrapper
@@ -76,7 +76,7 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
           src={sortedImages[currentIndex]?.url || "/placeholder-product.png"}
         />
 
-        {/* Botões de Navegação */}
+        {/* Navigation Buttons */}
         {sortedImages.length > 1 && (
           <>
             <Button
@@ -101,18 +101,17 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
           </>
         )}
 
-        {/* Indicadores */}
+        {/* Indicators */}
         {sortedImages.length > 1 && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
             {sortedImages.map((_, index) => (
               <button
                 key={index}
-                aria-label={`Ir para imagem ${index + 1}`}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentIndex
+                aria-label={`Go to image ${index + 1}`}
+                className={`h-2 rounded-full transition-all ${index === currentIndex
                     ? "w-8 bg-blue-600"
                     : "w-2 bg-gray-300 hover:bg-gray-400"
-                }`}
+                  }`}
                 onClick={() => goToSlide(index)}
               />
             ))}
@@ -120,17 +119,16 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
         )}
       </div>
 
-      {/* Miniaturas */}
+      {/* Thumbnails */}
       {sortedImages.length > 1 && (
         <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
           {sortedImages.map((image, index) => (
             <button
               key={image.id}
-              className={`flex-shrink-0 w-20 h-20 rounded border-2 transition-all overflow-hidden ${
-                index === currentIndex
+              className={`flex-shrink-0 w-20 h-20 rounded border-2 transition-all overflow-hidden ${index === currentIndex
                   ? "border-blue-600"
                   : "border-gray-200 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => goToSlide(index)}
             >
               <Image

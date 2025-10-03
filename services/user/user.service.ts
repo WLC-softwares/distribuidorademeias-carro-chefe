@@ -1,6 +1,6 @@
 /**
  * Service: User
- * Camada de lógica de negócios para usuários
+ * Business logic layer for users
  */
 
 import type { CreateUserDTO, UpdateUserDTO, User } from "@/models";
@@ -11,181 +11,187 @@ import { userRepository } from "@/repositories";
 
 export class UserService {
   /**
-   * Busca todos os usuários
+   * Get all users
    */
   async getAllUsers(): Promise<User[]> {
     try {
-      const usuarios = await userRepository.findAll();
+      const users = await userRepository.findAll();
 
-      return usuarios.map((u) => ({
+      return users.map((u) => ({
         id: u.id,
-        nome: u.nome,
+        name: u.name,
         email: u.email,
-        telefone: u.telefone,
+        phone: u.phone,
         cpf: u.cpf,
         role: u.role,
         avatar: u.avatar,
-        ativo: u.ativo,
+        active: u.active,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
       }));
     } catch (error) {
-      console.error("Erro ao buscar usuários:", error);
-      throw new Error("Não foi possível buscar os usuários");
+      console.error("Error fetching users:", error);
+      throw new Error("Unable to fetch users");
     }
   }
 
   /**
-   * Busca usuário por ID
+   * Get user by ID
    */
   async getUserById(id: string): Promise<User | null> {
     try {
-      const usuario = await userRepository.findById(id);
+      const user = await userRepository.findById(id);
 
-      if (!usuario) return null;
+      if (!user) return null;
 
       return {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        telefone: usuario.telefone,
-        cpf: usuario.cpf,
-        role: usuario.role,
-        avatar: usuario.avatar,
-        ativo: usuario.ativo,
-        createdAt: usuario.createdAt,
-        updatedAt: usuario.updatedAt,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        avatar: user.avatar,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       };
     } catch (error) {
-      console.error("Erro ao buscar usuário:", error);
+      console.error("Error fetching user:", error);
 
       return null;
     }
   }
 
   /**
-   * Busca usuário com endereços
+   * Get user with addresses
    */
   async getUserWithAddresses(id: string) {
     try {
-      const usuario = await userRepository.findById(id);
+      const user = await userRepository.findById(id);
 
-      if (!usuario) return null;
+      if (!user) return null;
 
       return {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        telefone: usuario.telefone,
-        cpf: usuario.cpf,
-        role: usuario.role,
-        avatar: usuario.avatar,
-        ativo: usuario.ativo,
-        createdAt: usuario.createdAt,
-        updatedAt: usuario.updatedAt,
-        enderecos: usuario.enderecos || [],
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        avatar: user.avatar,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        addresses: user.addresses || [],
       };
     } catch (error) {
-      console.error("Erro ao buscar usuário com endereços:", error);
+      console.error("Error fetching user with addresses:", error);
 
       return null;
     }
   }
 
   /**
-   * Cria novo usuário
+   * Create new user
    */
   async createUser(data: CreateUserDTO): Promise<User> {
     try {
-      // Verificar se email já existe
+      // Check if email already exists
       const existingUser = await userRepository.findByEmail(data.email);
 
       if (existingUser) {
-        throw new Error("Email já cadastrado");
+        throw new Error("Email already registered");
       }
 
-      // Hash da senha
-      const hashedPassword = await bcrypt.hash(data.senha, 10);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(data.password, 10);
 
-      const usuario = await userRepository.create({
-        nome: data.nome,
+      const user = await userRepository.create({
+        name: data.name,
         email: data.email,
-        senha: hashedPassword,
-        telefone: data.telefone,
+        password: hashedPassword,
+        phone: data.phone,
         cpf: data.cpf,
         role: data.role || "USER",
       });
 
       return {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        telefone: usuario.telefone,
-        cpf: usuario.cpf,
-        role: usuario.role,
-        avatar: usuario.avatar,
-        ativo: usuario.ativo,
-        createdAt: usuario.createdAt,
-        updatedAt: usuario.updatedAt,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        avatar: user.avatar,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       };
     } catch (error) {
-      console.error("Erro ao criar usuário:", error);
-      throw error;
+      console.error("Error creating user:", error);
+
+      if (error instanceof Error && error.message === "Email already registered") {
+        throw error;
+      }
+
+      throw new Error("Unable to create user");
     }
   }
 
   /**
-   * Atualiza usuário
+   * Update user
    */
-  async updateUser(id: string, data: UpdateUserDTO): Promise<User> {
+  async updateUser(id: string, data: UpdateUserDTO): Promise<User | null> {
     try {
-      const usuario = await userRepository.update(id, data);
+      const user = await userRepository.update(id, data);
 
       return {
-        id: usuario.id,
-        nome: usuario.nome,
-        email: usuario.email,
-        telefone: usuario.telefone,
-        cpf: usuario.cpf,
-        role: usuario.role,
-        avatar: usuario.avatar,
-        ativo: usuario.ativo,
-        createdAt: usuario.createdAt,
-        updatedAt: usuario.updatedAt,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        cpf: user.cpf,
+        role: user.role,
+        avatar: user.avatar,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       };
     } catch (error) {
-      console.error("Erro ao atualizar usuário:", error);
-      throw new Error("Não foi possível atualizar o usuário");
+      console.error("Error updating user:", error);
+
+      return null;
     }
   }
 
   /**
-   * Deleta usuário
+   * Delete user
    */
   async deleteUser(id: string): Promise<void> {
     try {
       await userRepository.delete(id);
     } catch (error) {
-      console.error("Erro ao deletar usuário:", error);
-      throw new Error("Não foi possível deletar o usuário");
+      console.error("Error deleting user:", error);
+      throw new Error("Unable to delete user");
     }
   }
 
   /**
-   * Obtém estatísticas de usuários
+   * Get user statistics
    */
-  async getUserStats() {
+  async getUserStats(): Promise<{ total: number; active: number; admins: number }> {
     try {
-      const [total, ativos, admins] = await Promise.all([
-        userRepository.findAll().then((users) => users.length),
-        userRepository.countByStatus(true),
-        userRepository.countByRole("ADMIN"),
+      const [total, active, admins] = await Promise.all([
+        userRepository.count(),
+        userRepository.countActive(),
+        userRepository.countAdmins(),
       ]);
 
-      return { total, ativos, admins };
+      return { total, active, admins };
     } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-      throw new Error("Não foi possível buscar as estatísticas");
+      console.error("Error fetching user stats:", error);
+      throw new Error("Unable to fetch user stats");
     }
   }
 }

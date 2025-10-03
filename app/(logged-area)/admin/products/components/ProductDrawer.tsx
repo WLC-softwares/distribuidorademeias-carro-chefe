@@ -1,18 +1,18 @@
 "use client";
 
-import type { CategoriaProduto, CreateProductDTO, Product } from "@/models";
+import type { CreateProductDTO, Product, ProductCategory } from "@/models";
 
 import { Button } from "@heroui/button";
-import { Input, Textarea } from "@heroui/input";
 import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@heroui/modal";
+  Drawer,
+  DrawerBody,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+} from "@heroui/drawer";
+import { Input, Textarea } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
-import { X } from "lucide-react";
+import { Package, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { createProductAction, updateProductAction } from "@/controllers";
@@ -27,18 +27,18 @@ interface ProductDrawerProps {
 interface ImageForm {
   url: string;
   alt: string;
-  principal: boolean;
+  primary: boolean;
 }
 
-const CATEGORIAS: { value: CategoriaProduto; label: string }[] = [
-  { value: "MEIAS_MASCULINAS", label: "Meias Masculinas" },
-  { value: "MEIAS_FEMININAS", label: "Meias Femininas" },
-  { value: "MEIAS_INFANTIS", label: "Meias Infantis" },
-  { value: "MEIAS_ESPORTIVAS", label: "Meias Esportivas" },
-  { value: "MEIAS_SOCIAIS", label: "Meias Sociais" },
-  { value: "MEIAS_TERMICAS", label: "Meias Térmicas" },
-  { value: "ACESSORIOS", label: "Acessórios" },
-  { value: "OUTROS", label: "Outros" },
+const CATEGORIAS: { value: ProductCategory; label: string }[] = [
+  { value: "MENS_SOCKS", label: "Meias Masculinas" },
+  { value: "WOMENS_SOCKS", label: "Meias Femininas" },
+  { value: "KIDS_SOCKS", label: "Meias Infantis" },
+  { value: "SPORTS_SOCKS", label: "Meias Esportivas" },
+  { value: "DRESS_SOCKS", label: "Meias Sociais" },
+  { value: "THERMAL_SOCKS", label: "Meias Térmicas" },
+  { value: "ACCESSORIES", label: "Acessórios" },
+  { value: "OTHER", label: "Outros" },
 ];
 
 export function ProductDrawer({
@@ -49,11 +49,12 @@ export function ProductDrawer({
 }: ProductDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nome: "",
-    descricao: "",
-    preco: "",
-    quantidade: "",
-    categoria: "" as CategoriaProduto,
+    name: "",
+    description: "",
+    retailPrice: "",
+    wholesalePrice: "",
+    quantity: "",
+    category: "" as ProductCategory,
     sku: "",
   });
   const [images, setImages] = useState<ImageForm[]>([]);
@@ -61,18 +62,19 @@ export function ProductDrawer({
   useEffect(() => {
     if (product) {
       setFormData({
-        nome: product.nome,
-        descricao: product.descricao || "",
-        preco: product.preco.toString(),
-        quantidade: product.quantidade.toString(),
-        categoria: product.categoria,
+        name: product.name,
+        description: product.description || "",
+        retailPrice: product.retailPrice.toString(),
+        wholesalePrice: product.wholesalePrice.toString(),
+        quantity: product.quantity.toString(),
+        category: product.category,
         sku: product.sku || "",
       });
       setImages(
-        product.imagens?.map((img) => ({
+        product.images?.map((img) => ({
           url: img.url,
           alt: img.alt || "",
-          principal: img.principal,
+          primary: img.primary,
         })) || [],
       );
     } else {
@@ -82,11 +84,12 @@ export function ProductDrawer({
 
   const resetForm = () => {
     setFormData({
-      nome: "",
-      descricao: "",
-      preco: "",
-      quantidade: "",
-      categoria: "" as CategoriaProduto,
+      name: "",
+      description: "",
+      retailPrice: "",
+      wholesalePrice: "",
+      quantity: "",
+      category: "" as ProductCategory,
       sku: "",
     });
     setImages([]);
@@ -95,16 +98,16 @@ export function ProductDrawer({
   const handleAddImage = () => {
     setImages([
       ...images,
-      { url: "", alt: "", principal: images.length === 0 },
+      { url: "", alt: "", primary: images.length === 0 },
     ]);
   };
 
   const handleRemoveImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);
 
-    // Se remover a imagem principal, tornar a primeira como principal
-    if (images[index].principal && newImages.length > 0) {
-      newImages[0].principal = true;
+    // If removing primary image, make first image primary
+    if (images[index].primary && newImages.length > 0) {
+      newImages[0].primary = true;
     }
     setImages(newImages);
   };
@@ -116,10 +119,10 @@ export function ProductDrawer({
   ) => {
     const newImages = [...images];
 
-    if (field === "principal" && value === true) {
-      // Desmarcar todas as outras como principal
+    if (field === "primary" && value === true) {
+      // Unmark all others as primary
       newImages.forEach((img, i) => {
-        img.principal = i === index;
+        img.primary = i === index;
       });
     } else {
       newImages[index] = { ...newImages[index], [field]: value };
@@ -131,10 +134,11 @@ export function ProductDrawer({
     e.preventDefault();
 
     if (
-      !formData.nome ||
-      !formData.preco ||
-      !formData.quantidade ||
-      !formData.categoria
+      !formData.name ||
+      !formData.retailPrice ||
+      !formData.wholesalePrice ||
+      !formData.quantity ||
+      !formData.category
     ) {
       alert("Preencha todos os campos obrigatórios");
 
@@ -145,19 +149,20 @@ export function ProductDrawer({
 
     try {
       const data: CreateProductDTO = {
-        nome: formData.nome,
-        descricao: formData.descricao || undefined,
-        preco: parseFloat(formData.preco),
-        quantidade: parseInt(formData.quantidade),
-        categoria: formData.categoria,
+        name: formData.name,
+        description: formData.description || undefined,
+        retailPrice: parseFloat(formData.retailPrice),
+        wholesalePrice: parseFloat(formData.wholesalePrice),
+        quantity: parseInt(formData.quantity),
+        category: formData.category,
         sku: formData.sku || undefined,
-        imagens: images
+        images: images
           .filter((img) => img.url)
           .map((img, index) => ({
             url: img.url,
             alt: img.alt || undefined,
-            ordem: index + 1,
-            principal: img.principal,
+            order: index + 1,
+            primary: img.primary,
           })),
       };
 
@@ -179,29 +184,23 @@ export function ProductDrawer({
   };
 
   return (
-    <Modal
-      classNames={{
-        wrapper: "items-end sm:items-center justify-end",
-        base: "h-full sm:h-auto sm:max-h-[90vh] m-0 sm:m-4 rounded-l-2xl sm:rounded-2xl",
-      }}
-      isOpen={isOpen}
-      scrollBehavior="inside"
-      size="3xl"
-      onClose={onClose}
-    >
-      <ModalContent>
+    <Drawer isOpen={isOpen} placement="right" size="lg" onClose={onClose}>
+      <DrawerContent>
         <form onSubmit={handleSubmit}>
-          <ModalHeader className="flex flex-col gap-1 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">
-              {product ? "Editar Produto" : "Adicionar Produto"}
-            </h2>
-            <p className="text-sm text-gray-600 font-normal">
-              {product
-                ? "Atualize as informações do produto"
-                : "Preencha os dados do novo produto"}
-            </p>
-          </ModalHeader>
-          <ModalBody className="py-6">
+          <DrawerHeader className="flex items-center gap-2 border-b border-gray-200">
+            <Package size={20} />
+            <div>
+              <h2 className="text-xl font-semibold">
+                {product ? "Editar Produto" : "Adicionar Produto"}
+              </h2>
+              <p className="text-sm text-gray-500 font-normal">
+                {product
+                  ? "Atualize as informações do produto"
+                  : "Preencha os dados do novo produto"}
+              </p>
+            </div>
+          </DrawerHeader>
+          <DrawerBody className="p-4">
             <div className="space-y-6">
               {/* Informações Básicas */}
               <div>
@@ -213,10 +212,10 @@ export function ProductDrawer({
                     isRequired
                     label="Nome do Produto"
                     placeholder="Ex: Meia Social Preta"
-                    value={formData.nome}
+                    value={formData.name}
                     variant="bordered"
                     onValueChange={(value) =>
-                      setFormData({ ...formData, nome: value })
+                      setFormData({ ...formData, name: value })
                     }
                   />
 
@@ -224,10 +223,10 @@ export function ProductDrawer({
                     label="Descrição"
                     minRows={3}
                     placeholder="Descrição detalhada do produto"
-                    value={formData.descricao}
+                    value={formData.description}
                     variant="bordered"
                     onValueChange={(value) =>
-                      setFormData({ ...formData, descricao: value })
+                      setFormData({ ...formData, description: value })
                     }
                   />
 
@@ -247,15 +246,15 @@ export function ProductDrawer({
                       label="Categoria"
                       placeholder="Selecione uma categoria"
                       selectedKeys={
-                        formData.categoria ? [formData.categoria] : []
+                        formData.category ? [formData.category] : []
                       }
                       variant="bordered"
                       onSelectionChange={(keys) => {
                         const selected = Array.from(
                           keys,
-                        )[0] as CategoriaProduto;
+                        )[0] as ProductCategory;
 
-                        setFormData({ ...formData, categoria: selected });
+                        setFormData({ ...formData, category: selected });
                       }}
                     >
                       {CATEGORIAS.map((cat) => (
@@ -267,7 +266,7 @@ export function ProductDrawer({
                   <div className="grid grid-cols-2 gap-4">
                     <Input
                       isRequired
-                      label="Preço"
+                      label="Preço Varejo"
                       min="0"
                       placeholder="0.00"
                       startContent={
@@ -275,26 +274,43 @@ export function ProductDrawer({
                       }
                       step="0.01"
                       type="number"
-                      value={formData.preco}
+                      value={formData.retailPrice}
                       variant="bordered"
                       onValueChange={(value) =>
-                        setFormData({ ...formData, preco: value })
+                        setFormData({ ...formData, retailPrice: value })
                       }
                     />
 
                     <Input
                       isRequired
-                      label="Quantidade em Estoque"
+                      label="Preço Atacado"
                       min="0"
-                      placeholder="0"
+                      placeholder="0.00"
+                      startContent={
+                        <span className="text-default-400 text-sm">R$</span>
+                      }
+                      step="0.01"
                       type="number"
-                      value={formData.quantidade}
+                      value={formData.wholesalePrice}
                       variant="bordered"
                       onValueChange={(value) =>
-                        setFormData({ ...formData, quantidade: value })
+                        setFormData({ ...formData, wholesalePrice: value })
                       }
                     />
                   </div>
+
+                  <Input
+                    isRequired
+                    label="Quantidade em Estoque"
+                    min="0"
+                    placeholder="0"
+                    type="number"
+                    value={formData.quantity}
+                    variant="bordered"
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, quantity: value })
+                    }
+                  />
                 </div>
               </div>
 
@@ -344,13 +360,13 @@ export function ProductDrawer({
                         />
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
-                            checked={image.principal}
+                            checked={image.primary}
                             className="w-4 h-4"
                             type="checkbox"
                             onChange={(e) =>
                               handleImageChange(
                                 index,
-                                "principal",
+                                "primary",
                                 e.target.checked,
                               )
                             }
@@ -380,22 +396,27 @@ export function ProductDrawer({
                 </div>
               </div>
             </div>
-          </ModalBody>
-          <ModalFooter className="border-t border-gray-200">
-            <Button disabled={loading} variant="flat" onClick={onClose}>
+          </DrawerBody>
+          <DrawerFooter className="border-t border-gray-200 gap-2">
+            <Button
+              className="flex-1"
+              disabled={loading}
+              variant="bordered"
+              onPress={onClose}
+            >
               Cancelar
             </Button>
             <Button
-              className="bg-yellow-400 hover:bg-yellow-500 font-semibold"
+              className="flex-1 bg-yellow-400 hover:bg-yellow-500 font-semibold"
               color="warning"
               isLoading={loading}
               type="submit"
             >
               {product ? "Atualizar" : "Adicionar"}
             </Button>
-          </ModalFooter>
+          </DrawerFooter>
         </form>
-      </ModalContent>
-    </Modal>
+      </DrawerContent>
+    </Drawer>
   );
 }

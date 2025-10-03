@@ -48,7 +48,7 @@ export function EmailStep({
         <Link
           as={NextLink}
           className="text-blue-500 hover:text-blue-600 font-medium"
-          href="/cadastro"
+          href="/register"
         >
           Criar conta
         </Link>

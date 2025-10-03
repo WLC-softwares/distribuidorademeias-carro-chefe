@@ -1,6 +1,6 @@
 /**
  * Service: Sale
- * Lógica de negócio para gerenciar vendas
+ * Business logic for managing sales
  */
 
 import type { CartItem } from "@/hooks/useCart";
@@ -30,152 +30,191 @@ class SaleService {
   }
 
   /**
-   * Criar nova venda
+   * Create new sale
    */
   async createSale(data: CreateSaleData): Promise<SaleResponse> {
     try {
-      // Calcular subtotal e total
+      // 📦 Validate available stock before creating the sale
+      const insufficientProducts: string[] = [];
+
+      for (const item of data.items) {
+        const product = await prisma.product.findUnique({
+          where: { id: item.product.id },
+          select: { quantity: true, name: true },
+        });
+
+        if (!product) {
+          throw new Error(`Product ${item.product.name} not found`);
+        }
+
+        if (product.quantity < item.quantity) {
+          insufficientProducts.push(
+            `${product.name} (available: ${product.quantity}, requested: ${item.quantity})`,
+          );
+        }
+      }
+
+      if (insufficientProducts.length > 0) {
+        throw new Error(
+          `Insufficient stock for: ${insufficientProducts.join(", ")}`,
+        );
+      }
+
+      // Calculate subtotal and total
       const subtotal = data.items.reduce((acc, item) => {
-        return acc + Number(item.product.preco) * item.quantidade;
+        const price =
+          item.saleType === "atacado"
+            ? item.product.wholesalePrice
+            : item.product.retailPrice;
+
+        return acc + Number(price) * item.quantity;
       }, 0);
 
-      const total = subtotal; // Sem desconto por enquanto
+      const total = subtotal; // No discount for now
 
-      // Gerar número da venda (formato: YYYYMMDD-XXXXX)
+      // Generate sale number (format: YYYYMMDD-XXXXX)
       const now = new Date();
       const dateStr = now.toISOString().split("T")[0].replace(/-/g, "");
       const randomStr = Math.random()
         .toString(36)
         .substring(2, 7)
         .toUpperCase();
-      const numeroVenda = `${dateStr}-${randomStr}`;
+      const saleNumber = `${dateStr}-${randomStr}`;
 
-      // Criar venda com itens
-      const venda = await prisma.venda.create({
+      // Create sale with items
+      const sale = await prisma.sale.create({
         data: {
-          numeroVenda,
-          usuarioId: data.usuarioId,
+          saleNumber: saleNumber,
+          userId: data.usuarioId,
           subtotal,
-          desconto: 0,
+          discount: 0,
           total,
-          formaPagamento: "PIX", // Padrão, será confirmado via WhatsApp
-          status: "PENDENTE",
-          observacoes: data.observacoes || null,
-          itens: {
-            create: data.items.map((item) => ({
-              produtoId: item.product.id,
-              quantidade: item.quantidade,
-              precoUnit: item.product.preco,
-              subtotal: Number(item.product.preco) * item.quantidade,
-              desconto: 0,
-              total: Number(item.product.preco) * item.quantidade,
-              tipoVenda: item.tipoVenda === "atacado" ? "ATACADO" : "VAREJO",
-            })),
+          paymentMethod: "PIX", // Default, will be confirmed via WhatsApp
+          status: "PENDING",
+          notes: data.observacoes || null,
+          items: {
+            create: data.items.map((item) => {
+              const price =
+                item.saleType === "atacado"
+                  ? item.product.wholesalePrice
+                  : item.product.retailPrice;
+
+              return {
+                productId: item.product.id,
+                quantity: item.quantity,
+                unitPrice: price,
+                subtotal: Number(price) * item.quantity,
+                discount: 0,
+                total: Number(price) * item.quantity,
+                saleType: item.saleType === "atacado" ? "WHOLESALE" : "RETAIL",
+              };
+            }),
           },
         },
         include: {
-          itens: {
+          items: {
             include: {
-              produto: true,
+              product: true,
             },
           },
         },
       });
 
-      // 🔔 Criar notificação para o usuário
+      // 🔔 Create notification for the user
       try {
         await this.notificationService.createOrderNotification(
           data.usuarioId,
-          venda.numeroVenda,
-          venda.id,
+          sale.saleNumber,
+          sale.id,
         );
       } catch (error) {
-        console.error("Erro ao criar notificação:", error);
-        // Não bloqueia a criação da venda
+        console.error("Error creating notification:", error);
+        // Don't block sale creation
       }
 
-      // 📧 Email será enviado apenas após confirmação de pagamento via webhook
+      // 📧 Email will be sent only after payment confirmation via webhook
 
       return {
-        id: venda.id,
-        numeroVenda: venda.numeroVenda,
-        total: Number(venda.total),
-        status: venda.status,
+        id: sale.id,
+        numeroVenda: sale.saleNumber,
+        total: Number(sale.total),
+        status: sale.status,
       };
     } catch (error) {
-      console.error("Erro ao criar venda:", error);
-      throw new Error("Não foi possível criar a venda");
+      console.error("Error creating sale:", error);
+      throw new Error("Unable to create sale");
     }
   }
 
   /**
-   * Buscar venda por ID
+   * Get sale by ID
    */
   async getSaleById(id: string) {
     try {
-      const venda = await prisma.venda.findUnique({
+      const sale = await prisma.sale.findUnique({
         where: { id },
         include: {
-          itens: {
+          items: {
             include: {
-              produto: {
+              product: {
                 include: {
-                  imagens: true,
+                  images: true,
                 },
               },
             },
           },
-          usuario: {
+          user: {
             select: {
               id: true,
-              nome: true,
+              name: true,
               email: true,
-              telefone: true,
+              phone: true,
               cpf: true,
             },
           },
         },
       });
 
-      if (!venda) return null;
+      if (!sale) return null;
 
-      // Converter Decimals para números
+      // Convert Decimals to numbers
       return {
-        ...venda,
-        subtotal: Number(venda.subtotal),
-        desconto: Number(venda.desconto),
-        total: Number(venda.total),
-        itens: venda.itens.map((item) => ({
+        ...sale,
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discount),
+        total: Number(sale.total),
+        items: sale.items.map((item) => ({
           ...item,
-          precoUnit: Number(item.precoUnit),
+          unitPrice: Number(item.unitPrice),
           subtotal: Number(item.subtotal),
-          desconto: Number(item.desconto),
+          discount: Number(item.discount),
           total: Number(item.total),
-          produto: {
-            ...item.produto,
-            preco: Number(item.produto.preco),
+          product: {
+            ...item.product,
+            retailPrice: Number(item.product.retailPrice),
+            wholesalePrice: Number(item.product.wholesalePrice),
           },
         })),
       };
     } catch (error) {
-      console.error("Erro ao buscar venda:", error);
+      console.error("Error fetching sale:", error);
       throw error;
     }
   }
 
   /**
-   * Listar vendas do usuário
+   * List user sales
    */
   async getUserSales(usuarioId: string) {
     try {
-      const vendas = await prisma.venda.findMany({
-        where: { usuarioId },
+      const sales = await prisma.sale.findMany({
+        where: { userId: usuarioId },
         include: {
-          itens: {
+          items: {
             include: {
-              produto: {
+              product: {
                 include: {
-                  imagens: true,
+                  images: true,
                 },
               },
             },
@@ -186,115 +225,116 @@ class SaleService {
         },
       });
 
-      // Converter Decimals para números
-      return vendas.map((venda) => ({
-        ...venda,
-        subtotal: Number(venda.subtotal),
-        desconto: Number(venda.desconto),
-        total: Number(venda.total),
-        itens: venda.itens.map((item) => ({
+      // Convert Decimals to numbers
+      return sales.map((sale) => ({
+        ...sale,
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discount),
+        total: Number(sale.total),
+        items: sale.items.map((item) => ({
           ...item,
-          precoUnit: Number(item.precoUnit),
+          unitPrice: Number(item.unitPrice),
           subtotal: Number(item.subtotal),
-          desconto: Number(item.desconto),
+          discount: Number(item.discount),
           total: Number(item.total),
-          produto: {
-            ...item.produto,
-            preco: Number(item.produto.preco),
+          product: {
+            ...item.product,
+            retailPrice: Number(item.product.retailPrice),
+            wholesalePrice: Number(item.product.wholesalePrice),
           },
         })),
       }));
     } catch (error) {
-      console.error("Erro ao listar vendas:", error);
+      console.error("Error listing sales:", error);
       throw error;
     }
   }
 
   /**
-   * Atualizar status da venda
+   * Update sale status
    */
   async updateSaleStatus(id: string, status: string) {
     try {
-      // Buscar venda atual para pegar o status anterior
-      const vendaAtual = await prisma.venda.findUnique({
+      // Fetch current sale to get previous status
+      const currentSale = await prisma.sale.findUnique({
         where: { id },
-        select: { status: true, numeroVenda: true, usuarioId: true },
+        select: { status: true, saleNumber: true, userId: true },
       });
 
-      const oldStatus = vendaAtual?.status;
+      const oldStatus = currentSale?.status;
 
-      const venda = await prisma.venda.update({
+      const sale = await prisma.sale.update({
         where: { id },
         data: { status: status as any },
       });
 
-      // 🔔 Criar notificação de mudança de status
-      if (vendaAtual && oldStatus !== status) {
+      // 🔔 Create status change notification
+      if (currentSale && oldStatus !== status) {
         try {
           await this.notificationService.createOrderStatusNotification(
-            vendaAtual.usuarioId,
-            vendaAtual.numeroVenda,
+            currentSale.userId,
+            currentSale.saleNumber,
             id,
             status,
             oldStatus,
           );
         } catch (error) {
-          console.error("Erro ao criar notificação de status:", error);
-          // Não bloqueia a atualização
+          console.error("Error creating status notification:", error);
+          // Don't block the update
         }
 
-        // 📧 Enviar email de atualização de status
+        // 📧 Send status update email
         try {
-          const usuario = await prisma.usuario.findUnique({
-            where: { id: vendaAtual.usuarioId },
+          const user = await prisma.user.findUnique({
+            where: { id: currentSale.userId },
           });
 
-          if (usuario) {
+          if (user) {
             const statusMessages: Record<
               string,
               { emoji: string; title: string; description: string }
             > = {
               PROCESSANDO: {
                 emoji: "⏳",
-                title: "Pedido em Processamento",
+                title: "Pedido em processamento",
                 description:
-                  "Seu pedido está sendo preparado pela nossa equipe. Em breve ele será enviado!",
+                  "Seu pedido está sendo preparado pela nossa equipe. Será enviado em breve!",
               },
               PAGA: {
                 emoji: "💰",
-                title: "Pagamento Confirmado",
+                title: "Pagamento confirmado",
                 description:
-                  "Ótima notícia! Seu pagamento foi confirmado com sucesso. Agora vamos preparar seu pedido.",
+                  "Boas notícias! Seu pagamento foi confirmado com sucesso. Agora vamos preparar seu pedido.",
               },
               ENVIADA: {
                 emoji: "🚚",
-                title: "Pedido Enviado",
+                title: "Pedido enviado",
                 description:
-                  "Seu pedido saiu para entrega! Acompanhe o rastreamento para saber quando chegará.",
+                  "Seu pedido está em sua rota! Acompanhe seu envio para saber quando chegará.",
               },
               ENTREGUE: {
                 emoji: "✅",
-                title: "Pedido Entregue",
+                title: "Pedido entregue",
                 description:
                   "Seu pedido foi entregue com sucesso! Esperamos que você goste. Obrigado por comprar conosco!",
               },
               CANCELADA: {
                 emoji: "❌",
-                title: "Pedido Cancelado",
+                title: "Pedido cancelado",
                 description:
                   "Seu pedido foi cancelado. Se você não solicitou o cancelamento, entre em contato conosco.",
               },
               REEMBOLSADA: {
                 emoji: "💸",
-                title: "Pedido Reembolsado",
+                title: "Pedido reembolsado",
                 description:
-                  "O reembolso do seu pedido foi processado. O valor será estornado em até 7 dias úteis.",
+                  "Seu pedido foi reembolsado. O valor será retornado dentro de 7 dias úteis.",
               },
             };
 
             const statusInfo = statusMessages[status] || {
               emoji: "📦",
-              title: "Atualização de Pedido",
+              title: "Pedido atualizado",
               description: `O status do seu pedido foi atualizado para ${status}.`,
             };
 
@@ -302,63 +342,63 @@ class SaleService {
               "@/lib/email"
             );
             const emailHtml = generateOrderStatusUpdateEmail(
-              usuario.nome,
-              vendaAtual.numeroVenda,
+              user.name,
+              currentSale.saleNumber,
               status,
               statusInfo,
             );
 
             await sendEmail({
-              to: usuario.email,
-              subject: `${statusInfo.emoji} ${statusInfo.title} - Pedido #${vendaAtual.numeroVenda}`,
+              to: user.email,
+              subject: `${statusInfo.emoji} ${statusInfo.title} - Pedido #${currentSale.saleNumber}`,
               html: emailHtml,
             });
 
             console.log(
-              `📧 Email de atualização enviado para ${usuario.email}`,
+              `📧 Update email sent to ${user.email}`,
             );
           }
         } catch (error) {
-          console.error("Erro ao enviar email de atualização:", error);
-          // Não bloqueia a atualização
+          console.error("Error sending update email:", error);
+          // Don't block the update
         }
       }
 
-      // Converter Decimals para números
+      // Convert Decimals to numbers
       return {
-        ...venda,
-        subtotal: Number(venda.subtotal),
-        desconto: Number(venda.desconto),
-        total: Number(venda.total),
+        ...sale,
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discount),
+        total: Number(sale.total),
       };
     } catch (error) {
-      console.error("Erro ao atualizar status da venda:", error);
+      console.error("Error updating sale status:", error);
       throw error;
     }
   }
 
   /**
-   * Listar todas as vendas (Admin)
+   * List all sales (Admin)
    */
   async getAllSales() {
     try {
-      const vendas = await prisma.venda.findMany({
+      const sales = await prisma.sale.findMany({
         include: {
-          itens: {
+          items: {
             include: {
-              produto: {
+              product: {
                 include: {
-                  imagens: true,
+                  images: true,
                 },
               },
             },
           },
-          usuario: {
+          user: {
             select: {
               id: true,
-              nome: true,
+              name: true,
               email: true,
-              telefone: true,
+              phone: true,
               cpf: true,
             },
           },
@@ -368,41 +408,42 @@ class SaleService {
         },
       });
 
-      // Converter Decimals para números
-      return vendas.map((venda) => ({
-        ...venda,
-        subtotal: Number(venda.subtotal),
-        desconto: Number(venda.desconto),
-        total: Number(venda.total),
-        itens: venda.itens.map((item) => ({
+      // Convert Decimals to numbers
+      return sales.map((sale) => ({
+        ...sale,
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discount),
+        total: Number(sale.total),
+        items: sale.items.map((item) => ({
           ...item,
-          precoUnit: Number(item.precoUnit),
+          unitPrice: Number(item.unitPrice),
           subtotal: Number(item.subtotal),
-          desconto: Number(item.desconto),
+          discount: Number(item.discount),
           total: Number(item.total),
-          produto: {
-            ...item.produto,
-            preco: Number(item.produto.preco),
+          product: {
+            ...item.product,
+            retailPrice: Number(item.product.retailPrice),
+            wholesalePrice: Number(item.product.wholesalePrice),
           },
         })),
       }));
     } catch (error) {
-      console.error("Erro ao listar todas as vendas:", error);
+      console.error("Error listing all sales:", error);
       throw error;
     }
   }
 
   /**
-   * Buscar vendas recentes (Dashboard)
+   * Get recent sales (Dashboard)
    */
   async getRecentSales(limit: number = 10) {
     try {
-      const vendas = await prisma.venda.findMany({
+      const sales = await prisma.sale.findMany({
         take: limit,
         include: {
-          usuario: {
+          user: {
             select: {
-              nome: true,
+              name: true,
               email: true,
             },
           },
@@ -412,15 +453,15 @@ class SaleService {
         },
       });
 
-      // Converter Decimals para números
-      return vendas.map((venda) => ({
-        ...venda,
-        subtotal: Number(venda.subtotal),
-        desconto: Number(venda.desconto),
-        total: Number(venda.total),
+      // Convert Decimals to numbers
+      return sales.map((sale) => ({
+        ...sale,
+        subtotal: Number(sale.subtotal),
+        discount: Number(sale.discount),
+        total: Number(sale.total),
       }));
     } catch (error) {
-      console.error("Erro ao buscar vendas recentes:", error);
+      console.error("Error fetching recent sales:", error);
       throw error;
     }
   }

@@ -10,16 +10,16 @@ import { Spinner } from "@heroui/spinner";
 import { Edit, Search, Trash2, UserCog } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { formatDate } from "@/utils";
 import {
   deleteUserAction,
   getUsersAction,
   getUserStatsAction,
 } from "@/controllers";
+import { formatDate } from "@/utils";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [stats, setStats] = useState({ total: 0, ativos: 0, admins: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, admins: 0 });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -58,7 +58,7 @@ export default function UsersPage() {
 
   const filteredUsers = users.filter(
     (user) =>
-      user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -140,7 +140,7 @@ export default function UsersPage() {
                   Usuários Ativos
                 </p>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
-                  {stats.ativos}
+                  {stats.active}
                 </p>
               </div>
               <div className="p-4 rounded-full bg-green-100">
@@ -227,12 +227,12 @@ export default function UsersPage() {
                         <Avatar
                           showFallback
                           className="bg-blue-500 text-white"
-                          name={user.nome}
+                          name={user.name}
                           size="sm"
                           src={user.avatar || undefined}
                         />
                         <span className="text-sm font-semibold text-gray-800">
-                          {user.nome}
+                          {user.name}
                         </span>
                       </div>
                     </td>
@@ -250,9 +250,9 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.ativo)}`}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.active)}`}
                       >
-                        {user.ativo ? "Ativo" : "Inativo"}
+                        {user.active ? "Ativo" : "Inativo"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

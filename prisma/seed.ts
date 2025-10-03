@@ -4,142 +4,148 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Iniciando seed...");
+  console.log("🌱 Starting seed...");
 
-  // Criar usuário admin
+  // Create admin user
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
-  const admin = await prisma.usuario.upsert({
+  const admin = await prisma.user.upsert({
     where: { email: "admin@distribuidora.com" },
     update: {},
     create: {
-      nome: "Administrador",
+      name: "Administrator",
       email: "admin@distribuidora.com",
-      senha: hashedPassword,
+      password: hashedPassword,
       role: "ADMIN",
-      telefone: "(11) 99999-9999",
+      phone: "(11) 99999-9999",
     },
   });
 
-  console.log("✅ Usuário admin criado:", admin.email);
+  console.log("✅ Admin user created:", admin.email);
 
-  // Criar produtos de exemplo
-  const produtos = await Promise.all([
-    prisma.produto.create({
+  // Create sample products
+  const products = await Promise.all([
+    prisma.product.create({
       data: {
-        nome: "Meia Social Preta",
-        descricao: "Meia social masculina preta de alta qualidade",
-        preco: 15.9,
-        quantidade: 100,
-        categoria: "MEIAS_SOCIAIS",
+        name: "Black Dress Socks",
+        description: "High quality black dress socks for men",
+        retailPrice: 15.9,
+        wholesalePrice: 12.9,
+        quantity: 100,
+        category: "DRESS_SOCKS",
+        sku: "DS-001",
+        images: {
+          create: [
+            {
+              url: "https://via.placeholder.com/400x400?text=Black+Dress+Socks",
+              alt: "Black Dress Socks",
+              order: 0,
+              primary: true,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "White Sports Socks",
+        description: "Sports socks ideal for running and gym",
+        retailPrice: 25.9,
+        wholesalePrice: 20.9,
+        quantity: 150,
+        category: "SPORTS_SOCKS",
+        sku: "SS-001",
+        images: {
+          create: [
+            {
+              url: "https://via.placeholder.com/400x400?text=Sports+Socks",
+              alt: "White Sports Socks",
+              order: 0,
+              primary: true,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Colorful Kids Socks",
+        description: "Kids socks with fun print",
+        retailPrice: 12.9,
+        wholesalePrice: 9.9,
+        quantity: 200,
+        category: "KIDS_SOCKS",
+        sku: "KS-001",
+        images: {
+          create: [
+            {
+              url: "https://via.placeholder.com/400x400?text=Kids+Socks",
+              alt: "Colorful Kids Socks",
+              order: 0,
+              primary: true,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Thermal Winter Socks",
+        description: "Thermal socks for cold days",
+        retailPrice: 35.9,
+        wholesalePrice: 28.9,
+        quantity: 80,
+        category: "THERMAL_SOCKS",
+        sku: "TS-001",
+        images: {
+          create: [
+            {
+              url: "https://via.placeholder.com/400x400?text=Thermal+Socks",
+              alt: "Thermal Socks",
+              order: 0,
+              primary: true,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Patterned Women's Socks",
+        description: "Women's socks with modern pattern",
+        retailPrice: 18.9,
+        wholesalePrice: 14.9,
+        quantity: 120,
+        category: "WOMENS_SOCKS",
+        sku: "WS-001",
+        images: {
+          create: [
+            {
+              url: "https://via.placeholder.com/400x400?text=Womens+Socks",
+              alt: "Patterned Women's Socks",
+              order: 0,
+              primary: true,
+            },
+          ],
+        },
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: "Striped Men's Socks",
+        description: "Men's socks with modern stripes",
+        retailPrice: 16.9,
+        wholesalePrice: 13.9,
+        quantity: 90,
+        category: "MENS_SOCKS",
         sku: "MS-001",
-        imagens: {
+        images: {
           create: [
             {
-              url: "https://via.placeholder.com/400x400?text=Meia+Social+Preta",
-              alt: "Meia Social Preta",
-              ordem: 0,
-              principal: true,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.produto.create({
-      data: {
-        nome: "Meia Esportiva Branca",
-        descricao: "Meia esportiva ideal para corrida e academia",
-        preco: 25.9,
-        quantidade: 150,
-        categoria: "MEIAS_ESPORTIVAS",
-        sku: "ME-001",
-        imagens: {
-          create: [
-            {
-              url: "https://via.placeholder.com/400x400?text=Meia+Esportiva",
-              alt: "Meia Esportiva Branca",
-              ordem: 0,
-              principal: true,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.produto.create({
-      data: {
-        nome: "Meia Infantil Colorida",
-        descricao: "Meia infantil com estampa divertida",
-        preco: 12.9,
-        quantidade: 200,
-        categoria: "MEIAS_INFANTIS",
-        sku: "MI-001",
-        imagens: {
-          create: [
-            {
-              url: "https://via.placeholder.com/400x400?text=Meia+Infantil",
-              alt: "Meia Infantil Colorida",
-              ordem: 0,
-              principal: true,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.produto.create({
-      data: {
-        nome: "Meia Térmica Inverno",
-        descricao: "Meia térmica para dias frios",
-        preco: 35.9,
-        quantidade: 80,
-        categoria: "MEIAS_TERMICAS",
-        sku: "MT-001",
-        imagens: {
-          create: [
-            {
-              url: "https://via.placeholder.com/400x400?text=Meia+Termica",
-              alt: "Meia Térmica",
-              ordem: 0,
-              principal: true,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.produto.create({
-      data: {
-        nome: "Meia Feminina Estampada",
-        descricao: "Meia feminina com estampa moderna",
-        preco: 18.9,
-        quantidade: 120,
-        categoria: "MEIAS_FEMININAS",
-        sku: "MF-001",
-        imagens: {
-          create: [
-            {
-              url: "https://via.placeholder.com/400x400?text=Meia+Feminina",
-              alt: "Meia Feminina Estampada",
-              ordem: 0,
-              principal: true,
-            },
-          ],
-        },
-      },
-    }),
-    prisma.produto.create({
-      data: {
-        nome: "Meia Masculina Listrada",
-        descricao: "Meia masculina com listras modernas",
-        preco: 16.9,
-        quantidade: 90,
-        categoria: "MEIAS_MASCULINAS",
-        sku: "MM-001",
-        imagens: {
-          create: [
-            {
-              url: "https://via.placeholder.com/400x400?text=Meia+Masculina",
-              alt: "Meia Masculina Listrada",
-              ordem: 0,
-              principal: true,
+              url: "https://via.placeholder.com/400x400?text=Mens+Socks",
+              alt: "Striped Men's Socks",
+              order: 0,
+              primary: true,
             },
           ],
         },
@@ -147,30 +153,30 @@ async function main() {
     }),
   ]);
 
-  console.log(`✅ ${produtos.length} produtos criados`);
+  console.log(`✅ ${products.length} products created`);
 
-  // Criar endereço para o admin
-  const endereco = await prisma.endereco.create({
+  // Create address for admin
+  const address = await prisma.address.create({
     data: {
-      usuarioId: admin.id,
-      cep: "01310-100",
-      logradouro: "Av. Paulista",
-      numero: "1000",
-      bairro: "Bela Vista",
-      cidade: "São Paulo",
-      estado: "SP",
-      principal: true,
+      userId: admin.id,
+      zipCode: "01310-100",
+      street: "Av. Paulista",
+      number: "1000",
+      neighborhood: "Bela Vista",
+      city: "São Paulo",
+      state: "SP",
+      primary: true,
     },
   });
 
-  console.log("✅ Endereço criado para admin");
+  console.log("✅ Address created for admin");
 
-  console.log("🎉 Seed concluído!");
+  console.log("🎉 Seed completed!");
 }
 
 main()
   .catch((e) => {
-    console.error("❌ Erro no seed:", e);
+    console.error("❌ Error in seed:", e);
     process.exit(1);
   })
   .finally(async () => {

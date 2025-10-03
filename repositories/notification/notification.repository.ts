@@ -4,15 +4,15 @@ import { prisma } from "@/lib";
 
 export class NotificationRepository {
   /**
-   * Criar uma nova notificação
+   * Create a new notification
    */
   async create(data: CreateNotificationDTO): Promise<Notification> {
-    const notification = await prisma.notificacao.create({
+    const notification = await prisma.notification.create({
       data: {
-        usuarioId: data.usuarioId,
-        tipo: data.tipo,
-        titulo: data.titulo,
-        mensagem: data.mensagem,
+        userId: data.userId,
+        type: data.type,
+        title: data.title,
+        message: data.message,
         link: data.link,
         metadata: data.metadata as any,
       },
@@ -25,16 +25,16 @@ export class NotificationRepository {
   }
 
   /**
-   * Buscar notificações de um usuário
+   * Get notifications by user ID
    */
   async getByUserId(
-    usuarioId: string,
+    userId: string,
     options?: { limit?: number; onlyUnread?: boolean },
   ): Promise<Notification[]> {
-    const notifications = await prisma.notificacao.findMany({
+    const notifications = await prisma.notification.findMany({
       where: {
-        usuarioId,
-        ...(options?.onlyUnread && { lida: false }),
+        userId,
+        ...(options?.onlyUnread && { read: false }),
       },
       orderBy: { createdAt: "desc" },
       take: options?.limit,
@@ -47,50 +47,50 @@ export class NotificationRepository {
   }
 
   /**
-   * Contar notificações não lidas
+   * Count unread notifications
    */
-  async countUnread(usuarioId: string): Promise<number> {
-    return prisma.notificacao.count({
+  async countUnread(userId: string): Promise<number> {
+    return prisma.notification.count({
       where: {
-        usuarioId,
-        lida: false,
+        userId,
+        read: false,
       },
     });
   }
 
   /**
-   * Marcar notificação como lida
+   * Mark notification as read
    */
   async markAsRead(id: string): Promise<void> {
-    await prisma.notificacao.update({
+    await prisma.notification.update({
       where: { id },
-      data: { lida: true },
+      data: { read: true },
     });
   }
 
   /**
-   * Marcar todas as notificações de um usuário como lidas
+   * Mark all user notifications as read
    */
-  async markAllAsRead(usuarioId: string): Promise<void> {
-    await prisma.notificacao.updateMany({
-      where: { usuarioId, lida: false },
-      data: { lida: true },
+  async markAllAsRead(userId: string): Promise<void> {
+    await prisma.notification.updateMany({
+      where: { userId, read: false },
+      data: { read: true },
     });
   }
 
   /**
-   * Deletar notificação
+   * Delete notification
    */
   async delete(id: string): Promise<void> {
-    await prisma.notificacao.delete({ where: { id } });
+    await prisma.notification.delete({ where: { id } });
   }
 
   /**
-   * Deletar todas as notificações lidas de um usuário
+   * Delete all read notifications for a user
    */
-  async deleteAllRead(usuarioId: string): Promise<void> {
-    await prisma.notificacao.deleteMany({
-      where: { usuarioId, lida: true },
+  async deleteAllRead(userId: string): Promise<void> {
+    await prisma.notification.deleteMany({
+      where: { userId, read: true },
     });
   }
 }

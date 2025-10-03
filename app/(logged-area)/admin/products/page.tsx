@@ -24,7 +24,7 @@ import { formatCurrency } from "@/utils";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [stats, setStats] = useState({ total: 0, ativos: 0, valorEstoque: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, stockValue: 0 });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -87,7 +87,7 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) =>
-      product.nome.toLowerCase().includes(searchTerm.toLowerCase()),
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [products, searchTerm]);
 
@@ -101,28 +101,28 @@ export default function ProductsPage() {
   }, [searchTerm]);
 
   const getStatusInfo = (product: Product) => {
-    if (product.quantidade === 0) {
+    if (product.quantity === 0) {
       return { label: "Sem estoque", color: "danger" as const };
-    } else if (product.quantidade < 20) {
+    } else if (product.quantity < 20) {
       return { label: "Estoque baixo", color: "warning" as const };
     } else {
       return { label: "Em estoque", color: "success" as const };
     }
   };
 
-  const getCategoriaLabel = (categoria: string) => {
+  const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      MEIAS_MASCULINAS: "Masculinas",
-      MEIAS_FEMININAS: "Femininas",
-      MEIAS_INFANTIS: "Infantis",
-      MEIAS_ESPORTIVAS: "Esportivas",
-      MEIAS_SOCIAIS: "Sociais",
-      MEIAS_TERMICAS: "Térmicas",
-      ACESSORIOS: "Acessórios",
-      OUTROS: "Outros",
+      MENS_SOCKS: "Masculinas",
+      WOMENS_SOCKS: "Femininas",
+      KIDS_SOCKS: "Infantis",
+      SPORTS_SOCKS: "Esportivas",
+      DRESS_SOCKS: "Sociais",
+      THERMAL_SOCKS: "Térmicas",
+      ACCESSORIES: "Acessórios",
+      OTHER: "Outros",
     };
 
-    return labels[categoria] || categoria;
+    return labels[category] || category;
   };
 
   if (loading) {
@@ -185,7 +185,7 @@ export default function ProductsPage() {
                     Produtos Ativos
                   </p>
                   <p className="text-2xl md:text-3xl font-bold text-gray-800 mt-1 md:mt-2">
-                    {stats.ativos}
+                    {stats.active}
                   </p>
                 </div>
                 <div className="p-3 md:p-4 rounded-full bg-green-100">
@@ -203,7 +203,7 @@ export default function ProductsPage() {
                     Valor em Estoque
                   </p>
                   <p className="text-2xl md:text-3xl font-bold text-gray-800 mt-1 md:mt-2">
-                    {formatCurrency(stats.valorEstoque)}
+                    {formatCurrency(stats.stockValue)}
                   </p>
                 </div>
                 <div className="p-3 md:p-4 rounded-full bg-purple-100">
@@ -294,8 +294,8 @@ export default function ProductsPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentProducts.map((product) => {
                       const statusInfo = getStatusInfo(product);
-                      const imagemPrincipal = product.imagens?.find(
-                        (img) => img.principal,
+                      const primaryImage = product.images?.find(
+                        (img) => img.primary,
                       );
 
                       return (
@@ -305,12 +305,12 @@ export default function ProductsPage() {
                         >
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3 min-w-0">
-                              {imagemPrincipal ? (
+                              {primaryImage ? (
                                 <Image
-                                  alt={imagemPrincipal.alt || product.nome}
+                                  alt={primaryImage.alt || product.name}
                                   className="rounded-lg object-cover flex-shrink-0"
                                   height={48}
-                                  src={imagemPrincipal.url}
+                                  src={primaryImage.url}
                                   width={48}
                                 />
                               ) : (
@@ -323,11 +323,11 @@ export default function ProductsPage() {
                               )}
                               <div className="min-w-0 flex-1">
                                 <p className="text-sm font-semibold text-gray-800 truncate">
-                                  {product.nome}
+                                  {product.name}
                                 </p>
-                                {product.descricao && (
+                                {product.description && (
                                   <p className="text-xs text-gray-500 truncate">
-                                    {product.descricao}
+                                    {product.description}
                                   </p>
                                 )}
                               </div>
@@ -335,7 +335,7 @@ export default function ProductsPage() {
                           </td>
                           <td className="px-4 py-4">
                             <span className="text-sm text-gray-600 truncate block">
-                              {getCategoriaLabel(product.categoria)}
+                              {getCategoryLabel(product.category)}
                             </span>
                           </td>
                           <td className="px-4 py-4">
@@ -344,13 +344,20 @@ export default function ProductsPage() {
                             </span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm font-semibold text-gray-800 truncate block">
-                              {formatCurrency(Number(product.preco))}
-                            </span>
+                            <div className="text-sm">
+                              <div className="font-semibold text-green-700">
+                                Varejo:{" "}
+                                {formatCurrency(Number(product.retailPrice))}
+                              </div>
+                              <div className="font-semibold text-purple-700">
+                                Atacado:{" "}
+                                {formatCurrency(Number(product.wholesalePrice))}
+                              </div>
+                            </div>
                           </td>
                           <td className="px-4 py-4">
                             <span className="text-sm text-gray-800 truncate block">
-                              {product.quantidade} un.
+                              {product.quantity} un.
                             </span>
                           </td>
                           <td className="px-4 py-4">
@@ -396,8 +403,8 @@ export default function ProductsPage() {
             <div className="lg:hidden divide-y divide-gray-200">
               {currentProducts.map((product) => {
                 const statusInfo = getStatusInfo(product);
-                const imagemPrincipal = product.imagens?.find(
-                  (img) => img.principal,
+                const primaryImage = product.images?.find(
+                  (img) => img.primary,
                 );
 
                 return (
@@ -407,12 +414,12 @@ export default function ProductsPage() {
                   >
                     <div className="flex gap-3">
                       <div className="flex-shrink-0">
-                        {imagemPrincipal ? (
+                        {primaryImage ? (
                           <Image
-                            alt={imagemPrincipal.alt || product.nome}
+                            alt={primaryImage.alt || product.name}
                             className="rounded-lg object-cover"
                             height={64}
-                            src={imagemPrincipal.url}
+                            src={primaryImage.url}
                             width={64}
                           />
                         ) : (
@@ -426,11 +433,11 @@ export default function ProductsPage() {
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="min-w-0 flex-1">
                             <h3 className="text-sm font-semibold text-gray-800 truncate">
-                              {product.nome}
+                              {product.name}
                             </h3>
-                            {product.descricao && (
+                            {product.description && (
                               <p className="text-xs text-gray-500 truncate">
-                                {product.descricao}
+                                {product.description}
                               </p>
                             )}
                           </div>
@@ -448,7 +455,7 @@ export default function ProductsPage() {
                           <div>
                             <span className="text-gray-500">Categoria:</span>
                             <p className="text-gray-800 font-medium truncate">
-                              {getCategoriaLabel(product.categoria)}
+                              {getCategoryLabel(product.category)}
                             </p>
                           </div>
                           <div>
@@ -458,15 +465,20 @@ export default function ProductsPage() {
                             </p>
                           </div>
                           <div>
-                            <span className="text-gray-500">Preço:</span>
-                            <p className="text-gray-800 font-bold">
-                              {formatCurrency(Number(product.preco))}
+                            <span className="text-gray-500">Preços:</span>
+                            <p className="text-green-700 font-bold">
+                              Varejo:{" "}
+                              {formatCurrency(Number(product.retailPrice))}
+                            </p>
+                            <p className="text-purple-700 font-bold">
+                              Atacado:{" "}
+                              {formatCurrency(Number(product.wholesalePrice))}
                             </p>
                           </div>
                           <div>
                             <span className="text-gray-500">Estoque:</span>
                             <p className="text-gray-800 font-medium">
-                              {product.quantidade} un.
+                              {product.quantity} un.
                             </p>
                           </div>
                         </div>

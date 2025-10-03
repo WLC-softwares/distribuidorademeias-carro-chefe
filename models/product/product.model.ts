@@ -1,69 +1,72 @@
 /**
  * Model: Product
- * Definições de tipos e interfaces para o módulo de Produto
+ * Type definitions and interfaces for the Product module
  */
 
-import type { CategoriaProduto, StatusProduto } from "@prisma/client";
+import type { ProductCategory, ProductStatus } from "@prisma/client";
 
 export interface ProductImage {
   id: string;
   url: string;
   alt?: string | null;
-  ordem: number;
-  principal: boolean;
-  produtoId: string;
+  order: number;
+  primary: boolean;
+  productId: string;
   createdAt: Date;
 }
 
 export interface Product {
   id: string;
-  nome: string;
-  descricao?: string | null;
-  preco: number; // Mudado de Decimal para number
-  quantidade: number;
-  status: StatusProduto;
-  categoria: CategoriaProduto;
+  name: string;
+  description?: string | null;
+  retailPrice: number;
+  wholesalePrice: number;
+  quantity: number;
+  status: ProductStatus;
+  category: ProductCategory;
   sku?: string | null;
-  ativo: boolean;
+  active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  imagens?: ProductImage[];
+  images?: ProductImage[];
 }
 
 export interface CreateProductDTO {
-  nome: string;
-  descricao?: string;
-  preco: number;
-  quantidade: number;
-  categoria: CategoriaProduto;
+  name: string;
+  description?: string;
+  retailPrice: number;
+  wholesalePrice: number;
+  quantity: number;
+  category: ProductCategory;
   sku?: string;
-  imagens?: CreateProductImageDTO[];
+  images?: CreateProductImageDTO[];
 }
 
 export interface CreateProductImageDTO {
   url: string;
   alt?: string;
-  ordem?: number;
-  principal?: boolean;
+  order?: number;
+  primary?: boolean;
 }
 
 export interface UpdateProductDTO {
-  nome?: string;
-  descricao?: string;
-  preco?: number;
-  quantidade?: number;
-  status?: StatusProduto;
-  categoria?: CategoriaProduto;
-  ativo?: boolean;
+  name?: string;
+  description?: string;
+  retailPrice?: number;
+  wholesalePrice?: number;
+  quantity?: number;
+  status?: ProductStatus;
+  category?: ProductCategory;
+  active?: boolean;
   sku?: string;
-  imagens?: CreateProductImageDTO[];
+  images?: CreateProductImageDTO[];
 }
 
 export interface UpdateProductImageDTO {
   url?: string;
   alt?: string;
-  ordem?: number;
-  principal?: boolean;
+  order?: number;
+  primary?: boolean;
 }
 
-export { CategoriaProduto, StatusProduto };
+export { ProductCategory, ProductStatus };

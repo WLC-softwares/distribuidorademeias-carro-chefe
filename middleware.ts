@@ -19,7 +19,7 @@ export default auth((req) => {
     nextUrl.pathname === "/" ||
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register") ||
-    nextUrl.pathname.startsWith("/produto/");
+    nextUrl.pathname.startsWith("/product/");
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register");
@@ -35,11 +35,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Se está logado e tenta acessar página de login ou registro
+  // If logged in and trying to access login or register page
   if (isAuthRoute && isLoggedIn) {
     const userRole = req.auth?.user?.role;
     const redirectUrl =
-      userRole === "ADMIN" ? "/admin/dashboard" : "/user/perfil";
+      userRole === "ADMIN" ? "/admin/dashboard" : "/user/profile";
 
     return NextResponse.redirect(new URL(redirectUrl, nextUrl));
   }
@@ -53,15 +53,15 @@ export default auth((req) => {
     );
   }
 
-  // Verificar se usuário tem permissão para acessar rotas de admin
+  // Check if user has permission to access admin routes
   const isAdminRoute = nextUrl.pathname.startsWith("/admin");
 
   if (isLoggedIn && isAdminRoute) {
     const userRole = req.auth?.user?.role;
 
     if (userRole !== "ADMIN") {
-      // Usuário não é admin, redirecionar para área do usuário
-      return NextResponse.redirect(new URL("/user/perfil", nextUrl));
+      // User is not admin, redirect to user area
+      return NextResponse.redirect(new URL("/user/profile", nextUrl));
     }
   }
 

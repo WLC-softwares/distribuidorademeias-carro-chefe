@@ -8,7 +8,7 @@ export default function UserPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/user/perfil");
+    router.replace("/user/profile");
   }, [router]);
 
   return (

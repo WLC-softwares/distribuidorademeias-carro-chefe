@@ -11,28 +11,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==================== USUÁRIO ====================
-model Usuario {
-  id              String    @id @default(uuid())
-  nome            String
-  email           String    @unique
-  senha           String // Hash da senha
-  telefone        String?
-  cpf             String?   @unique
-  role            Role      @default(USER)
-  avatar          String?
-  ativo           Boolean   @default(true)
-  resetToken      String?   @map("reset_token")
-  resetTokenExpiry DateTime? @map("reset_token_expiry")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+// ==================== USER ====================
+model User {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  password          String    // Password hash
+  phone             String?
+  cpf               String?   @unique
+  role              Role      @default(USER)
+  avatar            String?
+  active            Boolean   @default(true)
+  resetToken        String?   @map("reset_token")
+  resetTokenExpiry  DateTime? @map("reset_token_expiry")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  // Relações
-  enderecos     Endereco[]
-  vendas        Venda[]
-  notificacoes  Notificacao[]
+  // Relations
+  addresses      Address[]
+  sales          Sale[]
+  notifications  Notification[]
 
-  @@map("usuarios")
+  @@map("users")
 }
 
 enum Role {
@@ -41,187 +41,200 @@ enum Role {
   GUEST
 }
 
-// ==================== ENDEREÇO ====================
-model Endereco {
-  id          String   @id @default(uuid())
-  cep         String
-  logradouro  String
-  numero      String
-  complemento String?
-  bairro      String
-  cidade      String
-  estado      String
-  pais        String   @default("Brasil")
-  principal   Boolean  @default(false)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+// ==================== ADDRESS ====================
+model Address {
+  id           String   @id @default(uuid())
+  zipCode      String   @map("zip_code")
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  country      String   @default("Brasil")
+  primary      Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // Relações
-  usuarioId String   @map("usuario_id")
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  // Relations
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("enderecos")
-  @@index([usuarioId])
+  @@map("addresses")
+  @@index([userId])
 }
 
-// ==================== PRODUTO ====================
-model Produto {
-  id          String          @id @default(uuid())
-  nome        String
-  descricao   String?
-  preco       Decimal         @db.Decimal(10, 2)
-  quantidade  Int             @default(0)
-  status      StatusProduto   @default(ATIVO)
-  categoria   CategoriaProduto
-  sku         String?         @unique
-  ativo       Boolean         @default(true)
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
+// ==================== PRODUCT ====================
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  retailPrice    Decimal         @db.Decimal(10, 2) @map("retail_price")
+  wholesalePrice Decimal         @db.Decimal(10, 2) @map("wholesale_price")
+  quantity       Int             @default(0)
+  status         ProductStatus   @default(ACTIVE)
+  category       ProductCategory
+  sku            String?         @unique
+  active         Boolean         @default(true)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
-  // Relações
-  imagens     ImagemProduto[]
-  itensVenda  ItemVenda[]
+  // Relations
+  images    ProductImage[]
+  saleItems SaleItem[]
 
-  @@map("produtos")
-  @@index([categoria])
+  @@map("products")
+  @@index([category])
   @@index([status])
 }
 
-// ==================== IMAGEM PRODUTO ====================
-model ImagemProduto {
+// ==================== PRODUCT IMAGE ====================
+model ProductImage {
   id        String   @id @default(uuid())
   url       String
   alt       String?
-  ordem     Int      @default(0)
-  principal Boolean  @default(false)
+  order     Int      @default(0)
+  primary   Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
-  // Relações
-  produtoId String  @map("produto_id")
-  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  // Relations
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@map("imagens_produto")
-  @@index([produtoId])
-  @@index([principal])
+  @@map("product_images")
+  @@index([productId])
+  @@index([primary])
 }
 
-enum StatusProduto {
-  ATIVO
-  INATIVO
-  ESGOTADO
-  DESCONTINUADO
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+  DISCONTINUED
+
+  @@map("product_status")
 }
 
-enum CategoriaProduto {
-  MEIAS_MASCULINAS
-  MEIAS_FEMININAS
-  MEIAS_INFANTIS
-  MEIAS_ESPORTIVAS
-  MEIAS_SOCIAIS
-  MEIAS_TERMICAS
-  ACESSORIOS
-  OUTROS
+enum ProductCategory {
+  MENS_SOCKS
+  WOMENS_SOCKS
+  KIDS_SOCKS
+  SPORTS_SOCKS
+  DRESS_SOCKS
+  THERMAL_SOCKS
+  ACCESSORIES
+  OTHER
+
+  @@map("product_category")
 }
 
-// ==================== VENDA ====================
-model Venda {
-  id              String       @id @default(uuid())
-  numeroVenda     String       @unique @map("numero_venda")
-  status          StatusVenda  @default(PENDENTE)
-  subtotal        Decimal      @db.Decimal(10, 2)
-  desconto        Decimal      @default(0) @db.Decimal(10, 2)
-  total           Decimal      @db.Decimal(10, 2)
-  formaPagamento  FormaPagamento @map("forma_pagamento")
-  observacoes     String?
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
-  finalizadaEm    DateTime?    @map("finalizada_em")
-  canceladaEm     DateTime?    @map("cancelada_em")
+// ==================== SALE ====================
+model Sale {
+  id            String        @id @default(uuid())
+  saleNumber    String        @unique @map("sale_number")
+  status        SaleStatus    @default(PENDING)
+  subtotal      Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  paymentMethod PaymentMethod @map("payment_method")
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  completedAt   DateTime?     @map("completed_at")
+  canceledAt    DateTime?     @map("canceled_at")
 
-  // Relações
-  usuarioId String    @map("usuario_id")
-  usuario   Usuario   @relation(fields: [usuarioId], references: [id])
-  itens     ItemVenda[]
+  // Relations
+  userId String     @map("user_id")
+  user   User       @relation(fields: [userId], references: [id])
+  items  SaleItem[]
 
-  @@map("vendas")
-  @@index([usuarioId])
+  @@map("sales")
+  @@index([userId])
   @@index([status])
   @@index([createdAt])
 }
 
-enum StatusVenda {
-  PENDENTE
-  PROCESSANDO
-  PAGA
-  ENVIADA
-  ENTREGUE
-  CANCELADA
-  REEMBOLSADA
+enum SaleStatus {
+  PENDING
+  PROCESSING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELED
+  REFUNDED
+
+  @@map("sale_status")
 }
 
-enum FormaPagamento {
-  DINHEIRO
-  CARTAO_CREDITO
-  CARTAO_DEBITO
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
   PIX
-  BOLETO
-  TRANSFERENCIA
+  BANK_SLIP
+  BANK_TRANSFER
+
+  @@map("payment_method")
 }
 
-// ==================== ITEM VENDA ====================
-model ItemVenda {
-  id         String      @id @default(uuid())
-  quantidade Int
-  precoUnit  Decimal     @db.Decimal(10, 2) @map("preco_unitario")
-  subtotal   Decimal     @db.Decimal(10, 2)
-  desconto   Decimal     @default(0) @db.Decimal(10, 2)
-  total      Decimal     @db.Decimal(10, 2)
-  tipoVenda  TipoVenda   @default(VAREJO) @map("tipo_venda")
-  createdAt  DateTime    @default(now()) @map("created_at")
+// ==================== SALE ITEM ====================
+model SaleItem {
+  id        String   @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2) @map("unit_price")
+  subtotal  Decimal  @db.Decimal(10, 2)
+  discount  Decimal  @default(0) @db.Decimal(10, 2)
+  total     Decimal  @db.Decimal(10, 2)
+  saleType  SaleType @default(RETAIL) @map("sale_type")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  // Relações
-  vendaId   String  @map("venda_id")
-  venda     Venda   @relation(fields: [vendaId], references: [id], onDelete: Cascade)
-  produtoId String  @map("produto_id")
-  produto   Produto @relation(fields: [produtoId], references: [id])
+  // Relations
+  saleId    String  @map("sale_id")
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
 
-  @@map("itens_venda")
-  @@index([vendaId])
-  @@index([produtoId])
+  @@map("sale_items")
+  @@index([saleId])
+  @@index([productId])
 }
 
-enum TipoVenda {
-  VAREJO
-  ATACADO
+enum SaleType {
+  RETAIL
+  WHOLESALE
+
+  @@map("sale_type")
 }
 
-// ==================== NOTIFICAÇÃO ====================
-model Notificacao {
-  id        String            @id @default(uuid())
-  tipo      TipoNotificacao
-  titulo    String
-  mensagem  String
-  lida      Boolean           @default(false)
-  link      String?           // Link opcional para redirecionar (ex: /user/pedidos/123)
-  metadata  Json?             // Dados adicionais (ex: vendaId, statusAnterior, statusNovo)
-  createdAt DateTime          @default(now()) @map("created_at")
+// ==================== NOTIFICATION ====================
+model Notification {
+  id        String             @id @default(uuid())
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean            @default(false)
+  link      String?            // Optional redirect link (e.g., /user/orders/123)
+  metadata  Json?              // Additional data (e.g., saleId, previousStatus, newStatus)
+  createdAt DateTime           @default(now()) @map("created_at")
   
-  // Relações
-  usuarioId String   @map("usuario_id")
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  // Relations
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("notificacoes")
-  @@index([usuarioId])
-  @@index([lida])
+  @@map("notifications")
+  @@index([userId])
+  @@index([read])
   @@index([createdAt])
 }
 
-enum TipoNotificacao {
-  PEDIDO_CRIADO
-  PEDIDO_PROCESSANDO
-  PEDIDO_PAGO
-  PEDIDO_ENVIADO
-  PEDIDO_ENTREGUE
-  PEDIDO_CANCELADO
-  SISTEMA
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_PROCESSING
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELED
+  SYSTEM
+
+  @@map("notification_type")
 }

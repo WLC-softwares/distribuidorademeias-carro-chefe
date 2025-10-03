@@ -24,19 +24,21 @@ function PaymentSuccessContent() {
         setErrorMessage("Pedido não encontrado");
         setIsValid(false);
         setIsValidating(false);
+
         return;
       }
 
       try {
         // Verificar o status real do pedido no backend
         const response = await fetch(
-          `/api/sale/check-status?saleId=${externalReference}`
+          `/api/sale/check-status?saleId=${externalReference}`,
         );
 
         if (!response.ok) {
           setErrorMessage("Não foi possível verificar o status do pedido");
           setIsValid(false);
           setIsValidating(false);
+
           return;
         }
 
@@ -55,11 +57,15 @@ function PaymentSuccessContent() {
           // Redirecionar baseado no status
           setTimeout(() => {
             if (data.status === "PENDENTE") {
-              router.push(`/payment/pending?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
+              router.push(
+                `/payment/pending?external_reference=${externalReference}&payment_id=${paymentId || ""}`,
+              );
             } else if (data.status === "CANCELADA") {
-              router.push(`/payment/failure?external_reference=${externalReference}&payment_id=${paymentId || ""}`);
+              router.push(
+                `/payment/failure?external_reference=${externalReference}&payment_id=${paymentId || ""}`,
+              );
             } else {
-              router.push("/user/pedidos");
+              router.push("/user/orders");
             }
           }, 2000);
         }
@@ -81,7 +87,7 @@ function PaymentSuccessContent() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardBody className="flex flex-col items-center gap-4 py-12">
-            <Spinner size="lg" color="primary" />
+            <Spinner color="primary" size="lg" />
             <p className="text-lg font-semibold">Validando pagamento...</p>
             <p className="text-sm text-gray-600 text-center">
               Aguarde enquanto verificamos o status do seu pedido
@@ -115,7 +121,7 @@ function PaymentSuccessContent() {
               className="w-full"
               color="primary"
               size="lg"
-              onPress={() => router.push("/user/pedidos")}
+              onPress={() => router.push("/user/orders")}
             >
               Ver Meus Pedidos
             </Button>
@@ -207,7 +213,7 @@ function PaymentSuccessContent() {
               size="lg"
               startContent={<Package size={20} />}
               variant="bordered"
-              onPress={() => router.push("/user/pedidos")}
+              onPress={() => router.push("/user/orders")}
             >
               Ver Meus Pedidos
             </Button>
@@ -220,7 +226,13 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          Carregando...
+        </div>
+      }
+    >
       <PaymentSuccessContent />
     </Suspense>
   );

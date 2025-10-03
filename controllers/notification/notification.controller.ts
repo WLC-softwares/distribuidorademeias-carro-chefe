@@ -7,96 +7,96 @@ import { NotificationService } from "@/services";
 const notificationService = new NotificationService();
 
 /**
- * Buscar notificações do usuário
+ * Get user notifications
  */
 export async function getUserNotificationsAction(
-  usuarioId: string,
+  userId: string,
   limit?: number,
 ): Promise<Notification[]> {
   try {
-    return await notificationService.getUserNotifications(usuarioId, limit);
+    return await notificationService.getUserNotifications(userId, limit);
   } catch (error) {
-    console.error("Erro ao buscar notificações:", error);
+    console.error("Error fetching notifications:", error);
     throw error;
   }
 }
 
 /**
- * Buscar notificações não lidas
+ * Get unread notifications
  */
 export async function getUnreadNotificationsAction(
-  usuarioId: string,
+  userId: string,
 ): Promise<Notification[]> {
   try {
-    return await notificationService.getUnreadNotifications(usuarioId);
+    return await notificationService.getUnreadNotifications(userId);
   } catch (error) {
-    console.error("Erro ao buscar notificações não lidas:", error);
+    console.error("Error fetching unread notifications:", error);
     throw error;
   }
 }
 
 /**
- * Contar notificações não lidas
+ * Count unread notifications
  */
 export async function countUnreadNotificationsAction(
-  usuarioId: string,
+  userId: string,
 ): Promise<number> {
   try {
-    return await notificationService.countUnread(usuarioId);
+    return await notificationService.countUnread(userId);
   } catch (error) {
-    console.error("Erro ao contar notificações não lidas:", error);
+    console.error("Error counting unread notifications:", error);
     throw error;
   }
 }
 
 /**
- * Marcar notificação como lida
+ * Mark notification as read
  */
 export async function markNotificationAsReadAction(id: string): Promise<void> {
   try {
     await notificationService.markAsRead(id);
   } catch (error) {
-    console.error("Erro ao marcar notificação como lida:", error);
+    console.error("Error marking notification as read:", error);
     throw error;
   }
 }
 
 /**
- * Marcar todas as notificações como lidas
+ * Mark all notifications as read
  */
 export async function markAllNotificationsAsReadAction(
-  usuarioId: string,
+  userId: string,
 ): Promise<void> {
   try {
-    await notificationService.markAllAsRead(usuarioId);
+    await notificationService.markAllAsRead(userId);
   } catch (error) {
-    console.error("Erro ao marcar todas notificações como lidas:", error);
+    console.error("Error marking all notifications as read:", error);
     throw error;
   }
 }
 
 /**
- * Deletar notificação
+ * Delete notification
  */
 export async function deleteNotificationAction(id: string): Promise<void> {
   try {
     await notificationService.deleteNotification(id);
   } catch (error) {
-    console.error("Erro ao deletar notificação:", error);
+    console.error("Error deleting notification:", error);
     throw error;
   }
 }
 
 /**
- * Deletar todas as notificações lidas
+ * Delete all read notifications
  */
 export async function deleteAllReadNotificationsAction(
-  usuarioId: string,
+  userId: string,
 ): Promise<void> {
   try {
-    await notificationService.deleteAllRead(usuarioId);
+    await notificationService.deleteAllRead(userId);
   } catch (error) {
-    console.error("Erro ao deletar notificações lidas:", error);
+    console.error("Error deleting read notifications:", error);
     throw error;
   }
 }

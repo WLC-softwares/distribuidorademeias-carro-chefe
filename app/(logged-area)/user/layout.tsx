@@ -18,17 +18,17 @@ import { useState } from "react";
 const menuItems = [
   {
     title: "Meu Perfil",
-    href: "/user/perfil",
+    href: "/user/profile",
     icon: UserIcon,
   },
   {
     title: "Meus Pedidos",
-    href: "/user/pedidos",
+    href: "/user/orders",
     icon: Package,
   },
   {
     title: "Endereços",
-    href: "/user/enderecos",
+    href: "/user/addresses",
     icon: MapPin,
   },
 ];
@@ -99,11 +99,10 @@ export default function UserLayout({
                 as={NextLink}
                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${
-                                      isActive
-                                        ? "bg-yellow-100 text-yellow-700 font-semibold"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }
+                                    ${isActive
+                    ? "bg-yellow-100 text-yellow-700 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }
                                 `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}

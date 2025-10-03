@@ -18,10 +18,10 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useCart } from "@/hooks";
-import { getProductByIdAction, getProductsAction } from "@/controllers";
-import { ImageCarousel, ProductCard } from "@/components/products";
 import { CartDrawer } from "@/components/cart";
+import { ImageCarousel, ProductCard } from "@/components/products";
+import { getProductByIdAction, getProductsAction } from "@/controllers";
+import { useCart } from "@/hooks";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -30,8 +30,8 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantidade, setQuantidade] = useState(1);
-  const [tipoVenda, setTipoVenda] = useState<"varejo" | "atacado">("varejo");
+  const [quantity, setQuantity] = useState(1);
+  const [saleType, setSaleType] = useState<"varejo" | "atacado">("varejo");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -44,7 +44,7 @@ export default function ProductDetailPage() {
 
         if (data) {
           setProduct(data);
-          // Carregar produtos relacionados
+          // Load related products
           loadRelatedProducts(data);
         } else {
           setError("Produto não encontrado");
@@ -60,24 +60,24 @@ export default function ProductDetailPage() {
     async function loadRelatedProducts(currentProduct: Product) {
       try {
         const allProducts = await getProductsAction();
-        // Filtrar produtos da mesma categoria, excluindo o produto atual
+        // Filter products from same category, excluding current product
         let related = allProducts.filter(
           (p) =>
-            p.categoria === currentProduct.categoria &&
+            p.category === currentProduct.category &&
             p.id !== currentProduct.id &&
-            p.ativo &&
-            p.status === "ATIVO",
+            p.active &&
+            p.status === "ACTIVE",
         );
 
-        // Se não houver produtos da mesma categoria, pegar produtos aleatórios
+        // If no products from same category, get random products
         if (related.length === 0) {
           related = allProducts.filter(
             (p) =>
-              p.id !== currentProduct.id && p.ativo && p.status === "ATIVO",
+              p.id !== currentProduct.id && p.active && p.status === "ACTIVE",
           );
         }
 
-        // Embaralhar e pegar até 8 produtos
+        // Shuffle and get up to 8 products
         const shuffled = related.sort(() => Math.random() - 0.5);
 
         setRelatedProducts(shuffled.slice(0, 8));
@@ -91,11 +91,11 @@ export default function ProductDetailPage() {
     }
   }, [params.id]);
 
-  const handleQuantidadeChange = (delta: number) => {
-    const newQuantidade = quantidade + delta;
+  const handleQuantityChange = (delta: number) => {
+    const newQuantity = quantity + delta;
 
-    if (newQuantidade >= 1 && product && newQuantidade <= product.quantidade) {
-      setQuantidade(newQuantidade);
+    if (newQuantity >= 1 && product && newQuantity <= product.quantity) {
+      setQuantity(newQuantity);
     }
   };
 
@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     try {
-      addItem(product, quantidade, tipoVenda);
+      addItem(product, quantity, saleType);
       setShowSuccessMessage(true);
       setTimeout(() => {
         setShowSuccessMessage(false);
@@ -119,7 +119,7 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     try {
-      addItem(product, quantidade, tipoVenda);
+      addItem(product, quantity, saleType);
       router.push("/checkout");
     } catch (err) {
       alert("Erro ao adicionar produto ao carrinho");
@@ -152,24 +152,25 @@ export default function ProductDetailPage() {
     );
   }
 
-  const preco = product.preco;
-  const precoTotal = preco * quantidade;
-  const temEstoque = product.quantidade > 0 && product.status === "ATIVO";
+  const price =
+    saleType === "atacado" ? product.wholesalePrice : product.retailPrice;
+  const totalPrice = price * quantity;
+  const hasStock = product.quantity > 0 && product.status === "ACTIVE";
 
-  const categoriaLabels: Record<string, string> = {
-    MEIAS_MASCULINAS: "Meias Masculinas",
-    MEIAS_FEMININAS: "Meias Femininas",
-    MEIAS_INFANTIS: "Meias Infantis",
-    MEIAS_ESPORTIVAS: "Meias Esportivas",
-    MEIAS_SOCIAIS: "Meias Sociais",
-    MEIAS_TERMICAS: "Meias Térmicas",
-    ACESSORIOS: "Acessórios",
-    OUTROS: "Outros",
+  const categoryLabels: Record<string, string> = {
+    MENS_SOCKS: "Meias Masculinas",
+    WOMENS_SOCKS: "Meias Femininas",
+    KIDS_SOCKS: "Meias Infantis",
+    SPORTS_SOCKS: "Meias Esportivas",
+    DRESS_SOCKS: "Meias Sociais",
+    THERMAL_SOCKS: "Meias Térmicas",
+    ACCESSORIES: "Acessórios",
+    OTHER: "Outros",
   };
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Mensagem de Sucesso */}
+      {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-right">
           <Card className="bg-green-50 border-2 border-green-600">
@@ -180,7 +181,7 @@ export default function ProductDetailPage() {
                   Produto adicionado!
                 </p>
                 <p className="text-sm text-green-700">
-                  {quantidade}x {product?.nome}
+                  {quantity}x {product?.name}
                 </p>
               </div>
             </CardBody>
@@ -188,7 +189,7 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* Breadcrumb e Voltar */}
+      {/* Breadcrumb and Back */}
       <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-3 max-w-7xl">
           <Button
@@ -202,41 +203,40 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Conteúdo Principal */}
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Coluna 1: Imagens */}
+          {/* Column 1: Images */}
           <div className="lg:col-span-2">
             <Card className="p-4">
               <CardBody>
                 <ImageCarousel
-                  images={product.imagens || []}
-                  productName={product.nome}
+                  images={product.images || []}
+                  productName={product.name}
                 />
               </CardBody>
             </Card>
           </div>
 
-          {/* Coluna 2: Informações e Compra */}
+          {/* Column 2: Information and Purchase */}
           <div className="space-y-4">
-            {/* Card de Informações */}
+            {/* Information Card */}
             <Card>
               <CardBody className="p-6 space-y-4">
-                {/* Status e Categoria */}
+                {/* Status and Category */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <Chip
-                    className={`font-semibold ${
-                      tipoVenda === "atacado"
-                        ? "bg-purple-600 text-white"
-                        : "bg-green-600 text-white"
-                    }`}
+                    className={`font-semibold ${saleType === "atacado"
+                      ? "bg-purple-600 text-white"
+                      : "bg-green-600 text-white"
+                      }`}
                     size="sm"
                     variant="solid"
                   >
-                    {tipoVenda === "atacado" ? "Atacado" : "Varejo"}
+                    {saleType === "atacado" ? "Atacado" : "Varejo"}
                   </Chip>
                   <Chip size="sm" variant="flat">
-                    {categoriaLabels[product.categoria]}
+                    {categoryLabels[product.category]}
                   </Chip>
                   {product.sku && (
                     <span className="text-xs text-gray-500">
@@ -245,63 +245,63 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                {/* Título */}
+                {/* Title */}
                 <h1 className="text-xl font-medium text-gray-900">
-                  {product.nome}
+                  {product.name}
                 </h1>
 
-                {/* Preço */}
+                {/* Price */}
                 <div className="border-t border-gray-200 pt-4">
                   <div className="flex items-baseline gap-1">
                     <span className="text-3xl font-normal">R$</span>
                     <span className="text-5xl font-light">
-                      {Math.floor(preco)}
+                      {Math.floor(price)}
                     </span>
                     <span className="text-2xl font-light">
-                      {(preco % 1).toFixed(2).substring(1)}
+                      {(price % 1).toFixed(2).substring(1)}
                     </span>
                   </div>
                 </div>
 
-                {/* Toggle Varejo/Atacado */}
+                {/* Retail/Wholesale Toggle */}
                 <div className="border-t border-gray-200 pt-4">
                   <p className="text-sm text-gray-600 mb-3">
                     Selecione o tipo de compra:
                   </p>
                   <div className="flex gap-2">
                     <Button
-                      className={`flex-1 ${tipoVenda === "varejo" ? "bg-green-600 text-white" : ""}`}
-                      variant={tipoVenda === "varejo" ? "solid" : "bordered"}
-                      onPress={() => setTipoVenda("varejo")}
+                      className={`flex-1 ${saleType === "varejo" ? "bg-green-600 text-white" : ""}`}
+                      variant={saleType === "varejo" ? "solid" : "bordered"}
+                      onPress={() => setSaleType("varejo")}
                     >
                       Varejo
                     </Button>
                     <Button
-                      className={`flex-1 ${tipoVenda === "atacado" ? "bg-purple-600 text-white" : ""}`}
-                      variant={tipoVenda === "atacado" ? "solid" : "bordered"}
-                      onPress={() => setTipoVenda("atacado")}
+                      className={`flex-1 ${saleType === "atacado" ? "bg-purple-600 text-white" : ""}`}
+                      variant={saleType === "atacado" ? "solid" : "bordered"}
+                      onPress={() => setSaleType("atacado")}
                     >
                       Atacado
                     </Button>
                   </div>
                 </div>
 
-                {/* Quantidade */}
-                {temEstoque && (
+                {/* Quantity */}
+                {hasStock && (
                   <div className="border-t border-gray-200 pt-4">
                     <p className="text-sm text-gray-600 mb-3">
                       Quantidade:
                       <span className="text-gray-500 ml-2">
-                        ({product.quantidade} disponíveis)
+                        ({product.quantity} disponíveis)
                       </span>
                     </p>
                     <div className="flex items-center gap-3">
                       <Button
                         isIconOnly
-                        isDisabled={quantidade <= 1}
+                        isDisabled={quantity <= 1}
                         size="sm"
                         variant="bordered"
-                        onPress={() => handleQuantidadeChange(-1)}
+                        onPress={() => handleQuantityChange(-1)}
                       >
                         <Minus size={16} />
                       </Button>
@@ -312,40 +312,40 @@ export default function ProductDetailPage() {
                         }}
                         size="sm"
                         type="number"
-                        value={quantidade.toString()}
+                        value={quantity.toString()}
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
 
-                          if (val >= 1 && val <= product.quantidade) {
-                            setQuantidade(val);
+                          if (val >= 1 && val <= product.quantity) {
+                            setQuantity(val);
                           }
                         }}
                       />
                       <Button
                         isIconOnly
-                        isDisabled={quantidade >= product.quantidade}
+                        isDisabled={quantity >= product.quantity}
                         size="sm"
                         variant="bordered"
-                        onPress={() => handleQuantidadeChange(1)}
+                        onPress={() => handleQuantityChange(1)}
                       >
                         <Plus size={16} />
                       </Button>
                     </div>
 
-                    {quantidade > 1 && (
+                    {quantity > 1 && (
                       <p className="text-sm text-gray-600 mt-2">
                         Total:{" "}
                         <span className="font-semibold">
-                          R$ {precoTotal.toFixed(2)}
+                          R$ {totalPrice.toFixed(2)}
                         </span>
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Botões de Ação */}
+                {/* Action Buttons */}
                 <div className="space-y-2 pt-4">
-                  {temEstoque ? (
+                  {hasStock ? (
                     <>
                       <Button
                         className="w-full font-semibold"
@@ -381,21 +381,21 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Descrição do Produto */}
-        {product.descricao && (
+        {/* Product Description */}
+        {product.description && (
           <Card className="mt-6">
             <CardBody className="p-6">
               <h2 className="text-xl font-semibold mb-4">
                 Descrição do produto
               </h2>
               <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {product.descricao}
+                {product.description}
               </p>
             </CardBody>
           </Card>
         )}
 
-        {/* Produtos Relacionados */}
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
@@ -406,7 +406,7 @@ export default function ProductDetailPage() {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
-                  tipoVenda={tipoVenda}
+                  saleType={saleType}
                 />
               ))}
             </div>

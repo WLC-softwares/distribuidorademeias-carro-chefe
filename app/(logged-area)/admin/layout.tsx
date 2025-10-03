@@ -26,17 +26,17 @@ const menuItems = [
   },
   {
     title: "Produtos",
-    href: "/admin/produtos",
+    href: "/admin/products",
     icon: Box,
   },
   {
     title: "Usuários",
-    href: "/admin/usuarios",
+    href: "/admin/users",
     icon: Users,
   },
   {
     title: "Vendas",
-    href: "/admin/vendas",
+    href: "/admin/sales",
     icon: ShoppingBag,
   },
 ];
@@ -51,10 +51,10 @@ export default function AdminLayout({
   const { user, isLoading } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Verificar se usuário é admin
+  // Check if user is admin
   useEffect(() => {
     if (!isLoading && user && user.role !== "ADMIN") {
-      router.replace("/user/perfil");
+      router.replace("/user/profile");
     }
   }, [user, isLoading, router]);
 
@@ -123,11 +123,10 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${
-                                      isActive
-                                        ? "bg-yellow-100 text-yellow-700 font-semibold"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }
+                                    ${isActive
+                    ? "bg-yellow-100 text-yellow-700 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }
                                 `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}

@@ -1,22 +1,22 @@
 /**
  * Repository: Product
- * Responsável pelo acesso direto aos dados de produtos
+ * Responsible for direct access to product data
  */
 
-import type { CategoriaProduto, Prisma, StatusProduto } from "@prisma/client";
+import type { Prisma, ProductCategory, ProductStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
 export class ProductRepository {
   /**
-   * Busca todos os produtos com imagens
+   * Find all products with images
    */
   async findAll() {
-    return await prisma.produto.findMany({
+    return await prisma.product.findMany({
       include: {
-        imagens: {
+        images: {
           orderBy: {
-            ordem: "asc",
+            order: "asc",
           },
         },
       },
@@ -27,15 +27,15 @@ export class ProductRepository {
   }
 
   /**
-   * Busca produto por ID com imagens
+   * Find product by ID with images
    */
   async findById(id: string) {
-    return await prisma.produto.findUnique({
+    return await prisma.product.findUnique({
       where: { id },
       include: {
-        imagens: {
+        images: {
           orderBy: {
-            ordem: "asc",
+            order: "asc",
           },
         },
       },
@@ -43,67 +43,102 @@ export class ProductRepository {
   }
 
   /**
-   * Cria novo produto
+   * Find products by category
    */
-  async create(data: Prisma.ProdutoCreateInput) {
-    return await prisma.produto.create({
-      data,
+  async findByCategory(category: string) {
+    return await prisma.product.findMany({
+      where: { category: category as ProductCategory },
       include: {
-        imagens: true,
+        images: {
+          orderBy: {
+            order: "asc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }
 
   /**
-   * Atualiza produto
+   * Create new product
    */
-  async update(id: string, data: Prisma.ProdutoUpdateInput) {
-    return await prisma.produto.update({
+  async create(data: Prisma.ProductCreateInput) {
+    return await prisma.product.create({
+      data,
+      include: {
+        images: true,
+      },
+    });
+  }
+
+  /**
+   * Update product
+   */
+  async update(id: string, data: Prisma.ProductUpdateInput) {
+    return await prisma.product.update({
       where: { id },
       data,
       include: {
-        imagens: true,
+        images: true,
       },
     });
   }
 
   /**
-   * Deleta produto
+   * Delete product
    */
   async delete(id: string) {
-    return await prisma.produto.delete({
+    return await prisma.product.delete({
       where: { id },
     });
   }
 
   /**
-   * Conta produtos por categoria
+   * Count all products
    */
-  async countByCategory(categoria: CategoriaProduto) {
-    return await prisma.produto.count({
-      where: { categoria },
+  async count() {
+    return await prisma.product.count();
+  }
+
+  /**
+   * Count active products
+   */
+  async countActive() {
+    return await prisma.product.count({
+      where: { active: true },
     });
   }
 
   /**
-   * Conta produtos por status
+   * Count products by category
    */
-  async countByStatus(status: StatusProduto) {
-    return await prisma.produto.count({
+  async countByCategory(category: ProductCategory) {
+    return await prisma.product.count({
+      where: { category },
+    });
+  }
+
+  /**
+   * Count products by status
+   */
+  async countByStatus(status: ProductStatus) {
+    return await prisma.product.count({
       where: { status },
     });
   }
 
   /**
-   * Calcula valor total do estoque
+   * Calculate total stock value (based on retail price)
    */
   async getTotalStockValue() {
-    const produtos = await prisma.produto.findMany({
-      where: { ativo: true },
+    const products = await prisma.product.findMany({
+      where: { active: true },
     });
 
-    return produtos.reduce((total, produto) => {
-      return total + Number(produto.preco) * produto.quantidade;
+    return products.reduce((total, product) => {
+      return total + Number(product.retailPrice) * product.quantity;
     }, 0);
   }
 }

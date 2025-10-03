@@ -93,7 +93,7 @@ function PaymentFailureContent() {
               className="flex-1"
               size="lg"
               variant="bordered"
-              onPress={() => router.push("/user/pedidos")}
+              onPress={() => router.push("/user/orders")}
             >
               Ver Meus Pedidos
             </Button>
@@ -106,7 +106,13 @@ function PaymentFailureContent() {
 
 export default function PaymentFailurePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Carregando...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          Carregando...
+        </div>
+      }
+    >
       <PaymentFailureContent />
     </Suspense>
   );

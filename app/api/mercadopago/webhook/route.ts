@@ -46,11 +46,12 @@ export async function POST(request: NextRequest) {
               ? "CANCELADA"
               : "PENDENTE";
 
-      await prisma.venda.update({
+      await prisma.sale.update({
         where: { id: saleId },
         data: {
           status: newStatus as any,
-          formaPagamento: "PIX",
+          paymentMethod: "PIX",
+          completedAt: status === "approved" ? new Date() : undefined,
         },
       });
 
@@ -59,66 +60,93 @@ export async function POST(request: NextRequest) {
       // 📧 Enviar email e notificação apenas quando pagamento for aprovado
       if (status === "approved") {
         try {
-          // Buscar dados da venda para email
-          const venda = await prisma.venda.findUnique({
+          // Buscar dados da venda para atualizar estoque e enviar email
+          const sale = await prisma.sale.findUnique({
             where: { id: saleId },
             include: {
-              itens: {
+              items: {
                 include: {
-                  produto: true,
+                  product: true,
                 },
               },
-              usuario: {
+              user: {
                 select: {
-                  nome: true,
+                  name: true,
                   email: true,
                 },
               },
             },
           });
 
-          if (venda && venda.usuario) {
-            // 📧 Enviar email de confirmação de pagamento
-            const emailHtml = generateOrderConfirmationEmail(
-              venda.usuario.nome,
-              venda.numeroVenda,
-              {
-                items: venda.itens.map((item) => ({
-                  name: item.produto.nome,
-                  quantity: item.quantidade,
-                  price: Number(item.precoUnit),
-                  total: Number(item.total),
-                })),
-                subtotal: Number(venda.subtotal),
-                discount: Number(venda.desconto),
-                total: Number(venda.total),
-                paymentMethod: "Mercado Pago",
-              },
-            );
+          if (sale) {
+            // 📦 Atualizar estoque dos produtos
+            for (const item of sale.items) {
+              const produto = await prisma.product.findUnique({
+                where: { id: item.productId },
+                select: { quantity: true, name: true },
+              });
 
-            await sendEmail({
-              to: venda.usuario.email,
-              subject: `✅ Pagamento Confirmado - Pedido #${venda.numeroVenda} - Distribuidora Carro Chefe`,
-              html: emailHtml,
-            });
+              if (produto) {
+                const novaQuantidade = Math.max(
+                  0,
+                  produto.quantity - item.quantity,
+                );
 
-            // console.log(`📧 Email de confirmação enviado para ${venda.usuario.email}`);
+                await prisma.product.update({
+                  where: { id: item.productId },
+                  data: {
+                    quantity: novaQuantidade,
+                  },
+                });
 
-            // 🔔 Criar notificação de pagamento confirmado
-            const notificationService = new NotificationService();
+                // console.log(`📦 Estoque do produto ${item.produto.nome} atualizado: ${produto.quantidade} -> ${novaQuantidade}`);
+              }
+            }
 
-            await notificationService.createOrderStatusNotification(
-              venda.usuarioId,
-              venda.numeroVenda,
-              saleId,
-              "PAGA",
-              "PENDENTE",
-            );
+            // 📧 Enviar email de confirmação se houver usuário
+            if (sale.user) {
+              // 📧 Enviar email de confirmação de pagamento
+              const emailHtml = generateOrderConfirmationEmail(
+                sale.user.name,
+                sale.saleNumber,
+                {
+                  items: sale.items.map((item) => ({
+                    name: item.product.name,
+                    quantity: item.quantity,
+                    price: Number(item.unitPrice),
+                    total: Number(item.total),
+                  })),
+                  subtotal: Number(sale.subtotal),
+                  discount: Number(sale.discount),
+                  total: Number(sale.total),
+                  paymentMethod: "Mercado Pago",
+                },
+              );
 
-            // console.log(`🔔 Notificação de pagamento criada para venda ${saleId}`);
+              await sendEmail({
+                to: sale.user.email,
+                subject: `✅ Pagamento Confirmado - Pedido #${sale.saleNumber} - Distribuidora Carro Chefe`,
+                html: emailHtml,
+              });
+
+              // console.log(`📧 Email de confirmação enviado for ${sale.user.email}`);
+
+              // 🔔 Criar notificação de pagamento confirmado
+              const notificationService = new NotificationService();
+
+              await notificationService.createOrderStatusNotification(
+                sale.userId,
+                sale.saleNumber,
+                saleId,
+                "PAID",
+                "PENDING",
+              );
+
+              // console.log(`🔔 Notificação de pagamento criada para venda ${saleId}`);
+            }
           }
         } catch (error) {
-          console.error("Erro ao enviar email/notificação:", error);
+          console.error("Error processing approved sale:", error);
           // Não bloqueia o processamento do webhook
         }
       }
@@ -126,10 +154,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Erro ao processar webhook MP:", error);
+    console.error("Error processing MP webhook:", error);
 
     return NextResponse.json(
-      { error: "Erro ao processar webhook" },
+      { error: "Error processing webhook" },
       { status: 500 },
     );
   }

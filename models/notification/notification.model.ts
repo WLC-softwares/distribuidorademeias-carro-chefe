@@ -1,24 +1,26 @@
-import type { TipoNotificacao } from "@prisma/client";
+import type { NotificationType } from "@prisma/client";
+
+export type { NotificationType };
 
 export interface Notification {
   id: string;
-  tipo: TipoNotificacao;
-  titulo: string;
-  mensagem: string;
-  lida: boolean;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
   link?: string | null;
   metadata?: Record<string, any> | null;
   createdAt: Date;
-  usuarioId: string;
+  userId: string;
 }
 
-export type NotificationType = TipoNotificacao;
+export type NotificationTypeEnum = NotificationType;
 
 export interface CreateNotificationDTO {
-  usuarioId: string;
-  tipo: TipoNotificacao;
-  titulo: string;
-  mensagem: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
   link?: string;
   metadata?: Record<string, any>;
 }

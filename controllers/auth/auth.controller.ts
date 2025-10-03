@@ -1,6 +1,6 @@
 /**
  * Controller: Auth
- * Server Actions para autenticação
+ * Server Actions for authentication
  */
 
 "use server";
@@ -20,7 +20,7 @@ export async function loginAction(
 
     return response;
   } catch (error) {
-    console.error("Erro no controller de login:", error);
+    console.error("Error in login controller:", error);
     throw error;
   }
 }
@@ -32,26 +32,26 @@ export async function logoutAction(): Promise<void> {
   try {
     await authService.logout();
   } catch (error) {
-    console.error("Erro no controller de logout:", error);
+    console.error("Error in logout controller:", error);
     throw error;
   }
 }
 
 /**
- * Action: Verificar email
+ * Action: Check email
  */
 export async function checkEmailAction(email: string): Promise<boolean> {
   try {
     return await authService.checkEmailExists(email);
   } catch (error) {
-    console.error("Erro ao verificar email:", error);
+    console.error("Error checking email:", error);
 
     return false;
   }
 }
 
 /**
- * Action: Registrar novo usuário
+ * Action: Register new user
  */
 export async function registerAction(
   data: CreateUserDTO & {
@@ -68,24 +68,31 @@ export async function registerAction(
   },
 ) {
   try {
-    // Criar usuário
+    // Create user
     const user = await userService.createUser({
-      nome: data.nome,
+      name: data.name,
       email: data.email,
-      senha: data.senha,
-      telefone: data.telefone,
+      password: data.password,
+      phone: data.phone,
       cpf: data.cpf,
     });
 
-    // Se houver endereços, adicionar ao usuário
+    // If there are addresses, add them to the user
     if (data.enderecos && data.enderecos.length > 0 && user.id) {
       const { prisma } = await import("@/lib/prisma");
 
       for (const endereco of data.enderecos) {
-        await prisma.endereco.create({
+        await prisma.address.create({
           data: {
-            ...endereco,
-            usuarioId: user.id,
+            zipCode: endereco.cep,
+            street: endereco.logradouro,
+            number: endereco.numero,
+            complement: endereco.complemento,
+            neighborhood: endereco.bairro,
+            city: endereco.cidade,
+            state: endereco.estado,
+            primary: endereco.principal,
+            userId: user.id,
           },
         });
       }
@@ -93,7 +100,7 @@ export async function registerAction(
 
     return { success: true, user };
   } catch (error) {
-    console.error("Erro ao registrar usuário:", error);
+    console.error("Error registering user:", error);
     throw error;
   }
 }

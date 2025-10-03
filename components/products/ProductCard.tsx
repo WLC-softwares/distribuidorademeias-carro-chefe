@@ -1,102 +1,130 @@
 "use client";
 
+import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Image } from "@heroui/image";
+import { ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { useCart } from "@/hooks";
 import { Product } from "@/models";
 
 interface ProductCardProps {
   product: Product;
-  tipoVenda: "varejo" | "atacado";
+  saleType: "varejo" | "atacado";
 }
 
-export function ProductCard({ product, tipoVenda }: ProductCardProps) {
+export function ProductCard({ product, saleType }: ProductCardProps) {
   const router = useRouter();
-  const imagemPrincipal =
-    product.imagens?.find((img) => img.principal)?.url ||
+  const { addItem } = useCart();
+  const mainImage =
+    product.images?.find((img) => img.primary)?.url ||
     "/placeholder-product.png";
 
-  const preco = product.preco;
+  const price =
+    saleType === "atacado" ? product.wholesalePrice : product.retailPrice;
 
-  const categoriaLabels: Record<string, string> = {
-    MEIAS_MASCULINAS: "Masculinas",
-    MEIAS_FEMININAS: "Femininas",
-    MEIAS_INFANTIS: "Infantis",
-    MEIAS_ESPORTIVAS: "Esportivas",
-    MEIAS_SOCIAIS: "Sociais",
-    MEIAS_TERMICAS: "Térmicas",
-    ACESSORIOS: "Acessórios",
-    OUTROS: "Outros",
+  const categoryLabels: Record<string, string> = {
+    MENS_SOCKS: "Masculinas",
+    WOMENS_SOCKS: "Femininas",
+    KIDS_SOCKS: "Infantis",
+    SPORTS_SOCKS: "Esportivas",
+    DRESS_SOCKS: "Sociais",
+    THERMAL_SOCKS: "Térmicas",
+    ACCESSORIES: "Acessórios",
+    OTHER: "Outros",
   };
 
-  const temEstoque = product.quantidade > 0 && product.status === "ATIVO";
+  const hasStock = product.quantity > 0 && product.status === "ACTIVE";
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasStock) {
+      addItem(product, 1, saleType);
+    }
+  };
+
+  const handleCardClick = () => {
+    router.push(`/product/${product.id}`);
+  };
 
   return (
     <Card
-      isPressable
-      className="group relative hover:shadow-lg transition-shadow duration-200 cursor-pointer bg-white"
-      shadow="sm"
-      onPress={() => router.push(`/produto/${product.id}`)}
+      className="group relative hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer bg-white border border-gray-100"
+      shadow="md"
     >
-      <CardBody className="p-0">
-        {/* Imagem do Produto */}
+      <CardBody className="p-0" onClick={handleCardClick}>
+        {/* Product Image */}
         <div className="relative w-full aspect-square overflow-hidden bg-white">
           <Image
             removeWrapper
-            alt={product.nome}
-            className="w-full h-full object-contain p-4 z-0"
+            alt={product.name}
+            className="w-full h-full object-contain p-6 z-0 group-hover:scale-105 transition-transform duration-300"
             fallbackSrc="/placeholder-product.png"
-            src={imagemPrincipal}
+            src={mainImage}
           />
 
-          {/* Badge de Tipo de Venda - Sempre Visível */}
+          {/* Sale Type Badge */}
           <div className="absolute top-2 left-2">
             <Chip
-              className={`text-xs font-semibold ${tipoVenda === "atacado"
-                  ? "bg-purple-600 text-white"
-                  : "bg-green-600 text-white"
+              className={`text-xs font-bold shadow-md ${saleType === "atacado"
+                ? "bg-purple-600 text-white"
+                : "bg-blue-600 text-white"
                 }`}
+              radius="sm"
               size="sm"
               variant="solid"
             >
-              {tipoVenda === "atacado" ? "Atacado" : "Varejo"}
+              {saleType === "atacado" ? "Atacado" : "Varejo"}
             </Chip>
           </div>
         </div>
 
-        {/* Informações do Produto */}
-        <div className="p-3 space-y-1">
-          {/* Preço */}
+        {/* Product Information */}
+        <div className="p-4 space-y-2">
+          {/* Price */}
           <div className="space-y-1">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-normal">R$</span>
-              <span className="text-3xl font-light">{Math.floor(preco)}</span>
-              <span className="text-xl font-light">
-                {(preco % 1).toFixed(2).substring(1)}
+              <span className="text-2xl font-bold text-green-600">R$</span>
+              <span className="text-4xl font-bold text-green-600">
+                {Math.floor(price)}
+              </span>
+              <span className="text-2xl font-bold text-green-600">
+                {(price % 1).toFixed(2).substring(1)}
               </span>
             </div>
           </div>
 
-          {/* Nome do Produto */}
+          {/* Product Name */}
           <h3
-            className="text-sm text-gray-800 line-clamp-2 leading-tight mt-2"
+            className="text-sm text-gray-700 line-clamp-2 leading-tight font-medium"
             style={{ minHeight: "2.5rem" }}
           >
-            {product.nome}
+            {product.name}
           </h3>
 
-          {/* Categoria */}
-          <p className="text-xs text-gray-500">
-            {categoriaLabels[product.categoria]}
+          {/* Category */}
+          <p className="text-xs text-gray-500 font-medium">
+            {categoryLabels[product.category]}
           </p>
 
-          {/* Status de Estoque */}
-          {!temEstoque && (
-            <div className="mt-2">
-              <Chip className="text-xs" color="danger" size="sm" variant="flat">
-                {product.status === "ESGOTADO" ? "Esgotado" : "Indisponível"}
+          {/* Add to Cart Button */}
+          {hasStock ? (
+            <Button
+              className="w-full mt-3 font-bold"
+              color="success"
+              size="md"
+              startContent={<ShoppingCart size={18} />}
+              variant="shadow"
+              onClick={handleAddToCart}
+            >
+              Adicionar
+            </Button>
+          ) : (
+            <div className="mt-3">
+              <Chip className="text-xs w-full" color="danger" size="md" variant="flat">
+                {product.status === "OUT_OF_STOCK" ? "Esgotado" : "Indisponível"}
               </Chip>
             </div>
           )}

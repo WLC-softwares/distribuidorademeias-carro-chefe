@@ -55,11 +55,11 @@ export default function CheckoutPage() {
     if (isAuthenticated && user?.id && !addressLoaded) {
       setAddressLoaded(true);
       getUserWithAddressesAction(user.id).then((userData) => {
-        if (userData && userData.enderecos && userData.enderecos.length > 0) {
+        if (userData && userData.addresses && userData.addresses.length > 0) {
           // Pegar endereço principal ou o primeiro
           const enderecoPrincipal =
-            userData.enderecos.find((e: Address) => e.principal) ||
-            userData.enderecos[0];
+            userData.addresses.find((e: Address) => e.primary) ||
+            userData.addresses[0];
 
           setUserAddress(enderecoPrincipal);
         }
@@ -100,10 +100,13 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((item) => ({
-            nome: item.product.nome,
-            descricao: item.product.descricao,
-            quantidade: item.quantidade,
-            preco: item.product.preco,
+            name: item.product.name,
+            description: item.product.description,
+            quantity: item.quantity,
+            price:
+              item.saleType === "atacado"
+                ? item.product.wholesalePrice
+                : item.product.retailPrice,
           })),
           saleId: sale.id,
           saleNumber: sale.numeroVenda,
@@ -114,7 +117,9 @@ export default function CheckoutPage() {
         const errorData = await response.json().catch(() => ({}));
 
         console.error("Erro MP:", errorData);
-        throw new Error(errorData.error || "Erro ao criar preferência de pagamento");
+        throw new Error(
+          errorData.error || "Erro ao criar preferência de pagamento",
+        );
       }
 
       const { initPoint } = await response.json();
@@ -194,7 +199,7 @@ export default function CheckoutPage() {
                   <Input
                     isReadOnly
                     id="checkout-nome"
-                    value={user?.nome || ""}
+                    value={user?.name || ""}
                     variant="bordered"
                   />
                 </div>
@@ -227,21 +232,21 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <p className="font-medium text-gray-900">
-                        {userAddress.logradouro}, {userAddress.numero}
+                        {userAddress.street}, {userAddress.number}
                       </p>
-                      {userAddress.complemento && (
+                      {userAddress.complement && (
                         <p className="text-sm text-gray-600">
-                          {userAddress.complemento}
+                          {userAddress.complement}
                         </p>
                       )}
                       <p className="text-sm text-gray-600">
-                        {userAddress.bairro}
+                        {userAddress.neighborhood}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {userAddress.cidade} - {userAddress.estado}
+                        {userAddress.city} - {userAddress.state}
                       </p>
                       <p className="text-sm text-gray-600">
-                        CEP: {userAddress.cep}
+                        CEP: {userAddress.zipCode}
                       </p>
                     </div>
                     <p className="text-xs text-gray-500 italic">
@@ -296,46 +301,50 @@ export default function CheckoutPage() {
                 {/* Lista de Itens */}
                 <div className="space-y-3">
                   {items.map((item) => {
-                    const imagemPrincipal =
-                      item.product.imagens?.find((img) => img.principal)?.url ||
+                    const mainImage =
+                      item.product.images?.find((img) => img.primary)?.url ||
                       "/placeholder-product.png";
-                    const precoTotal = item.product.preco * item.quantidade;
+                    const price =
+                      item.saleType === "atacado"
+                        ? item.product.wholesalePrice
+                        : item.product.retailPrice;
+                    const totalPrice = price * item.quantity;
 
                     return (
                       <div
-                        key={`${item.product.id}-${item.tipoVenda}`}
+                        key={`${item.product.id}-${item.saleType}`}
                         className="flex gap-3"
                       >
                         <div className="w-16 h-16 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden">
                           <Image
                             removeWrapper
-                            alt={item.product.nome}
+                            alt={item.product.name}
                             className="w-full h-full object-contain"
-                            src={imagemPrincipal}
+                            src={mainImage}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
-                            {item.product.nome}
+                            {item.product.name}
                           </h4>
                           <Chip
-                            className={`mt-1 ${item.tipoVenda === "atacado"
+                            className={`mt-1 ${item.saleType === "atacado"
                               ? "bg-purple-100 text-purple-700"
                               : "bg-green-100 text-green-700"
                               }`}
                             size="sm"
                             variant="flat"
                           >
-                            {item.tipoVenda === "atacado"
+                            {item.saleType === "atacado"
                               ? "Atacado"
                               : "Varejo"}
                           </Chip>
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-xs text-gray-500">
-                              Qtd: {item.quantidade}
+                              Qtd: {item.quantity}
                             </span>
                             <span className="text-sm font-semibold text-gray-900">
-                              R$ {precoTotal.toFixed(2)}
+                              R$ {totalPrice.toFixed(2)}
                             </span>
                           </div>
                         </div>

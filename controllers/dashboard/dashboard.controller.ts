@@ -25,7 +25,7 @@ export async function getDashboardDataAction(): Promise<DashboardData> {
 }
 
 /**
- * Action: Obter estatísticas do dashboard
+ * Action: Get dashboard statistics
  */
 export async function getDashboardStatsAction(): Promise<DashboardStats> {
   try {
@@ -33,7 +33,7 @@ export async function getDashboardStatsAction(): Promise<DashboardStats> {
 
     return stats;
   } catch (error) {
-    console.error("Erro ao buscar estatísticas:", error);
+    console.error("Error fetching statistics:", error);
     throw error;
   }
 }

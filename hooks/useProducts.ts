@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { Product, CategoriaProduto } from "@/models";
 import { getProductsAction } from "@/controllers";
+import { Product, ProductCategory } from "@/models";
 
-export type TipoVenda = "varejo" | "atacado";
+export type SaleType = "varejo" | "atacado";
 
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tipoVenda, setTipoVenda] = useState<TipoVenda>("varejo");
-  const [categoriaFiltro, setCategoriaFiltro] = useState<
-    CategoriaProduto | "TODOS"
+  const [saleType, setSaleType] = useState<SaleType>("varejo");
+  const [categoryFilter, setCategoryFilter] = useState<
+    ProductCategory | "TODOS"
   >("TODOS");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Carregar produtos
+  // Load products
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -27,8 +27,8 @@ export function useProducts() {
 
         setProducts(data);
       } catch (err) {
-        console.error("Erro ao carregar produtos:", err);
-        setError("Não foi possível carregar os produtos");
+        console.error("Error loading products:", err);
+        setError("Unable to load products");
       } finally {
         setLoading(false);
       }
@@ -37,44 +37,44 @@ export function useProducts() {
     loadProducts();
   }, []);
 
-  // Filtrar produtos
+  // Filter products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Filtrar apenas produtos ativos
-      if (!product.ativo) return false;
+      // Filter only active products
+      if (!product.active) return false;
 
-      // Filtrar por categoria
+      // Filter by category
       if (
-        categoriaFiltro !== "TODOS" &&
-        product.categoria !== categoriaFiltro
+        categoryFilter !== "TODOS" &&
+        product.category !== categoryFilter
       ) {
         return false;
       }
 
-      // Filtrar por termo de busca
+      // Filter by search term
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
 
         return (
-          product.nome.toLowerCase().includes(searchLower) ||
-          product.descricao?.toLowerCase().includes(searchLower) ||
+          product.name.toLowerCase().includes(searchLower) ||
+          product.description?.toLowerCase().includes(searchLower) ||
           product.sku?.toLowerCase().includes(searchLower)
         );
       }
 
       return true;
     });
-  }, [products, categoriaFiltro, searchTerm]);
+  }, [products, categoryFilter, searchTerm]);
 
   return {
     products: filteredProducts,
     allProducts: products,
     loading,
     error,
-    tipoVenda,
-    setTipoVenda,
-    categoriaFiltro,
-    setCategoriaFiltro,
+    saleType,
+    setSaleType,
+    categoryFilter,
+    setCategoryFilter,
     searchTerm,
     setSearchTerm,
   };

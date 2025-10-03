@@ -1,45 +1,55 @@
 /**
  * Service: Product
- * Camada de lógica de negócios para produtos
+ * Business logic layer for products
  */
 
 import type { CreateProductDTO, Product, UpdateProductDTO } from "@/models";
 
 import { productRepository } from "@/repositories";
 
+/**
+ * Helper to serialize products and remove Decimal objects
+ */
+function serializeProduct(product: any): Product {
+  return JSON.parse(
+    JSON.stringify({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      retailPrice: Number(product.retailPrice),
+      wholesalePrice: Number(product.wholesalePrice),
+      quantity: product.quantity,
+      status: product.status,
+      category: product.category,
+      sku: product.sku,
+      active: product.active,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      images: product.images?.map((img: any) => ({
+        id: img.id,
+        url: img.url,
+        alt: img.alt,
+        order: img.order,
+        primary: img.primary,
+        productId: img.productId,
+        createdAt: img.createdAt,
+      })),
+    }),
+  );
+}
+
 export class ProductService {
   /**
-   * Busca todos os produtos
+   * Lista todos os produtos ativos
    */
   async getAllProducts(): Promise<Product[]> {
     try {
-      const produtos = await productRepository.findAll();
+      const products = await productRepository.findAll();
 
-      return produtos.map((p) => ({
-        id: p.id,
-        nome: p.nome,
-        descricao: p.descricao,
-        preco: Number(p.preco), // Converter Decimal para number
-        quantidade: p.quantidade,
-        status: p.status,
-        categoria: p.categoria,
-        sku: p.sku,
-        ativo: p.ativo,
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-        imagens: p.imagens?.map((img) => ({
-          id: img.id,
-          url: img.url,
-          alt: img.alt,
-          ordem: img.ordem,
-          principal: img.principal,
-          produtoId: img.produtoId,
-          createdAt: img.createdAt,
-        })),
-      }));
+      return products.map(serializeProduct);
     } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-      throw new Error("Não foi possível buscar os produtos");
+      console.error("Error loading products:", error);
+      throw new Error("Unable to load products");
     }
   }
 
@@ -48,36 +58,14 @@ export class ProductService {
    */
   async getProductById(id: string): Promise<Product | null> {
     try {
-      const produto = await productRepository.findById(id);
+      const product = await productRepository.findById(id);
 
-      if (!produto) return null;
+      if (!product) return null;
 
-      return {
-        id: produto.id,
-        nome: produto.nome,
-        descricao: produto.descricao,
-        preco: Number(produto.preco), // Converter Decimal para number
-        quantidade: produto.quantidade,
-        status: produto.status,
-        categoria: produto.categoria,
-        sku: produto.sku,
-        ativo: produto.ativo,
-        createdAt: produto.createdAt,
-        updatedAt: produto.updatedAt,
-        imagens: produto.imagens?.map((img) => ({
-          id: img.id,
-          url: img.url,
-          alt: img.alt,
-          ordem: img.ordem,
-          principal: img.principal,
-          produtoId: img.produtoId,
-          createdAt: img.createdAt,
-        })),
-      };
+      return serializeProduct(product);
     } catch (error) {
-      console.error("Erro ao buscar produto:", error);
-
-      return null;
+      console.error("Error loading product:", error);
+      throw new Error("Unable to load product");
     }
   }
 
@@ -86,50 +74,30 @@ export class ProductService {
    */
   async createProduct(data: CreateProductDTO): Promise<Product> {
     try {
-      const produto = await productRepository.create({
-        nome: data.nome,
-        descricao: data.descricao,
-        preco: data.preco,
-        quantidade: data.quantidade,
-        categoria: data.categoria,
+      const product = await productRepository.create({
+        name: data.name,
+        description: data.description,
+        retailPrice: data.retailPrice,
+        wholesalePrice: data.wholesalePrice,
+        quantity: data.quantity,
+        category: data.category,
         sku: data.sku,
-        imagens: data.imagens
+        images: data.images
           ? {
-              create: data.imagens.map((img, index) => ({
-                url: img.url,
-                alt: img.alt,
-                ordem: img.ordem ?? index,
-                principal: img.principal ?? index === 0,
-              })),
-            }
+            create: data.images.map((img, index) => ({
+              url: img.url,
+              alt: img.alt,
+              order: img.order ?? index,
+              primary: img.primary ?? index === 0,
+            })),
+          }
           : undefined,
       });
 
-      return {
-        id: produto.id,
-        nome: produto.nome,
-        descricao: produto.descricao,
-        preco: Number(produto.preco), // Converter Decimal para number
-        quantidade: produto.quantidade,
-        status: produto.status,
-        categoria: produto.categoria,
-        sku: produto.sku,
-        ativo: produto.ativo,
-        createdAt: produto.createdAt,
-        updatedAt: produto.updatedAt,
-        imagens: produto.imagens?.map((img) => ({
-          id: img.id,
-          url: img.url,
-          alt: img.alt,
-          ordem: img.ordem,
-          principal: img.principal,
-          produtoId: img.produtoId,
-          createdAt: img.createdAt,
-        })),
-      };
+      return serializeProduct(product);
     } catch (error) {
-      console.error("Erro ao criar produto:", error);
-      throw new Error("Não foi possível criar o produto");
+      console.error("Error creating product:", error);
+      throw new Error("Unable to create product");
     }
   }
 
@@ -138,47 +106,31 @@ export class ProductService {
    */
   async updateProduct(id: string, data: UpdateProductDTO): Promise<Product> {
     try {
-      const { imagens, ...productData } = data as any;
+      const { images, ...productData } = data as any;
 
-      let produto;
+      let product;
 
-      if (imagens && imagens.length > 0) {
-        produto = await productRepository.update(id, {
+      if (images && images.length > 0) {
+        product = await productRepository.update(id, {
           ...productData,
-          imagens: {
+          images: {
             deleteMany: {},
-            create: imagens,
+            create: images.map((img: any, index: number) => ({
+              url: img.url,
+              alt: img.alt,
+              order: img.order ?? index,
+              primary: img.primary ?? index === 0,
+            })),
           },
         });
       } else {
-        produto = await productRepository.update(id, productData);
+        product = await productRepository.update(id, productData);
       }
 
-      return {
-        id: produto.id,
-        nome: produto.nome,
-        descricao: produto.descricao,
-        preco: Number(produto.preco), // Converter Decimal para number
-        quantidade: produto.quantidade,
-        status: produto.status,
-        categoria: produto.categoria,
-        sku: produto.sku,
-        ativo: produto.ativo,
-        createdAt: produto.createdAt,
-        updatedAt: produto.updatedAt,
-        imagens: produto.imagens?.map((img) => ({
-          id: img.id,
-          url: img.url,
-          alt: img.alt,
-          ordem: img.ordem,
-          principal: img.principal,
-          produtoId: img.produtoId,
-          createdAt: img.createdAt,
-        })),
-      };
+      return serializeProduct(product);
     } catch (error) {
-      console.error("Erro ao atualizar produto:", error);
-      throw new Error("Não foi possível atualizar o produto");
+      console.error("Error updating product:", error);
+      throw new Error("Unable to update product");
     }
   }
 
@@ -189,26 +141,45 @@ export class ProductService {
     try {
       await productRepository.delete(id);
     } catch (error) {
-      console.error("Erro ao deletar produto:", error);
-      throw new Error("Não foi possível deletar o produto");
+      console.error("Error deleting product:", error);
+      throw new Error("Unable to delete product");
     }
   }
 
   /**
-   * Obtém estatísticas de produtos
+   * Get products by category
    */
-  async getProductStats() {
+  async getProductsByCategory(category: string): Promise<Product[]> {
     try {
-      const [total, ativos, valorEstoque] = await Promise.all([
-        productRepository.findAll().then((products) => products.length),
-        productRepository.countByStatus("ATIVO"),
-        productRepository.getTotalStockValue(),
+      const products = await productRepository.findByCategory(category);
+
+      return products.map(serializeProduct);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      throw new Error("Unable to load products");
+    }
+  }
+
+  /**
+   * Get product statistics
+   */
+  async getProductStats(): Promise<{ total: number; active: number; stockValue: number }> {
+    try {
+      const [total, active, products] = await Promise.all([
+        productRepository.count(),
+        productRepository.countActive(),
+        productRepository.findAll(),
       ]);
 
-      return { total, ativos, valorEstoque };
+      // Calculate total stock value
+      const stockValue = products.reduce((acc, product) => {
+        return acc + Number(product.retailPrice) * product.quantity;
+      }, 0);
+
+      return { total, active, stockValue };
     } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
-      throw new Error("Não foi possível buscar as estatísticas");
+      console.error("Error fetching product stats:", error);
+      throw new Error("Unable to fetch product stats");
     }
   }
 }

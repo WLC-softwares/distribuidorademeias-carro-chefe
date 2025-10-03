@@ -1,6 +1,6 @@
 /**
  * Repository: Dashboard
- * Responsável pelo acesso direto aos dados do dashboard
+ * Responsible for direct access to dashboard data
  */
 
 import { prisma } from "@/lib/prisma";
@@ -8,15 +8,15 @@ import { DashboardData, DashboardStats } from "@/models";
 
 export class DashboardRepository {
   /**
-   * Busca dados gerais do dashboard
+   * Get general dashboard data
    */
   async getDashboardData(): Promise<DashboardData> {
-    // Simulação de chamada API
-    // Em produção, aqui seria uma chamada real para o backend
+    // API call simulation
+    // In production, this would be a real backend call
     return {
       metrics: [
         {
-          title: "Vendas Finalizadas",
+          title: "Completed Sales",
           value: "1,234",
           change: "+12.5%",
           icon: "ShoppingCart",
@@ -24,7 +24,7 @@ export class DashboardRepository {
           bgColor: "bg-green-100",
         },
         {
-          title: "Receita Total",
+          title: "Total Revenue",
           value: "R$ 45.670,00",
           change: "+8.2%",
           icon: "DollarSign",
@@ -32,7 +32,7 @@ export class DashboardRepository {
           bgColor: "bg-blue-100",
         },
         {
-          title: "Produtos em Estoque",
+          title: "Products in Stock",
           value: "567",
           change: "-3.1%",
           icon: "Package",
@@ -40,7 +40,7 @@ export class DashboardRepository {
           bgColor: "bg-orange-100",
         },
         {
-          title: "Clientes Ativos",
+          title: "Active Customers",
           value: "892",
           change: "+15.3%",
           icon: "Users",
@@ -53,84 +53,84 @@ export class DashboardRepository {
           id: "#1234",
           customer: "João Silva",
           total: "R$ 125,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-10-01",
         },
         {
           id: "#1235",
           customer: "Maria Santos",
           total: "R$ 89,50",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-10-01",
         },
         {
           id: "#1236",
           customer: "Pedro Costa",
           total: "R$ 210,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-30",
         },
         {
           id: "#1237",
           customer: "Ana Oliveira",
           total: "R$ 156,90",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-30",
         },
         {
           id: "#1238",
           customer: "Carlos Souza",
           total: "R$ 342,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-29",
         },
         {
           id: "#1239",
           customer: "Juliana Lima",
           total: "R$ 156,90",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-29",
         },
         {
           id: "#1240",
           customer: "Roberto Alves",
           total: "R$ 342,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-28",
         },
         {
           id: "#1241",
           customer: "Fernanda Castro",
           total: "R$ 156,90",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-28",
         },
         {
           id: "#1242",
           customer: "Marcelo Dias",
           total: "R$ 342,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-27",
         },
         {
           id: "#1243",
           customer: "Patricia Rocha",
           total: "R$ 156,90",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-27",
         },
         {
           id: "#1244",
           customer: "Ricardo Nunes",
           total: "R$ 342,00",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-26",
         },
         {
           id: "#1245",
           customer: "Sandra Martins",
           total: "R$ 156,90",
-          status: "Finalizada",
+          status: "Completed",
           date: "2025-09-26",
         },
       ],
@@ -138,40 +138,40 @@ export class DashboardRepository {
   }
 
   /**
-   * Busca estatísticas do dashboard
+   * Get dashboard statistics
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      // Buscar total de vendas
-      const totalSales = await prisma.venda.count();
+      // Get total sales
+      const totalSales = await prisma.sale.count();
 
-      // Buscar receita total (vendas pagas, enviadas e entregues)
-      const vendas = await prisma.venda.findMany({
+      // Get total revenue (paid, shipped and delivered sales)
+      const sales = await prisma.sale.findMany({
         where: {
           status: {
-            in: ["PAGA", "ENVIADA", "ENTREGUE"],
+            in: ["PAID", "SHIPPED", "DELIVERED"],
           },
         },
         select: {
           total: true,
         },
       });
-      const totalRevenue = vendas.reduce(
-        (acc, venda) => acc + Number(venda.total),
+      const totalRevenue = sales.reduce(
+        (acc, sale) => acc + Number(sale.total),
         0,
       );
 
-      // Buscar total de produtos
-      const totalProducts = await prisma.produto.count({
+      // Get total products
+      const totalProducts = await prisma.product.count({
         where: {
-          ativo: true,
+          active: true,
         },
       });
 
-      // Buscar clientes ativos
-      const activeCustomers = await prisma.usuario.count({
+      // Get active customers
+      const activeCustomers = await prisma.user.count({
         where: {
-          ativo: true,
+          active: true,
           role: "USER",
         },
       });
@@ -183,9 +183,9 @@ export class DashboardRepository {
         activeCustomers,
       };
     } catch (error) {
-      console.error("Erro ao buscar estatísticas do dashboard:", error);
+      console.error("Error fetching dashboard statistics:", error);
 
-      // Retornar valores padrão em caso de erro
+      // Return default values in case of error
       return {
         totalSales: 0,
         totalRevenue: 0,
@@ -196,5 +196,5 @@ export class DashboardRepository {
   }
 }
 
-// Singleton para reutilização
+// Singleton for reuse
 export const dashboardRepository = new DashboardRepository();

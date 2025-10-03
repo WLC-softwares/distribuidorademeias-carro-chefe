@@ -1,10 +1,10 @@
 /**
  * Constants: Routes
- * Constantes de rotas da aplicação
+ * Application route constants
  */
 
 export const ROUTES = {
-  // Públicas
+  // Public
   HOME: "/",
   LOGIN: "/login",
   REGISTER: "/register",
@@ -13,19 +13,20 @@ export const ROUTES = {
   // Admin
   ADMIN: {
     DASHBOARD: "/admin/dashboard",
-    USUARIOS: "/admin/usuarios",
-    PRODUTOS: "/admin/produtos",
-    VENDAS: "/admin/vendas",
+    USERS: "/admin/users",
+    PRODUCTS: "/admin/products",
+    SALES: "/admin/sales",
   },
 
   // User
   USER: {
     DASHBOARD: "/user/dashboard",
-    PERFIL: "/user/perfil",
-    PEDIDOS: "/user/pedidos",
-    CARRINHO: "/user/carrinho",
+    PROFILE: "/user/profile",
+    ORDERS: "/user/orders",
+    ADDRESSES: "/user/addresses",
+    CART: "/user/cart",
     CHECKOUT: "/user/checkout",
-    PAGAMENTO: "/user/pagamento",
+    PAYMENT: "/user/payment",
   },
 } as const;
 

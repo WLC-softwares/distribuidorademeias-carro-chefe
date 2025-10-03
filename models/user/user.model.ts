@@ -1,19 +1,19 @@
 /**
  * Model: User
- * Definições de tipos e interfaces para o módulo de Usuário
+ * Type definitions and interfaces for the User module
  */
 
 import type { Role } from "@prisma/client";
 
 export interface User {
   id: string;
-  nome: string;
+  name: string;
   email: string;
-  telefone?: string | null;
+  phone?: string | null;
   cpf?: string | null;
   role: Role;
   avatar?: string | null;
-  ativo: boolean;
+  active: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,16 +37,16 @@ export interface LoginStep {
 }
 
 export interface CreateUserDTO {
-  nome: string;
+  name: string;
   email: string;
-  senha: string;
-  telefone?: string;
+  password: string;
+  phone?: string;
   cpf?: string;
   role?: Role;
 }
 
 export interface UpdateUserDTO {
-  nome?: string;
-  telefone?: string;
+  name?: string;
+  phone?: string;
   avatar?: string;
 }

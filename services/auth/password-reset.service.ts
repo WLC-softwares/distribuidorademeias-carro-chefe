@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
 export async function requestPasswordReset(email: string) {
   try {
     // Verificar se usuário existe
-    const user = await prisma.usuario.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -37,7 +37,7 @@ export async function requestPasswordReset(email: string) {
     const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
 
     // Salvar token no banco
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: user.id },
       data: {
         resetToken: hashedToken,
@@ -45,11 +45,11 @@ export async function requestPasswordReset(email: string) {
       },
     });
 
-    // Gerar URL de reset
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/redefinir-senha?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    // Generate reset URL
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     // Enviar email
-    const emailHtml = generatePasswordResetEmail(user.nome, resetUrl);
+    const emailHtml = generatePasswordResetEmail(user.name, resetUrl);
 
     await sendEmail({
       to: email,
@@ -73,7 +73,7 @@ export async function requestPasswordReset(email: string) {
  */
 export async function verifyResetToken(email: string, token: string) {
   try {
-    const user = await prisma.usuario.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -121,10 +121,10 @@ export async function resetPassword(
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Atualizar senha e limpar token
-    await prisma.usuario.update({
+    await prisma.user.update({
       where: { id: verification.userId },
       data: {
-        senha: hashedPassword,
+        password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null,
       },

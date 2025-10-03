@@ -16,7 +16,7 @@ export interface RecentSale {
   id: string;
   customer: string;
   total: string;
-  status: "Finalizada" | "Pendente" | "Cancelada";
+  status: "Completed" | "Pending" | "Canceled";
   date: string;
 }
 

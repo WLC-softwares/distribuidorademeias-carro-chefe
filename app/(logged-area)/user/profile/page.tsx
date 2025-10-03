@@ -10,26 +10,26 @@ import { Save, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { useSession } from "@/hooks";
 import { updateUserAction } from "@/controllers";
+import { useSession } from "@/hooks";
 
 export default function PerfilPage() {
   const { user, isLoading, update } = useSession();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    nome: "",
+    name: "",
     email: "",
-    telefone: "",
+    phone: "",
     cpf: "",
   });
 
   useEffect(() => {
     if (user) {
       setFormData({
-        nome: user.nome || "",
+        name: user.name || "",
         email: user.email || "",
-        telefone: user.telefone || "",
+        phone: user.phone || "",
         cpf: user.cpf || "",
       });
     }
@@ -42,13 +42,13 @@ export default function PerfilPage() {
       setSaving(true);
 
       await updateUserAction(user.id, {
-        nome: formData.nome,
-        telefone: formData.telefone,
+        name: formData.name,
+        phone: formData.phone,
       });
 
       // Atualizar sessão
       await update({
-        name: formData.nome,
+        name: formData.name,
       });
 
       toast.success("Perfil atualizado com sucesso!");
@@ -96,7 +96,7 @@ export default function PerfilPage() {
             {...(user.avatar ? { src: user.avatar } : {})}
           />
           <div>
-            <h2 className="text-xl font-bold text-gray-800">{user.nome}</h2>
+            <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
             <p className="text-gray-600">{user.email}</p>
             <p className="text-sm text-gray-500 mt-1">
               Membro desde{" "}
@@ -133,10 +133,10 @@ export default function PerfilPage() {
               isDisabled={!editing}
               label="Nome Completo"
               placeholder="Seu nome"
-              value={formData.nome}
+              value={formData.name}
               variant={editing ? "bordered" : "flat"}
               onChange={(e) =>
-                setFormData({ ...formData, nome: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
             />
             <Input
@@ -151,10 +151,10 @@ export default function PerfilPage() {
               isDisabled={!editing}
               label="Telefone"
               placeholder="(00) 00000-0000"
-              value={formData.telefone}
+              value={formData.phone}
               variant={editing ? "bordered" : "flat"}
               onChange={(e) =>
-                setFormData({ ...formData, telefone: e.target.value })
+                setFormData({ ...formData, phone: e.target.value })
               }
             />
             <Input
@@ -183,9 +183,9 @@ export default function PerfilPage() {
                 onPress={() => {
                   setEditing(false);
                   setFormData({
-                    nome: user.nome || "",
+                    name: user.name || "",
                     email: user.email || "",
-                    telefone: user.telefone || "",
+                    phone: user.phone || "",
                     cpf: user.cpf || "",
                   });
                 }}

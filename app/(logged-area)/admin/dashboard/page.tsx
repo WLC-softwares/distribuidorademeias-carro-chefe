@@ -24,12 +24,12 @@ interface DashboardStats {
 
 interface RecentSale {
   id: string;
-  numeroVenda: string;
+  saleNumber: string;
   status: string;
   total: number;
   createdAt: Date;
-  usuario: {
-    nome: string;
+  user: {
+    name: string;
     email: string;
   };
 }
@@ -38,13 +38,13 @@ const statusMap: Record<
   string,
   { color: "success" | "warning" | "danger" | "default"; label: string }
 > = {
-  PENDENTE: { color: "warning", label: "Pendente" },
-  PROCESSANDO: { color: "warning", label: "Processando" },
-  PAGA: { color: "success", label: "Paga" },
-  ENVIADA: { color: "success", label: "Enviada" },
-  ENTREGUE: { color: "success", label: "Entregue" },
-  CANCELADA: { color: "danger", label: "Cancelada" },
-  REEMBOLSADA: { color: "default", label: "Reembolsada" },
+  PENDING: { color: "warning", label: "Pending" },
+  PROCESSING: { color: "warning", label: "Processando" },
+  PAID: { color: "success", label: "Paga" },
+  SHIPPED: { color: "success", label: "Enviada" },
+  DELIVERED: { color: "success", label: "Entregue" },
+  CANCELED: { color: "danger", label: "Cancelada" },
+  REFUNDED: { color: "default", label: "Reembolsada" },
 };
 
 export default function Dashboard() {
@@ -196,17 +196,17 @@ export default function Dashboard() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-800">
-                          #{sale.numeroVenda}
+                          #{sale.saleNumber}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-gray-800">
-                          {sale.usuario.nome}
+                          {sale.user.name}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-600">
-                          {sale.usuario.email}
+                          {sale.user.email}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

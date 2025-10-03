@@ -1,6 +1,6 @@
 /**
  * Auth Configuration
- * Configuração principal do NextAuth
+ * Main NextAuth configuration
  */
 
 import type { UserRole } from "@/models";
@@ -25,45 +25,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email e senha são obrigatórios");
+          throw new Error("Email and password are required");
         }
 
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        // Validar formato de email
+        // Validate email format
         if (!isValidEmail(email)) {
-          throw new Error("Email inválido");
+          throw new Error("Invalid email");
         }
 
-        // Buscar usuário no banco de dados
-        const usuario = await prisma.usuario.findUnique({
+        // Find user in database
+        const user = await prisma.user.findUnique({
           where: { email },
         });
 
-        if (!usuario) {
-          throw new Error("Credenciais inválidas");
+        if (!user) {
+          throw new Error("Invalid credentials");
         }
 
-        // Verificar se o usuário está ativo
-        if (!usuario.ativo) {
-          throw new Error("Usuário inativo");
+        // Check if user is active
+        if (!user.active) {
+          throw new Error("Inactive user");
         }
 
-        // Verificar senha
-        const isValidPassword = await bcrypt.compare(password, usuario.senha);
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
-          throw new Error("Credenciais inválidas");
+          throw new Error("Invalid credentials");
         }
 
-        // Retornar usuário
+        // Return user
         return {
-          id: usuario.id,
-          name: usuario.nome,
-          email: usuario.email,
-          role: usuario.role,
-          avatar: usuario.avatar ?? undefined,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar ?? undefined,
         };
       },
     }),
@@ -73,10 +73,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   callbacks: {
-    // Extender callbacks do authConfig
+    // Extend callbacks from authConfig
     ...authConfig.callbacks,
     async jwt({ token, user, trigger, session }) {
-      // Primeiro login
+      // First login
       if (user) {
         token.id = user.id;
         token.role = (user as any).role || "USER";
@@ -106,12 +106,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const isOnLoginPage = nextUrl.pathname.startsWith("/login");
       const isOnPublicPage = nextUrl.pathname === "/";
 
-      // Se está logado e tenta acessar login, redireciona
+      // If logged in and tries to access login, redirect
       if (isLoggedIn && isOnLoginPage) {
         return Response.redirect(new URL("/admin/dashboard", nextUrl));
       }
 
-      // Se não está logado e tenta acessar área protegida
+      // If not logged in and tries to access protected area
       if (!isLoggedIn && !isOnLoginPage && !isOnPublicPage) {
         return false;
       }
@@ -121,7 +121,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 dias
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.AUTH_SECRET,
   trustHost: true,

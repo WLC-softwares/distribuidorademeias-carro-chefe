@@ -6,8 +6,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 export interface CartItem {
   product: Product;
-  quantidade: number;
-  tipoVenda: "varejo" | "atacado";
+  quantity: number;
+  saleType: "varejo" | "atacado";
 }
 
 interface CartContextType {
@@ -16,14 +16,14 @@ interface CartContextType {
   isInitialized: boolean;
   addItem: (
     product: Product,
-    quantidade: number,
-    tipoVenda: "varejo" | "atacado",
+    quantity: number,
+    saleType: "varejo" | "atacado",
   ) => void;
-  removeItem: (productId: string, tipoVenda: "varejo" | "atacado") => void;
+  removeItem: (productId: string, saleType: "varejo" | "atacado") => void;
   updateQuantity: (
     productId: string,
-    tipoVenda: "varejo" | "atacado",
-    quantidade: number,
+    saleType: "varejo" | "atacado",
+    quantity: number,
   ) => void;
   clearCart: () => void;
   getTotal: () => number;
@@ -37,21 +37,39 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Carregar carrinho do localStorage ao iniciar
+  // Load cart from localStorage on init
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
 
     if (savedCart) {
       try {
-        setItems(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart);
+
+        // Check if products have the new structure (retailPrice and wholesalePrice)
+        const hasOldStructure = parsedCart.some(
+          (item: CartItem) =>
+            item.product.hasOwnProperty("preco") ||
+            item.product.hasOwnProperty("precoVarejo") ||
+            !item.product.hasOwnProperty("retailPrice"),
+        );
+
+        if (hasOldStructure) {
+          // Clear cart with old structure
+          console.warn("Old cart structure detected. Clearing...");
+          localStorage.removeItem("cart");
+          setItems([]);
+        } else {
+          setItems(parsedCart);
+        }
       } catch (err) {
-        console.error("Erro ao carregar carrinho:", err);
+        console.error("Error loading cart:", err);
+        localStorage.removeItem("cart");
       }
     }
     setIsInitialized(true);
   }, []);
 
-  // Salvar carrinho no localStorage sempre que mudar
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isInitialized) {
       if (items.length > 0) {
@@ -64,25 +82,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (
     product: Product,
-    quantidade: number,
-    tipoVenda: "varejo" | "atacado",
+    quantity: number,
+    saleType: "varejo" | "atacado",
   ) => {
     setLoading(true);
     try {
       setItems((prevItems) => {
         const existingItemIndex = prevItems.findIndex(
           (item) =>
-            item.product.id === product.id && item.tipoVenda === tipoVenda,
+            item.product.id === product.id && item.saleType === saleType,
         );
 
         if (existingItemIndex >= 0) {
           const newItems = [...prevItems];
 
-          newItems[existingItemIndex].quantidade += quantidade;
+          newItems[existingItemIndex].quantity += quantity;
 
           return newItems;
         } else {
-          return [...prevItems, { product, quantidade, tipoVenda }];
+          return [...prevItems, { product, quantity, saleType }];
         }
       });
     } finally {
@@ -90,30 +108,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const removeItem = (productId: string, tipoVenda: "varejo" | "atacado") => {
+  const removeItem = (productId: string, saleType: "varejo" | "atacado") => {
     setItems((prevItems) =>
       prevItems.filter(
         (item) =>
-          !(item.product.id === productId && item.tipoVenda === tipoVenda),
+          !(item.product.id === productId && item.saleType === saleType),
       ),
     );
   };
 
   const updateQuantity = (
     productId: string,
-    tipoVenda: "varejo" | "atacado",
-    quantidade: number,
+    saleType: "varejo" | "atacado",
+    quantity: number,
   ) => {
-    if (quantidade <= 0) {
-      removeItem(productId, tipoVenda);
+    if (quantity <= 0) {
+      removeItem(productId, saleType);
 
       return;
     }
 
     setItems((prevItems) =>
       prevItems.map((item) =>
-        item.product.id === productId && item.tipoVenda === tipoVenda
-          ? { ...item, quantidade }
+        item.product.id === productId && item.saleType === saleType
+          ? { ...item, quantity }
           : item,
       ),
     );
@@ -126,12 +144,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const getTotal = () => {
     return items.reduce((total, item) => {
-      return total + Number(item.product.preco) * item.quantidade;
+      const price =
+        item.saleType === "atacado"
+          ? item.product.wholesalePrice
+          : item.product.retailPrice;
+
+      return total + Number(price) * item.quantity;
     }, 0);
   };
 
   const getTotalItems = () => {
-    return items.reduce((total, item) => total + item.quantidade, 0);
+    return items.reduce((total, item) => total + item.quantity, 0);
   };
 
   return (

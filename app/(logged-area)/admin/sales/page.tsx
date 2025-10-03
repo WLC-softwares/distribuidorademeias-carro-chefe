@@ -9,25 +9,25 @@ import { Eye, Filter, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { formatCurrency } from "@/utils";
 import { getAllSalesAction, updateSaleStatusAction } from "@/controllers";
+import { formatCurrency } from "@/utils";
 
-interface Venda {
+interface Sale {
   id: string;
-  numeroVenda: string;
+  saleNumber: string;
   status: string;
   total: number;
   subtotal: number;
-  desconto: number;
-  formaPagamento: string;
+  discount: number;
+  paymentMethod: string;
   createdAt: Date;
-  usuario: {
-    nome: string;
+  user: {
+    name: string;
     email: string;
   };
-  itens: {
+  items: {
     id: string;
-    quantidade: number;
+    quantity: number;
   }[];
 }
 
@@ -35,27 +35,27 @@ const statusMap: Record<
   string,
   { color: "success" | "warning" | "danger" | "default"; label: string }
 > = {
-  PENDENTE: { color: "warning", label: "Pendente" },
-  PROCESSANDO: { color: "warning", label: "Processando" },
-  PAGA: { color: "success", label: "Paga" },
-  ENVIADA: { color: "success", label: "Enviada" },
-  ENTREGUE: { color: "success", label: "Entregue" },
-  CANCELADA: { color: "danger", label: "Cancelada" },
-  REEMBOLSADA: { color: "default", label: "Reembolsada" },
+  PENDING: { color: "warning", label: "Pendente" },
+  PROCESSING: { color: "warning", label: "Processando" },
+  PAID: { color: "success", label: "Paga" },
+  SHIPPED: { color: "success", label: "Enviada" },
+  DELIVERED: { color: "success", label: "Entregue" },
+  CANCELED: { color: "danger", label: "Cancelada" },
+  REFUNDED: { color: "default", label: "Reembolsada" },
 };
 
 const statusOptions = [
-  { value: "PENDENTE", label: "Pendente" },
-  { value: "PROCESSANDO", label: "Processando" },
-  { value: "PAGA", label: "Paga" },
-  { value: "ENVIADA", label: "Enviada" },
-  { value: "ENTREGUE", label: "Entregue" },
-  { value: "CANCELADA", label: "Cancelada" },
-  { value: "REEMBOLSADA", label: "Reembolsada" },
+  { value: "PENDING", label: "Pendente" },
+  { value: "PROCESSING", label: "Processando" },
+  { value: "PAID", label: "Paga" },
+  { value: "SHIPPED", label: "Enviada" },
+  { value: "DELIVERED", label: "Entregue" },
+  { value: "CANCELED", label: "Cancelada" },
+  { value: "REFUNDED", label: "Reembolsada" },
 ];
 
 export default function SalesPage() {
-  const [sales, setSales] = useState<Venda[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -63,9 +63,9 @@ export default function SalesPage() {
   const fetchSales = async () => {
     try {
       setLoading(true);
-      const vendas = await getAllSalesAction();
+      const sales = await getAllSalesAction();
 
-      setSales(vendas as any);
+      setSales(sales as any);
     } catch (error) {
       console.error("Erro ao buscar vendas:", error);
       toast.error("Erro ao buscar vendas");
@@ -78,10 +78,10 @@ export default function SalesPage() {
     fetchSales();
   }, []);
 
-  const handleStatusChange = async (vendaId: string, newStatus: string) => {
+  const handleStatusChange = async (saleId: string, newStatus: string) => {
     try {
-      setUpdatingStatus(vendaId);
-      await updateSaleStatusAction(vendaId, newStatus);
+      setUpdatingStatus(saleId);
+      await updateSaleStatusAction(saleId, newStatus);
       toast.success("Status atualizado com sucesso!");
       // Atualizar a lista
       await fetchSales();
@@ -95,21 +95,21 @@ export default function SalesPage() {
 
   const filteredSales = sales.filter(
     (sale) =>
-      sale.numeroVenda.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sale.usuario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sale.usuario.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      sale.saleNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sale.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sale.user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const totalFinalizadas = sales.filter((s) => s.status === "ENTREGUE").length;
+  const totalFinalizadas = sales.filter((s) => s.status === "DELIVERED").length;
   const totalPendentes = sales.filter(
-    (s) => s.status === "PENDENTE" || s.status === "PROCESSANDO",
+    (s) => s.status === "PENDING" || s.status === "PROCESSING",
   ).length;
   const receitaTotal = sales
     .filter(
       (s) =>
-        s.status === "PAGA" ||
-        s.status === "ENVIADA" ||
-        s.status === "ENTREGUE",
+        s.status === "PAID" ||
+        s.status === "SHIPPED" ||
+        s.status === "DELIVERED",
     )
     .reduce((acc, sale) => acc + Number(sale.total), 0);
 
@@ -244,23 +244,23 @@ export default function SalesPage() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-800">
-                          #{sale.numeroVenda}
+                          #{sale.saleNumber}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-gray-800">
-                          {sale.usuario.nome}
+                          {sale.user.name}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-600">
-                          {sale.usuario.email}
+                          {sale.user.email}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-800">
-                          {sale.itens.reduce(
-                            (acc, item) => acc + item.quantidade,
+                          {sale.items.reduce(
+                            (acc, item) => acc + item.quantity,
                             0,
                           )}{" "}
                           itens
@@ -273,7 +273,7 @@ export default function SalesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-600">
-                          {sale.formaPagamento}
+                          {sale.paymentMethod}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

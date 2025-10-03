@@ -36,24 +36,24 @@ export async function POST(request: NextRequest) {
     const isLocal = request.headers.get("host")?.includes("localhost");
     const baseUrl = isLocal
       ? "http://localhost:3000"
-      : (process.env.NEXTAUTH_URL || productionUrl);
+      : process.env.NEXTAUTH_URL || productionUrl;
 
     // console.log("🔗 Base URL para MP:", baseUrl);
 
     const backUrls = {
-      success: `${baseUrl}/payment/success`,
-      failure: `${baseUrl}/payment/failure`,
-      pending: `${baseUrl}/payment/pending`,
+      success: `${baseUrl}/payment/success?saleId=${saleId}`,
+      failure: `${baseUrl}/payment/failure?saleId=${saleId}`,
+      pending: `${baseUrl}/payment/pending?saleId=${saleId}`,
     };
 
-    // console.log("🔙 Back URLs:", backUrls);
+    console.log("🔙 Back URLs:", backUrls);
 
     // Preparar telefone (extrair DDD e número)
     let areaCode = "11";
     let phoneNumber = "999999999";
 
-    if (userData?.telefone) {
-      const cleanPhone = userData.telefone.replace(/\D/g, "");
+    if (userData?.phone) {
+      const cleanPhone = userData.phone.replace(/\D/g, "");
 
       if (cleanPhone.length >= 10) {
         areaCode = cleanPhone.substring(0, 2);
@@ -68,24 +68,24 @@ export async function POST(request: NextRequest) {
       street_number: 1000,
     };
 
-    if (userData?.enderecos && userData.enderecos.length > 0) {
+    if (userData?.addresses && userData.addresses.length > 0) {
       const primaryAddress =
-        userData.enderecos.find((e) => e.principal) || userData.enderecos[0];
+        userData.addresses.find((e) => e.primary) || userData.addresses[0];
 
       address = {
-        zip_code: primaryAddress.cep.replace(/\D/g, ""),
-        street_name: primaryAddress.logradouro,
-        street_number: parseInt(primaryAddress.numero) || 0,
+        zip_code: primaryAddress.zipCode.replace(/\D/g, ""),
+        street_name: primaryAddress.street,
+        street_number: parseInt(primaryAddress.number) || 0,
       };
     }
 
     // Preparar dados da preferência
     const preferenceData: any = {
       items: items.map((item: any) => ({
-        title: item.nome,
-        description: item.descricao || "",
-        quantity: item.quantidade,
-        unit_price: Number(item.preco),
+        title: item.name,
+        description: item.description || "",
+        quantity: item.quantity,
+        unit_price: Number(item.price),
         currency_id: "BRL",
       })),
       payer: {
@@ -101,10 +101,13 @@ export async function POST(request: NextRequest) {
         },
         address: address,
       },
-      back_urls: backUrls,
-      auto_return: "approved",
-      external_reference: saleId || saleNumber || "",
+      back_urls: {
+        success: backUrls.success,
+        failure: backUrls.failure,
+        pending: backUrls.pending,
+      },
       notification_url: `${baseUrl}/api/mercadopago/webhook`,
+      external_reference: saleId || saleNumber || "",
       statement_descriptor: "DISTRIBUIDORA MEIAS",
       payment_methods: {
         installments: 12,
@@ -112,7 +115,7 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // console.log("📦 Enviando para MP:", JSON.stringify(preferenceData, null, 2));
+    console.log("📦 Enviando para MP:", JSON.stringify(preferenceData, null, 2));
 
     // Criar preferência no Mercado Pago
     const preference = await mercadoPagoPreference.create({

@@ -10,140 +10,140 @@ export class NotificationService {
   }
 
   /**
-   * Criar notificação de pedido criado
+   * Create order notification
    */
   async createOrderNotification(
-    usuarioId: string,
+    userId: string,
     orderNumber: string,
-    vendaId: string,
+    saleId: string,
   ): Promise<Notification> {
     return this.repository.create({
-      usuarioId,
-      tipo: "PEDIDO_CRIADO" as NotificationType,
-      titulo: "🎉 Pedido realizado com sucesso!",
-      mensagem: `Seu pedido #${orderNumber} foi recebido e está sendo processado.`,
-      link: `/user/pedidos`,
-      metadata: { vendaId, orderNumber },
+      userId,
+      type: "ORDER_CREATED" as NotificationType,
+      title: "🎉 Order placed successfully!",
+      message: `Your order #${orderNumber} has been received and is being processed.`,
+      link: `/user/orders`,
+      metadata: { saleId, orderNumber },
     });
   }
 
   /**
-   * Criar notificação de mudança de status do pedido
+   * Create order status notification
    */
   async createOrderStatusNotification(
-    usuarioId: string,
+    userId: string,
     orderNumber: string,
-    vendaId: string,
+    saleId: string,
     newStatus: string,
     oldStatus?: string,
   ): Promise<Notification> {
     const statusMessages: Record<
       string,
       {
-        tipo: NotificationType;
-        titulo: string;
-        mensagem: string;
+        type: NotificationType;
+        title: string;
+        message: string;
         emoji: string;
       }
     > = {
-      PROCESSANDO: {
-        tipo: "PEDIDO_PROCESSANDO" as NotificationType,
-        titulo: "⏳ Pedido em processamento",
-        mensagem: `Seu pedido #${orderNumber} está sendo preparado.`,
+      PROCESSING: {
+        type: "ORDER_PROCESSING" as NotificationType,
+        title: "⏳ Pedido em processamento",
+        message: `Seu pedido #${orderNumber} está sendo preparado.`,
         emoji: "⏳",
       },
-      PAGA: {
-        tipo: "PEDIDO_PAGO" as NotificationType,
-        titulo: "💰 Pagamento confirmado",
-        mensagem: `O pagamento do pedido #${orderNumber} foi confirmado!`,
+      PAID: {
+        type: "ORDER_PAID" as NotificationType,
+        title: "💰 Pagamento confirmado",
+        message: `O pagamento do seu pedido #${orderNumber} foi confirmado!`,
         emoji: "💰",
       },
-      ENVIADA: {
-        tipo: "PEDIDO_ENVIADO" as NotificationType,
-        titulo: "🚚 Pedido enviado",
-        mensagem: `Seu pedido #${orderNumber} foi enviado e está a caminho!`,
+      SHIPPED: {
+        type: "ORDER_SHIPPED" as NotificationType,
+        title: "🚚 Pedido enviado",
+        message: `Seu pedido #${orderNumber} foi enviado e está em sua rota!`,
         emoji: "🚚",
       },
-      ENTREGUE: {
-        tipo: "PEDIDO_ENTREGUE" as NotificationType,
-        titulo: "✅ Pedido entregue",
-        mensagem: `Seu pedido #${orderNumber} foi entregue com sucesso!`,
+      DELIVERED: {
+        type: "ORDER_DELIVERED" as NotificationType,
+        title: "✅ Pedido entregue",
+        message: `Seu pedido #${orderNumber} foi entregue com sucesso!`,
         emoji: "✅",
       },
-      CANCELADA: {
-        tipo: "PEDIDO_CANCELADO" as NotificationType,
-        titulo: "❌ Pedido cancelado",
-        mensagem: `Seu pedido #${orderNumber} foi cancelado.`,
+      CANCELED: {
+        type: "ORDER_CANCELED" as NotificationType,
+        title: "❌ Pedido cancelado",
+        message: `Seu pedido #${orderNumber} foi cancelado.`,
         emoji: "❌",
       },
     };
 
     const statusInfo = statusMessages[newStatus] || {
-      tipo: "SISTEMA" as NotificationType,
-      titulo: "📦 Atualização de pedido",
-      mensagem: `O status do seu pedido #${orderNumber} foi atualizado.`,
+      type: "SYSTEM" as NotificationType,
+      title: "📦 Pedido atualizado",
+      message: `O status do seu pedido #${orderNumber} foi atualizado.`,
       emoji: "📦",
     };
 
     return this.repository.create({
-      usuarioId,
-      tipo: statusInfo.tipo,
-      titulo: statusInfo.titulo,
-      mensagem: statusInfo.mensagem,
-      link: `/user/pedidos`,
-      metadata: { vendaId, orderNumber, newStatus, oldStatus },
+      userId,
+      type: statusInfo.type,
+      title: statusInfo.title,
+      message: statusInfo.message,
+      link: `/user/orders`,
+      metadata: { saleId, orderNumber, newStatus, oldStatus },
     });
   }
 
   /**
-   * Buscar notificações do usuário
+   * Get user notifications
    */
   async getUserNotifications(
-    usuarioId: string,
+    userId: string,
     limit?: number,
   ): Promise<Notification[]> {
-    return this.repository.getByUserId(usuarioId, { limit });
+    return this.repository.getByUserId(userId, { limit });
   }
 
   /**
-   * Buscar notificações não lidas
+   * Get unread notifications
    */
-  async getUnreadNotifications(usuarioId: string): Promise<Notification[]> {
-    return this.repository.getByUserId(usuarioId, { onlyUnread: true });
+  async getUnreadNotifications(userId: string): Promise<Notification[]> {
+    return this.repository.getByUserId(userId, { onlyUnread: true });
   }
 
   /**
-   * Contar notificações não lidas
+   * Count unread notifications
    */
-  async countUnread(usuarioId: string): Promise<number> {
-    return this.repository.countUnread(usuarioId);
+  async countUnread(userId: string): Promise<number> {
+    return this.repository.countUnread(userId);
   }
 
   /**
-   * Marcar notificação como lida
+   * Mark notification as read
    */
   async markAsRead(id: string): Promise<void> {
     return this.repository.markAsRead(id);
   }
 
   /**
-   * Marcar todas como lidas
+   * Mark all as read
    */
-  async markAllAsRead(usuarioId: string): Promise<void> {
-    return this.repository.markAllAsRead(usuarioId);
+  async markAllAsRead(userId: string): Promise<void> {
+    return this.repository.markAllAsRead(userId);
   }
 
   /**
-   * Deletar notificação
+   * Delete notification
    */
   async deleteNotification(id: string): Promise<void> {
     return this.repository.delete(id);
   }
 
   /**
-   * Deletar todas lidas
+   * Delete all read notifications
    */
-  async deleteAllRead(usuarioId: string): Promise<void> {
-    return this.repository.deleteAllRead(usuarioId);
+  async deleteAllRead(userId: string): Promise<void> {
+    return this.repository.deleteAllRead(userId);
   }
 }

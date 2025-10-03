@@ -14,19 +14,19 @@ import { useSession } from "@/hooks";
 import { formatCurrency } from "@/utils";
 
 // Simulação de pedidos - depois você pode conectar com a API real
-interface Pedido {
+interface Sale {
   id: string;
-  numeroVenda: string;
+  saleNumber: string;
   status: string;
   total: number;
   createdAt: Date;
-  itens: {
+  items: {
     id: string;
-    quantidade: number;
-    precoUnit: number;
-    produto: {
-      nome: string;
-      imagens: { url: string }[];
+    quantity: number;
+    unitPrice: number;
+    product: {
+      name: string;
+      images: { url: string }[];
     };
   }[];
 }
@@ -48,7 +48,7 @@ const statusMap: Record<
 
 export default function PedidosPage() {
   const { user, isLoading } = useSession();
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [pedidos, setPedidos] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export default function PedidosPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-800">
-                      Pedido #{pedido.numeroVenda}
+                      Pedido #{pedido.saleNumber}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                       <Calendar size={14} />
@@ -157,24 +157,24 @@ export default function PedidosPage() {
               <CardBody className="p-6">
                 {/* Itens do Pedido */}
                 <div className="space-y-4 mb-4">
-                  {pedido.itens.map((item) => (
+                  {pedido.items.map((item) => (
                     <div key={item.id} className="flex gap-4">
                       <Image
-                        alt={item.produto.nome}
+                        alt={item.product.name}
                         className="rounded-lg object-cover"
                         height={80}
-                        src={item.produto.imagens[0]?.url || "/placeholder.png"}
+                        src={item.product.images[0]?.url || "/placeholder.png"}
                         width={80}
                       />
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-800">
-                          {item.produto.nome}
+                          {item.product.name}
                         </h4>
                         <p className="text-sm text-gray-600 mt-1">
-                          Quantidade: {item.quantidade}
+                          Quantidade: {item.quantity}
                         </p>
                         <p className="text-sm font-semibold text-gray-800 mt-1">
-                          {formatCurrency(Number(item.precoUnit))}
+                          {formatCurrency(Number(item.unitPrice))}
                         </p>
                       </div>
                     </div>
@@ -195,7 +195,7 @@ export default function PedidosPage() {
                   <Button color="warning" size="sm" variant="flat">
                     Ver Detalhes
                   </Button>
-                  {pedido.status === "PENDENTE" && (
+                  {pedido.status === "PENDING" && (
                     <Button color="danger" size="sm" variant="light">
                       Cancelar Pedido
                     </Button>

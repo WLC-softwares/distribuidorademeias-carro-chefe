@@ -1,44 +1,44 @@
 /**
- * Model: Address (Endereço)
- * Definições de tipos e interfaces para o módulo de Endereço
+ * Model: Address
+ * Type definitions and interfaces for the Address module
  */
 
 export interface Address {
   id: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string | null;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  pais: string;
-  principal: boolean;
-  usuarioId: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
+  country: string;
+  primary: boolean;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateAddressDTO {
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  pais?: string;
-  principal?: boolean;
-  usuarioId: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  country?: string;
+  primary?: boolean;
+  userId: string;
 }
 
 export interface UpdateAddressDTO {
-  cep?: string;
-  logradouro?: string;
-  numero?: string;
-  complemento?: string;
-  bairro?: string;
-  cidade?: string;
-  estado?: string;
-  principal?: boolean;
+  zipCode?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  primary?: boolean;
 }

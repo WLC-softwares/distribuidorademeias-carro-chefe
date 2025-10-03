@@ -7,16 +7,16 @@ import { registerAction } from "@/controllers";
 export type RegisterStep = "personal" | "document" | "address";
 
 export interface RegisterData {
-  // Informações Pessoais
+  // Personal Information
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
-  // Documentos
+  // Documents
   cpf: string;
   phone: string;
-  // Endereço
+  // Address
   cep: string;
   address: string;
   number: string;
@@ -59,32 +59,32 @@ export function useRegister() {
 
   const validatePersonalInfo = () => {
     if (!formData.firstName.trim()) {
-      setError("Nome é obrigatório");
+      setError("First name is required");
 
       return false;
     }
     if (!formData.lastName.trim()) {
-      setError("Sobrenome é obrigatório");
+      setError("Last name is required");
 
       return false;
     }
     if (!formData.email.trim()) {
-      setError("E-mail é obrigatório");
+      setError("Email is required");
 
       return false;
     }
     if (!formData.password) {
-      setError("Senha é obrigatória");
+      setError("Password is required");
 
       return false;
     }
     if (formData.password.length < 6) {
-      setError("Senha deve ter no mínimo 6 caracteres");
+      setError("Password must be at least 6 characters");
 
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError("As senhas não coincidem");
+      setError("Passwords do not match");
 
       return false;
     }
@@ -94,12 +94,12 @@ export function useRegister() {
 
   const validateDocument = () => {
     if (!formData.cpf.trim()) {
-      setError("CPF é obrigatório");
+      setError("CPF is required");
 
       return false;
     }
     if (!formData.phone.trim()) {
-      setError("Telefone é obrigatório");
+      setError("Phone is required");
 
       return false;
     }
@@ -109,32 +109,32 @@ export function useRegister() {
 
   const validateAddress = () => {
     if (!formData.cep.trim()) {
-      setError("CEP é obrigatório");
+      setError("ZIP code is required");
 
       return false;
     }
     if (!formData.address.trim()) {
-      setError("Endereço é obrigatório");
+      setError("Address is required");
 
       return false;
     }
     if (!formData.number.trim()) {
-      setError("Número é obrigatório");
+      setError("Number is required");
 
       return false;
     }
     if (!formData.neighborhood.trim()) {
-      setError("Bairro é obrigatório");
+      setError("Neighborhood is required");
 
       return false;
     }
     if (!formData.city.trim()) {
-      setError("Cidade é obrigatória");
+      setError("City is required");
 
       return false;
     }
     if (!formData.state.trim()) {
-      setError("Estado é obrigatório");
+      setError("State is required");
 
       return false;
     }
@@ -164,32 +164,32 @@ export function useRegister() {
     setError("");
 
     try {
-      // Preparar dados do usuário
+      // Prepare user data
       const userData = {
-        nome: `${formData.firstName} ${formData.lastName}`.trim(),
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
-        senha: formData.password,
-        telefone: formData.phone,
+        password: formData.password,
+        phone: formData.phone,
         cpf: formData.cpf,
-        enderecos: [
+        addresses: [
           {
             cep: formData.cep,
-            logradouro: formData.address,
-            numero: formData.number,
-            complemento: formData.complement || undefined,
-            bairro: formData.neighborhood,
-            cidade: formData.city,
-            estado: formData.state,
+            street: formData.address,
+            number: formData.number,
+            complement: formData.complement || undefined,
+            neighborhood: formData.neighborhood,
+            city: formData.city,
+            state: formData.state,
             principal: true,
           },
         ],
       };
 
-      // Registrar usuário
+      // Register user
       const result = await registerAction(userData);
 
       if (result.success) {
-        // Fazer login automático após registro
+        // Automatic login after registration
         const loginResult = await signIn("credentials", {
           email: formData.email,
           password: formData.password,
@@ -197,10 +197,10 @@ export function useRegister() {
         });
 
         if (loginResult?.error) {
-          // Se houver erro no login, redirecionar para página de login
+          // If there's a login error, redirect to login page
           router.push("/login");
         } else {
-          // Login bem-sucedido, redirecionar para home
+          // Successful login, redirect to home
           router.push("/");
         }
       }
@@ -208,7 +208,7 @@ export function useRegister() {
       const errorMessage =
         err instanceof Error
           ? err.message
-          : "Erro ao criar conta. Tente novamente.";
+          : "Error creating account. Please try again.";
 
       setError(errorMessage);
     } finally {
@@ -231,14 +231,14 @@ export function useRegister() {
     setIsConfirmPasswordVisible(!isConfirmPasswordVisible);
 
   return {
-    // Estado
+    // State
     step,
     formData,
     isPasswordVisible,
     isConfirmPasswordVisible,
     error,
     isLoading,
-    // Funções
+    // Functions
     updateFormData,
     handlePersonalInfoNext,
     handleDocumentNext,

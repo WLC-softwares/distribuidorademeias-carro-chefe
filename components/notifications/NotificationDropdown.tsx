@@ -24,10 +24,10 @@ import {
 } from "@/controllers";
 
 interface NotificationDropdownProps {
-  usuarioId: string;
+  userId: string;
 }
 
-export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
+export function NotificationDropdown({ userId }: NotificationDropdownProps) {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -35,25 +35,25 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchNotifications = useCallback(async () => {
-    if (!usuarioId) return;
+    if (!userId) return;
 
     try {
       const [notifs, count] = await Promise.all([
-        getUserNotificationsAction(usuarioId, 10),
-        countUnreadNotificationsAction(usuarioId),
+        getUserNotificationsAction(userId, 10),
+        countUnreadNotificationsAction(userId),
       ]);
 
       setNotifications(notifs);
       setUnreadCount(count);
     } catch (error) {
-      console.error("Erro ao buscar notificações:", error);
+      console.error("Error fetching notifications:", error);
     }
-  }, [usuarioId]);
+  }, [userId]);
 
   useEffect(() => {
     fetchNotifications();
 
-    // Atualizar a cada 30 segundos
+    // Update every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
 
     return () => clearInterval(interval);
@@ -64,17 +64,17 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
       await markNotificationAsReadAction(id);
       await fetchNotifications();
     } catch (error) {
-      console.error("Erro ao marcar como lida:", error);
+      console.error("Error marking as read:", error);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     setLoading(true);
     try {
-      await markAllNotificationsAsReadAction(usuarioId);
+      await markAllNotificationsAsReadAction(userId);
       await fetchNotifications();
     } catch (error) {
-      console.error("Erro ao marcar todas como lidas:", error);
+      console.error("Error marking all as read:", error);
     } finally {
       setLoading(false);
     }
@@ -86,35 +86,35 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
       await deleteNotificationAction(id);
       await fetchNotifications();
     } catch (error) {
-      console.error("Erro ao deletar notificação:", error);
+      console.error("Error deleting notification:", error);
     }
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Marcar como lida
-    if (!notification.lida) {
+    // Mark as read
+    if (!notification.read) {
       await handleMarkAsRead(notification.id);
     }
 
-    // Navegar para o link se existir
+    // Navigate to link if exists
     if (notification.link) {
       setIsOpen(false);
       router.push(notification.link);
     }
   };
 
-  const getNotificationIcon = (tipo: string) => {
+  const getNotificationIcon = (type: string) => {
     const iconMap: Record<string, string> = {
-      PEDIDO_CRIADO: "🎉",
-      PEDIDO_PROCESSANDO: "⏳",
-      PEDIDO_PAGO: "💰",
-      PEDIDO_ENVIADO: "🚚",
-      PEDIDO_ENTREGUE: "✅",
-      PEDIDO_CANCELADO: "❌",
-      SISTEMA: "📢",
+      ORDER_CREATED: "🎉",
+      ORDER_PROCESSING: "⏳",
+      ORDER_PAID: "💰",
+      ORDER_SHIPPED: "🚚",
+      ORDER_DELIVERED: "✅",
+      ORDER_CANCELED: "❌",
+      SYSTEM: "📢",
     };
 
-    return iconMap[tipo] || "🔔";
+    return iconMap[type] || "🔔";
   };
 
   const formatDate = (date: Date) => {
@@ -217,37 +217,36 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
           {notifications?.map((notification) => (
             <DropdownItem
               key={notification.id}
-              className={`py-3 px-4 cursor-pointer hover:bg-gray-50 ${
-                !notification.lida ? "bg-blue-50/50" : ""
-              }`}
-              textValue={notification.titulo}
+              className={`py-3 px-4 cursor-pointer hover:bg-gray-50 ${!notification.read ? "bg-blue-50/50" : ""
+                }`}
+              textValue={notification.title}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="flex items-start gap-3">
                 <div className="text-2xl flex-shrink-0 mt-1">
-                  {getNotificationIcon(notification.tipo)}
+                  {getNotificationIcon(notification.type)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold text-sm text-gray-800 line-clamp-1">
-                      {notification.titulo}
+                      {notification.title}
                     </p>
-                    {!notification.lida && (
+                    {!notification.read && (
                       <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1" />
                     )}
                   </div>
                   <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-                    {notification.mensagem}
+                    {notification.message}
                   </p>
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs text-gray-400">
                       {formatDate(notification.createdAt)}
                     </span>
                     <div className="flex gap-1">
-                      {!notification.lida && (
+                      {!notification.read && (
                         <Button
                           isIconOnly
-                          aria-label="Marcar como lida"
+                          aria-label="Mark as read"
                           className="h-6 w-6 min-w-6 text-gray-400 hover:text-green-600"
                           size="sm"
                           variant="light"
@@ -261,7 +260,7 @@ export function NotificationDropdown({ usuarioId }: NotificationDropdownProps) {
                       )}
                       <Button
                         isIconOnly
-                        aria-label="Deletar"
+                        aria-label="Delete"
                         className="h-6 w-6 min-w-6 text-gray-400 hover:text-red-600"
                         size="sm"
                         variant="light"

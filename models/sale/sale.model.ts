@@ -1,52 +1,52 @@
 /**
- * Model: Sale (Venda)
- * Definições de tipos e interfaces para o módulo de Vendas
+ * Model: Sale
+ * Type definitions and interfaces for the Sale module
  */
 
-import type { FormaPagamento, StatusVenda } from "@prisma/client";
+import type { PaymentMethod, SaleStatus } from "@prisma/client";
 
 import { Decimal } from "@prisma/client/runtime/library";
 
 export interface Sale {
   id: string;
-  numeroVenda: string;
-  status: StatusVenda;
+  saleNumber: string;
+  status: SaleStatus;
   subtotal: Decimal;
-  desconto: Decimal;
+  discount: Decimal;
   total: Decimal;
-  formaPagamento: FormaPagamento;
-  observacoes?: string | null;
-  usuarioId: string;
+  paymentMethod: PaymentMethod;
+  notes?: string | null;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
-  finalizadaEm?: Date | null;
-  canceladaEm?: Date | null;
+  completedAt?: Date | null;
+  canceledAt?: Date | null;
 }
 
 export interface SaleItem {
   id: string;
-  quantidade: number;
-  precoUnit: Decimal;
+  quantity: number;
+  unitPrice: Decimal;
   subtotal: Decimal;
-  desconto: Decimal;
+  discount: Decimal;
   total: Decimal;
-  vendaId: string;
-  produtoId: string;
+  saleId: string;
+  productId: string;
   createdAt: Date;
 }
 
 export interface CreateSaleDTO {
-  usuarioId: string;
-  formaPagamento: FormaPagamento;
-  observacoes?: string;
-  itens: CreateSaleItemDTO[];
+  userId: string;
+  paymentMethod: PaymentMethod;
+  notes?: string;
+  items: CreateSaleItemDTO[];
 }
 
 export interface CreateSaleItemDTO {
-  produtoId: string;
-  quantidade: number;
-  precoUnit: number;
-  desconto?: number;
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+  discount?: number;
 }
 
-export { FormaPagamento, StatusVenda };
+export { PaymentMethod, SaleStatus };

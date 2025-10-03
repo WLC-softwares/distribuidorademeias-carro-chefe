@@ -16,11 +16,11 @@ interface AddressStepProps {
 
 interface ViaCEPResponse {
   cep: string;
-  logradouro: string;
-  complemento: string;
-  bairro: string;
-  localidade: string;
-  uf: string;
+  street: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   erro?: boolean;
 }
 
@@ -70,16 +70,16 @@ export function AddressStep({
       }
 
       // Preencher os campos com os dados da API
-      updateFormData("address", data.logradouro || "");
-      updateFormData("neighborhood", data.bairro || "");
-      updateFormData("city", data.localidade || "");
-      updateFormData("state", data.uf || "");
+      updateFormData("address", data.street || "");
+      updateFormData("neighborhood", data.neighborhood || "");
+      updateFormData("city", data.city || "");
+      updateFormData("state", data.state || "");
 
       setCepStatus("success");
     } catch (error) {
-      console.error("Erro ao buscar CEP:", error);
+      console.error("Error searching CEP:", error);
       setCepStatus("error");
-      setCepError("Erro ao buscar CEP. Tente novamente.");
+      setCepError("Error searching CEP. Try again.");
     } finally {
       setCepLoading(false);
     }

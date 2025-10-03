@@ -1,24 +1,24 @@
 /**
  * Repository: Auth
- * Responsável pelo acesso direto aos dados de autenticação
+ * Responsible for direct access to authentication data
  */
 
 import type { AuthCredentials, AuthResponse, User } from "@/models";
 
 export class AuthRepository {
   /**
-   * Realiza login do usuário
+   * User login
    */
   async login(credentials: AuthCredentials): Promise<AuthResponse> {
-    // Simulação de chamada API
-    // Em produção, aqui seria uma chamada real para o backend
+    // API call simulation
+    // In production, this would be an actual backend call
     return {
       user: {
         id: "1",
-        nome: "Usuário Teste",
+        name: "Test User",
         email: credentials.email,
         role: "ADMIN",
-        ativo: true,
+        active: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -28,29 +28,29 @@ export class AuthRepository {
   }
 
   /**
-   * Busca usuário atual
+   * Get current user
    */
   async getCurrentUser(): Promise<User | null> {
-    // Simulação
+    // Simulation
     return null;
   }
 
   /**
-   * Realiza logout do usuário
+   * User logout
    */
   async logout(): Promise<void> {
-    // Simulação
+    // Simulation
     return;
   }
 
   /**
-   * Verifica se o email existe
+   * Check if email exists
    */
   async checkEmailExists(email: string): Promise<boolean> {
-    // Simulação
+    // Simulation
     return true;
   }
 }
 
-// Singleton para reutilização
+// Singleton for reuse
 export const authRepository = new AuthRepository();

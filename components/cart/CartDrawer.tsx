@@ -11,7 +11,7 @@ import {
   DrawerHeader,
 } from "@heroui/drawer";
 import { Image } from "@heroui/image";
-import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/hooks";
@@ -49,25 +49,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   return (
     <Drawer isOpen={isOpen} placement="right" size="md" onClose={onClose}>
       <DrawerContent>
-        <DrawerHeader className="flex items-center justify-between border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <ShoppingCart size={20} />
-            <h2 className="text-xl font-semibold">Carrinho</h2>
-            {totalItems > 0 && (
-              <Chip color="primary" size="sm" variant="flat">
-                {totalItems} {totalItems === 1 ? "item" : "itens"}
-              </Chip>
-            )}
-          </div>
-          <Button
-            isIconOnly
-            aria-label="Fechar"
-            size="sm"
-            variant="light"
-            onPress={onClose}
-          >
-            <X size={20} />
-          </Button>
+        <DrawerHeader className="flex items-center gap-2 border-b border-gray-200">
+          <ShoppingCart size={20} />
+          <h2 className="text-xl font-semibold">Carrinho</h2>
+          {totalItems > 0 && (
+            <Chip color="primary" size="sm" variant="flat">
+              {totalItems} {totalItems === 1 ? "item" : "itens"}
+            </Chip>
+          )}
         </DrawerHeader>
 
         <DrawerBody className="p-0">
@@ -87,79 +76,82 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             <div className="divide-y divide-gray-200">
               {items.map((item) => {
-                const imagemPrincipal =
-                  item.product.imagens?.find((img) => img.principal)?.url ||
+                const mainImage =
+                  item.product.images?.find((img) => img.primary)?.url ||
                   "/placeholder-product.png";
-                const precoTotal = item.product.preco * item.quantidade;
+                const price =
+                  item.saleType === "atacado"
+                    ? item.product.wholesalePrice
+                    : item.product.retailPrice;
+                const totalPrice = price * item.quantity;
 
                 return (
                   <div
-                    key={`${item.product.id}-${item.tipoVenda}`}
+                    key={`${item.product.id}-${item.saleType}`}
                     className="p-4 hover:bg-gray-50 transition"
                   >
                     <div className="flex gap-3">
-                      {/* Imagem */}
+                      {/* Image */}
                       <div className="w-20 h-20 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden">
                         <Image
                           removeWrapper
-                          alt={item.product.nome}
+                          alt={item.product.name}
                           className="w-full h-full object-contain"
-                          src={imagemPrincipal}
+                          src={mainImage}
                         />
                       </div>
 
-                      {/* Informações */}
+                      {/* Information */}
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                          {item.product.nome}
+                          {item.product.name}
                         </h4>
                         <Chip
-                          className={`mb-2 ${
-                            item.tipoVenda === "atacado"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
+                          className={`mb-2 ${item.saleType === "atacado"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-green-100 text-green-700"
+                            }`}
                           size="sm"
                           variant="flat"
                         >
-                          {item.tipoVenda === "atacado" ? "Atacado" : "Varejo"}
+                          {item.saleType === "atacado" ? "Atacado" : "Varejo"}
                         </Chip>
 
                         <div className="flex items-center justify-between">
-                          {/* Controles de Quantidade */}
+                          {/* Quantity Controls */}
                           <div className="flex items-center gap-2">
                             <Button
                               isIconOnly
-                              aria-label="Diminuir quantidade"
-                              isDisabled={item.quantidade <= 1}
+                              aria-label="Decrease quantity"
+                              isDisabled={item.quantity <= 1}
                               size="sm"
                               variant="flat"
                               onPress={() =>
                                 updateQuantity(
                                   item.product.id,
-                                  item.tipoVenda,
-                                  item.quantidade - 1,
+                                  item.saleType,
+                                  item.quantity - 1,
                                 )
                               }
                             >
                               <Minus size={14} />
                             </Button>
                             <span className="text-sm font-medium min-w-[20px] text-center">
-                              {item.quantidade}
+                              {item.quantity}
                             </span>
                             <Button
                               isIconOnly
-                              aria-label="Aumentar quantidade"
+                              aria-label="Increase quantity"
                               isDisabled={
-                                item.quantidade >= item.product.quantidade
+                                item.quantity >= item.product.quantity
                               }
                               size="sm"
                               variant="flat"
                               onPress={() =>
                                 updateQuantity(
                                   item.product.id,
-                                  item.tipoVenda,
-                                  item.quantidade + 1,
+                                  item.saleType,
+                                  item.quantity + 1,
                                 )
                               }
                             >
@@ -167,29 +159,29 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             </Button>
                           </div>
 
-                          {/* Preço */}
+                          {/* Price */}
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gray-900">
-                              R$ {precoTotal.toFixed(2)}
+                              R$ {totalPrice.toFixed(2)}
                             </p>
-                            {item.quantidade > 1 && (
+                            {item.quantity > 1 && (
                               <p className="text-xs text-gray-500">
-                                R$ {item.product.preco.toFixed(2)} cada
+                                R$ {price.toFixed(2)} cada
                               </p>
                             )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Botão Remover */}
+                      {/* Remove Button */}
                       <Button
                         isIconOnly
-                        aria-label="Remover"
+                        aria-label="Remove"
                         color="danger"
                         size="sm"
                         variant="light"
                         onPress={() =>
-                          removeItem(item.product.id, item.tipoVenda)
+                          removeItem(item.product.id, item.saleType)
                         }
                       >
                         <Trash2 size={16} />
@@ -204,7 +196,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {items.length > 0 && (
           <DrawerFooter className="flex-col gap-3 border-t border-gray-200 p-4">
-            {/* Botão Limpar Carrinho */}
+            {/* Clear Cart Button */}
             <Button
               className="w-full"
               color="danger"
@@ -227,7 +219,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               </span>
             </div>
 
-            {/* Botão Finalizar Compra */}
+            {/* Checkout Button */}
             <Button
               className="w-full font-semibold"
               color="primary"
@@ -237,7 +229,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               Finalizar compra
             </Button>
 
-            {/* Botão Continuar Comprando */}
+            {/* Continue Shopping Button */}
             <Button
               className="w-full"
               size="lg"

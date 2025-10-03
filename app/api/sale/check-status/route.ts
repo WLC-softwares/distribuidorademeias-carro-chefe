@@ -20,13 +20,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const sale = await prisma.venda.findFirst({
-      where: saleId
-        ? { id: saleId }
-        : { numeroVenda: saleNumber! },
+    const sale = await prisma.sale.findFirst({
+      where: saleId ? { id: saleId } : { saleNumber: saleNumber! },
       select: {
         id: true,
-        numeroVenda: true,
+        saleNumber: true,
         status: true,
         total: true,
         createdAt: true,
@@ -42,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       id: sale.id,
-      numeroVenda: sale.numeroVenda,
+      saleNumber: sale.saleNumber,
       status: sale.status,
       total: sale.total,
       createdAt: sale.createdAt,
@@ -56,4 +54,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
