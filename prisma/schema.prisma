@@ -72,6 +72,7 @@ model Product {
   retailPrice    Decimal         @db.Decimal(10, 2) @map("retail_price")
   wholesalePrice Decimal         @db.Decimal(10, 2) @map("wholesale_price")
   quantity       Int             @default(0)
+  weight         Decimal?        @db.Decimal(6, 3) @map("weight") // Peso em kg (ex: 0.080 = 80g)
   status         ProductStatus   @default(ACTIVE)
   category       ProductCategory
   sku            String?         @unique

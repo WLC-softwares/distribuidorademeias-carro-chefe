@@ -4,4 +4,6 @@
  */
 
 export * from "./api";
+export * from "./melhor-envio";
 export * from "./prisma";
+
