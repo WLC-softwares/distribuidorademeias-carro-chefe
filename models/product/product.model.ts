@@ -22,6 +22,7 @@ export interface Product {
   retailPrice: number;
   wholesalePrice: number;
   quantity: number;
+  weight?: number | null; // Peso em kg
   status: ProductStatus;
   category: ProductCategory;
   sku?: string | null;
@@ -37,6 +38,7 @@ export interface CreateProductDTO {
   retailPrice: number;
   wholesalePrice: number;
   quantity: number;
+  weight?: number; // Peso em kg
   category: ProductCategory;
   sku?: string;
   images?: CreateProductImageDTO[];
@@ -55,6 +57,7 @@ export interface UpdateProductDTO {
   retailPrice?: number;
   wholesalePrice?: number;
   quantity?: number;
+  weight?: number; // Peso em kg
   status?: ProductStatus;
   category?: ProductCategory;
   active?: boolean;

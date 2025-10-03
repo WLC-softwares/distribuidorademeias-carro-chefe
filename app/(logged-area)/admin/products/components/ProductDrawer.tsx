@@ -54,6 +54,7 @@ export function ProductDrawer({
     retailPrice: "",
     wholesalePrice: "",
     quantity: "",
+    weight: "",
     category: "" as ProductCategory,
     sku: "",
   });
@@ -67,6 +68,7 @@ export function ProductDrawer({
         retailPrice: product.retailPrice.toString(),
         wholesalePrice: product.wholesalePrice.toString(),
         quantity: product.quantity.toString(),
+        weight: product.weight?.toString() || "",
         category: product.category,
         sku: product.sku || "",
       });
@@ -89,6 +91,7 @@ export function ProductDrawer({
       retailPrice: "",
       wholesalePrice: "",
       quantity: "",
+      weight: "",
       category: "" as ProductCategory,
       sku: "",
     });
@@ -154,6 +157,7 @@ export function ProductDrawer({
         retailPrice: parseFloat(formData.retailPrice),
         wholesalePrice: parseFloat(formData.wholesalePrice),
         quantity: parseInt(formData.quantity),
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
         category: formData.category,
         sku: formData.sku || undefined,
         images: images
@@ -299,18 +303,34 @@ export function ProductDrawer({
                     />
                   </div>
 
-                  <Input
-                    isRequired
-                    label="Quantidade em Estoque"
-                    min="0"
-                    placeholder="0"
-                    type="number"
-                    value={formData.quantity}
-                    variant="bordered"
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, quantity: value })
-                    }
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      isRequired
+                      label="Quantidade em Estoque"
+                      min="0"
+                      placeholder="0"
+                      type="number"
+                      value={formData.quantity}
+                      variant="bordered"
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, quantity: value })
+                      }
+                    />
+
+                    <Input
+                      label="Peso (kg)"
+                      min="0"
+                      placeholder="0.080"
+                      step="0.001"
+                      type="number"
+                      value={formData.weight}
+                      variant="bordered"
+                      description="Peso unitário em kg (ex: 0.080 = 80g)"
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, weight: value })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
 

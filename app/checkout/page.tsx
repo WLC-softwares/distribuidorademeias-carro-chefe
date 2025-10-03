@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ShippingCalculator } from "@/components/shipping";
 import { createSaleAction, getUserWithAddressesAction } from "@/controllers";
 import { useAuth, useCart } from "@/hooks";
 
@@ -30,6 +31,12 @@ export default function CheckoutPage() {
   const [observacoes, setObservacoes] = useState("");
   const [userAddress, setUserAddress] = useState<Address | null>(null);
   const [addressLoaded, setAddressLoaded] = useState(false);
+  const [selectedShipping, setSelectedShipping] = useState<{
+    codigo: string;
+    nome: string;
+    valor: number;
+    prazoEntrega: number;
+  } | null>(null);
 
   // Effect para redirecionamentos
   useEffect(() => {
@@ -267,6 +274,13 @@ export default function CheckoutPage() {
               </CardBody>
             </Card>
 
+            {/* Cálculo de Frete */}
+            <ShippingCalculator
+              items={items}
+              defaultCep={userAddress?.zipCode}
+              onShippingSelect={setSelectedShipping}
+            />
+
             {/* Observações */}
             <Card>
               <CardHeader className="flex items-center gap-2 pb-3">
@@ -365,9 +379,20 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Entrega</span>
-                    <span className="font-medium text-green-600">
-                      A combinar
-                    </span>
+                    {selectedShipping ? (
+                      <div className="text-right">
+                        <span className="font-medium text-green-600">
+                          R$ {selectedShipping.valor.toFixed(2)}
+                        </span>
+                        <p className="text-xs text-gray-500">
+                          {selectedShipping.nome} - {selectedShipping.prazoEntrega} dias úteis
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="font-medium text-orange-600">
+                        Calcular
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -376,7 +401,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total</span>
                   <span className="text-2xl font-bold text-gray-900">
-                    R$ {total.toFixed(2)}
+                    R$ {(total + (selectedShipping?.valor || 0)).toFixed(2)}
                   </span>
                 </div>
               </CardBody>
