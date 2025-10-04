@@ -90,23 +90,6 @@ export function calculatePackageDimensions(
 export function hasMelhorEnvioCredentials(): boolean {
   return !!process.env.MELHOR_ENVIO_TOKEN;
 }
-
-/**
- * Verifica se está usando ambiente sandbox
- */
-export function isSandboxMode(): boolean {
-  return process.env.MELHOR_ENVIO_SANDBOX === "true";
-}
-
-/**
- * Obtém a URL base da API
- */
-export function getApiUrl(): string {
-  return isSandboxMode()
-    ? "https://sandbox.melhorenvio.com.br/api/v2"
-    : "https://melhorenvio.com.br/api/v2";
-}
-
 /**
  * Calcula o frete usando a API do Melhor Envio
  */
@@ -120,7 +103,7 @@ export async function calculateShipping(
 
   try {
     const token = process.env.MELHOR_ENVIO_TOKEN;
-    const apiUrl = getApiUrl();
+    const apiUrl = process.env.MELHOR_ENVIO_API_URL || "https://melhorenvio.com.br/api/v2";
 
     const response = await fetch(`${apiUrl}/me/shipment/calculate`, {
       method: "POST",

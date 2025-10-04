@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     );
 
     // CEP de origem (Brás - São Paulo)
-    const cepOrigem = process.env.MELHOR_ENVIO_CEP_ORIGEM || "03020000";
+    const cepOrigem = process.env.MELHOR_ENVIO_CEP_ORIGEM || "";
 
     // Calcular frete usando Melhor Envio
     const shippingOptions = await calculateShipping({
