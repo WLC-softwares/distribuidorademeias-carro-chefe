@@ -354,9 +354,7 @@ class SaleService {
               html: emailHtml,
             });
 
-            console.log(
-              `📧 Update email sent to ${user.email}`,
-            );
+            console.log(`📧 Update email sent to ${user.email}`);
           }
         } catch (error) {
           console.error("Error sending update email:", error);

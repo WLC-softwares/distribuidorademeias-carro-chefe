@@ -1,8 +1,6 @@
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { Link } from "@heroui/link";
 import { Eye, EyeOff } from "lucide-react";
-import NextLink from "next/link";
 
 import { RegisterData } from "../hooks/useRegister";
 
@@ -147,17 +145,6 @@ export function PersonalInfoStep({
       >
         Continuar
       </Button>
-
-      <div className="text-center text-sm">
-        <span className="text-gray-600">Já tem uma conta? </span>
-        <Link
-          as={NextLink}
-          className="text-blue-500 hover:text-blue-600 font-medium"
-          href="/login"
-        >
-          Fazer login
-        </Link>
-      </div>
     </form>
   );
 }

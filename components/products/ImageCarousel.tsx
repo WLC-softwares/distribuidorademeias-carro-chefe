@@ -108,10 +108,11 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
               <button
                 key={index}
                 aria-label={`Go to image ${index + 1}`}
-                className={`h-2 rounded-full transition-all ${index === currentIndex
+                className={`h-2 rounded-full transition-all ${
+                  index === currentIndex
                     ? "w-8 bg-blue-600"
                     : "w-2 bg-gray-300 hover:bg-gray-400"
-                  }`}
+                }`}
                 onClick={() => goToSlide(index)}
               />
             ))}
@@ -125,10 +126,11 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
           {sortedImages.map((image, index) => (
             <button
               key={image.id}
-              className={`flex-shrink-0 w-20 h-20 rounded border-2 transition-all overflow-hidden ${index === currentIndex
+              className={`flex-shrink-0 w-20 h-20 rounded border-2 transition-all overflow-hidden ${
+                index === currentIndex
                   ? "border-blue-600"
                   : "border-gray-200 hover:border-gray-400"
-                }`}
+              }`}
               onClick={() => goToSlide(index)}
             >
               <Image

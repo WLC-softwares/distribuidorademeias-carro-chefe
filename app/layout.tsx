@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { Providers } from "./providers";
 
 import Header from "@/components/header/header";
+import { WhatsAppFloat } from "@/components/whatsapp";
 import { fontSans } from "@/config/fonts";
 
 export const metadata: Metadata = {
@@ -51,6 +52,7 @@ export default function RootLayout({
               </div>
             </footer>
           </div>
+          <WhatsAppFloat />
         </Providers>
       </body>
     </html>

@@ -148,7 +148,7 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
     >
       <Badge
         className={unreadCount === 0 ? "hidden" : ""}
-        color="danger"
+        color="primary"
         content={
           unreadCount > 0 ? (unreadCount > 99 ? "99+" : unreadCount) : null
         }
@@ -217,8 +217,9 @@ export function NotificationDropdown({ userId }: NotificationDropdownProps) {
           {notifications?.map((notification) => (
             <DropdownItem
               key={notification.id}
-              className={`py-3 px-4 cursor-pointer hover:bg-gray-50 ${!notification.read ? "bg-blue-50/50" : ""
-                }`}
+              className={`py-3 px-4 cursor-pointer hover:bg-gray-50 ${
+                !notification.read ? "bg-blue-50/50" : ""
+              }`}
               textValue={notification.title}
               onClick={() => handleNotificationClick(notification)}
             >

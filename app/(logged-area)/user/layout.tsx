@@ -6,16 +6,13 @@ import {
   MapPin,
   Menu,
   Package,
-  Store,
   User as UserIcon,
   X,
-  Check,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Card, CardBody } from "@heroui/card";
 
 const menuItems = [
   {
@@ -53,10 +50,10 @@ export default function UserLayout({
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-yellow-400 h-16 flex items-center justify-between px-4 z-40 shadow-md">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white-400 h-16 flex items-center justify-between px-4 z-40 shadow-md">
         <h1 className="text-xl font-bold text-gray-800">Minha Conta</h1>
         <button
-          className="p-2 hover:bg-yellow-300 rounded-md transition-colors"
+          className="p-2 hover:bg-white-300 rounded-md transition-colors"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -66,31 +63,18 @@ export default function UserLayout({
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-50 transition-transform duration-300
+          fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-40 transition-transform duration-300 flex flex-col
           lg:translate-x-0
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         {/* Logo/Header */}
-        <div className="h-16 bg-yellow-400 flex items-center justify-center px-4">
+        <div className="h-16 bg-white mt-20 flex items-center justify-center px-4 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-800">Minha Conta</h1>
         </div>
 
-        {/* Botão Voltar para Loja */}
-        <div className="p-4 border-b border-gray-200">
-          <Link
-            as={NextLink}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors font-semibold"
-            href="/"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Store size={20} />
-            <span>Voltar para Loja</span>
-          </Link>
-        </div>
-
         {/* Menu Items */}
-        <nav className="p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -100,12 +84,13 @@ export default function UserLayout({
                 key={item.href}
                 as={NextLink}
                 className={`
-                                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${isActive
-                    ? "bg-yellow-100 text-yellow-700 font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
+                  flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                  ${
+                    isActive
+                      ? "bg-blue-600 text-white font-semibold"
+                      : "text-gray-700 hover:bg-gray-100"
                   }
-                                `}
+                `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -117,7 +102,7 @@ export default function UserLayout({
         </nav>
 
         {/* Logout Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
+        <div className="p-4 border-t border-gray-200">
           <button
             className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
             onClick={handleLogout}
@@ -131,7 +116,7 @@ export default function UserLayout({
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           role="button"
           tabIndex={0}
           onClick={() => setSidebarOpen(false)}
@@ -147,20 +132,6 @@ export default function UserLayout({
       <main className="lg:ml-64 pt-20 lg:pt-8 min-h-screen bg-gray-50">
         <div className="p-6">{children}</div>
       </main>
-
-      {/* Features/Characteristics */}
-      <Card className="mt-6">
-        <CardBody className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Características</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <Check className="text-green-600" size={20} />
-              <span>Material de qualidade</span>
-            </div>
-            {/* ... mais features */}
-          </div>
-        </CardBody>
-      </Card>
     </>
   );
 }

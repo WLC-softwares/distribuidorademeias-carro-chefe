@@ -276,8 +276,8 @@ export default function CheckoutPage() {
 
             {/* Cálculo de Frete */}
             <ShippingCalculator
-              items={items}
               defaultCep={userAddress?.zipCode}
+              items={items}
               onShippingSelect={setSelectedShipping}
             />
 
@@ -342,16 +342,15 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </h4>
                           <Chip
-                            className={`mt-1 ${item.saleType === "atacado"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                              }`}
+                            className={`mt-1 ${
+                              item.saleType === "atacado"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
                             size="sm"
                             variant="flat"
                           >
-                            {item.saleType === "atacado"
-                              ? "Atacado"
-                              : "Varejo"}
+                            {item.saleType === "atacado" ? "Atacado" : "Varejo"}
                           </Chip>
                           <div className="flex justify-between items-center mt-1">
                             <span className="text-xs text-gray-500">
@@ -385,7 +384,8 @@ export default function CheckoutPage() {
                           R$ {selectedShipping.valor.toFixed(2)}
                         </span>
                         <p className="text-xs text-gray-500">
-                          {selectedShipping.nome} - {selectedShipping.prazoEntrega} dias úteis
+                          {selectedShipping.nome} -{" "}
+                          {selectedShipping.prazoEntrega} dias úteis
                         </p>
                       </div>
                     ) : (

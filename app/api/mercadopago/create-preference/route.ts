@@ -116,7 +116,10 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    console.log("📦 Enviando para MP:", JSON.stringify(preferenceData, null, 2));
+    console.log(
+      "📦 Enviando para MP:",
+      JSON.stringify(preferenceData, null, 2),
+    );
 
     // Criar preferência no Mercado Pago
     const preference = await mercadoPagoPreference.create({

@@ -5,12 +5,19 @@ import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Input } from "@heroui/input";
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@heroui/modal";
 import { Spinner } from "@heroui/spinner";
-import { Save, User as UserIcon } from "lucide-react";
+import { Eye, EyeOff, Lock, Save, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { updateUserAction } from "@/controllers";
+import { changePasswordAction, updateUserAction } from "@/controllers";
 import { useSession } from "@/hooks";
 
 export default function PerfilPage() {
@@ -23,6 +30,18 @@ export default function PerfilPage() {
     phone: "",
     cpf: "",
   });
+
+  // Estado do modal de senha
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -61,10 +80,65 @@ export default function PerfilPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!user?.id) return;
+
+    // Validações
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
+      toast.error("Preencha todos os campos");
+
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error("A nova senha deve ter pelo menos 6 caracteres");
+
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("As senhas não coincidem");
+
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+
+      await changePasswordAction(
+        user.id,
+        passwordData.currentPassword,
+        passwordData.newPassword,
+      );
+
+      toast.success("Senha alterada com sucesso!");
+      setIsPasswordModalOpen(false);
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error: any) {
+      console.error("Erro ao alterar senha:", error);
+
+      if (error?.message?.includes("incorrect")) {
+        toast.error("Senha atual incorreta");
+      } else {
+        toast.error("Erro ao alterar senha");
+      }
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Spinner color="warning" size="lg" />
+        <Spinner color="primary" size="lg" />
       </div>
     );
   }
@@ -90,7 +164,7 @@ export default function PerfilPage() {
         <CardBody className="flex flex-row items-center gap-4 p-6">
           <Avatar
             className="w-20 h-20"
-            color="warning"
+            color="primary"
             icon={<UserIcon size={32} />}
             size="lg"
             {...(user.avatar ? { src: user.avatar } : {})}
@@ -117,7 +191,7 @@ export default function PerfilPage() {
           </div>
           {!editing && (
             <Button
-              color="warning"
+              color="primary"
               variant="flat"
               onPress={() => setEditing(true)}
             >
@@ -171,7 +245,7 @@ export default function PerfilPage() {
             <div className="flex gap-3 mt-6">
               <Button
                 className="font-semibold"
-                color="warning"
+                color="primary"
                 isLoading={saving}
                 startContent={<Save size={18} />}
                 onPress={handleSave}
@@ -210,14 +284,145 @@ export default function PerfilPage() {
         <Divider />
         <CardBody className="p-6">
           <Button
-            color="warning"
+            color="primary"
+            startContent={<Lock size={18} />}
             variant="flat"
-            onPress={() => toast.info("Funcionalidade em desenvolvimento")}
+            onPress={() => setIsPasswordModalOpen(true)}
           >
             Alterar Senha
           </Button>
         </CardBody>
       </Card>
+
+      {/* Modal de Alterar Senha */}
+      <Modal
+        isOpen={isPasswordModalOpen}
+        onOpenChange={(open) => {
+          setIsPasswordModalOpen(open);
+          if (!open) {
+            setPasswordData({
+              currentPassword: "",
+              newPassword: "",
+              confirmPassword: "",
+            });
+            setShowCurrentPassword(false);
+            setShowNewPassword(false);
+            setShowConfirmPassword(false);
+          }
+        }}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Alterar Senha
+              </ModalHeader>
+              <ModalBody>
+                <Input
+                  isRequired
+                  endContent={
+                    <button
+                      className="focus:outline-none"
+                      type="button"
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
+                    >
+                      {showCurrentPassword ? (
+                        <EyeOff className="text-gray-400" size={20} />
+                      ) : (
+                        <Eye className="text-gray-400" size={20} />
+                      )}
+                    </button>
+                  }
+                  label="Senha Atual"
+                  placeholder="Digite sua senha atual"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  variant="bordered"
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  isRequired
+                  endContent={
+                    <button
+                      className="focus:outline-none"
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? (
+                        <EyeOff className="text-gray-400" size={20} />
+                      ) : (
+                        <Eye className="text-gray-400" size={20} />
+                      )}
+                    </button>
+                  }
+                  label="Nova Senha"
+                  placeholder="Digite sua nova senha"
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordData.newPassword}
+                  variant="bordered"
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      newPassword: e.target.value,
+                    })
+                  }
+                />
+                <Input
+                  isRequired
+                  endContent={
+                    <button
+                      className="focus:outline-none"
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="text-gray-400" size={20} />
+                      ) : (
+                        <Eye className="text-gray-400" size={20} />
+                      )}
+                    </button>
+                  }
+                  label="Confirmar Nova Senha"
+                  placeholder="Digite sua nova senha novamente"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordData.confirmPassword}
+                  variant="bordered"
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                />
+                <p className="text-xs text-gray-500">
+                  A senha deve ter pelo menos 6 caracteres
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  Cancelar
+                </Button>
+                <Button
+                  color="primary"
+                  isLoading={changingPassword}
+                  onPress={handleChangePassword}
+                >
+                  Alterar Senha
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

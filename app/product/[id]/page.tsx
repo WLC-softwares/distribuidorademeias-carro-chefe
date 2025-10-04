@@ -4,17 +4,8 @@ import type { Product } from "@/models";
 
 import { Button } from "@heroui/button";
 import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
-import { Input } from "@heroui/input";
 import { Spinner } from "@heroui/spinner";
-import {
-  ArrowLeft,
-  CheckCircle,
-  Minus,
-  Package,
-  Plus,
-  ShoppingCart,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle, Minus, Package, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -32,7 +23,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [saleType, setSaleType] = useState<"varejo" | "atacado">("varejo");
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [otherProducts, setOtherProducts] = useState<Product[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -44,8 +35,8 @@ export default function ProductDetailPage() {
 
         if (data) {
           setProduct(data);
-          // Load related products
-          loadRelatedProducts(data);
+          // Load other products
+          loadOtherProducts(data);
         } else {
           setError("Produto não encontrado");
         }
@@ -57,32 +48,20 @@ export default function ProductDetailPage() {
       }
     }
 
-    async function loadRelatedProducts(currentProduct: Product) {
+    async function loadOtherProducts(currentProduct: Product) {
       try {
         const allProducts = await getProductsAction();
-        // Filter products from same category, excluding current product
-        let related = allProducts.filter(
+
+        const others = allProducts.filter(
           (p) =>
-            p.category === currentProduct.category &&
-            p.id !== currentProduct.id &&
-            p.active &&
-            p.status === "ACTIVE",
+            p.id !== currentProduct.id && p.active && p.status === "ACTIVE",
         );
 
-        // If no products from same category, get random products
-        if (related.length === 0) {
-          related = allProducts.filter(
-            (p) =>
-              p.id !== currentProduct.id && p.active && p.status === "ACTIVE",
-          );
-        }
+        const shuffled = others.sort(() => Math.random() - 0.5);
 
-        // Shuffle and get up to 8 products
-        const shuffled = related.sort(() => Math.random() - 0.5);
-
-        setRelatedProducts(shuffled.slice(0, 8));
+        setOtherProducts(shuffled.slice(0, 8));
       } catch (err) {
-        console.error("Erro ao carregar produtos relacionados:", err);
+        console.error("Erro ao carregar outros produtos:", err);
       }
     }
 
@@ -169,7 +148,7 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="bg-white min-h-screen">
       {/* Success Message */}
       {showSuccessMessage && (
         <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-right">
@@ -196,7 +175,7 @@ export default function ProductDetailPage() {
             className="text-blue-600"
             startContent={<ArrowLeft size={18} />}
             variant="light"
-            onPress={() => router.push("/")}
+            onPress={() => router.back()}
           >
             Voltar
           </Button>
@@ -205,10 +184,10 @@ export default function ProductDetailPage() {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Column 1: Images - 3 colunas */}
-          <div className="lg:col-span-3">
-            <Card className="p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Column 1: Images - 7 colunas */}
+          <div className="lg:col-span-7">
+            <Card className="p-6 bg-white">
               <CardBody>
                 <ImageCarousel
                   images={product.images || []}
@@ -218,96 +197,92 @@ export default function ProductDetailPage() {
             </Card>
           </div>
 
-          {/* Column 2: Information and Purchase - 2 colunas */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* Column 2: Information and Purchase - 5 colunas */}
+          <div className="lg:col-span-5 space-y-4">
             {/* Information Card */}
             <Card>
-              <CardBody className="p-6 space-y-6">
-                {/* Category and SKU */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Chip size="sm" color="warning" variant="flat">
-                    {categoryLabels[product.category]}
-                  </Chip>
-                  {product.sku && (
-                    <span className="text-xs text-gray-500">
-                      SKU: {product.sku}
-                    </span>
-                  )}
+              <CardBody className="p-6 space-y-4">
+                {/* Category */}
+                <div className="text-sm text-gray-600">
+                  {categoryLabels[product.category]}
                 </div>
 
                 {/* Title */}
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-xl font-normal text-gray-900 leading-relaxed">
                     {product.name}
                   </h1>
-                  {/* Stock Badge */}
-                  {hasStock && product.quantity < 10 && (
-                    <Chip size="sm" color="warning" variant="flat">
-                      ⚠️ Apenas {product.quantity} disponíveis
-                    </Chip>
-                  )}
                 </div>
 
+                {/* Stock Badge */}
+                {hasStock && product.quantity < 10 ? (
+                  <div className="text-sm text-yellow-600">
+                    ⚠️ Últimas {product.quantity} unidades disponíveis
+                  </div>
+                ) : (
+                  <div className="text-sm text-blue-600">
+                    ✅ {product.quantity} unidades disponíveis
+                  </div>
+                )}
+
                 {/* Retail/Wholesale Toggle */}
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-3">
-                    Tipo de compra:
-                  </p>
+                <div className="border-t border-gray-200 pt-4">
+                  <p className="text-sm text-gray-600 mb-3">Tipo de compra:</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
-                      className={`p-4 rounded-lg border-2 transition-all ${saleType === "varejo"
-                        ? "border-green-600 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
-                        }`}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        saleType === "varejo"
+                          ? "border-blue-600 bg-blue-50"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
                       onClick={() => setSaleType("varejo")}
                     >
                       <div className="text-center">
-                        <p className="font-semibold text-gray-900">Varejo</p>
-                        <p className="text-lg font-bold text-green-600 mt-1">
-                          R$ {product.retailPrice.toFixed(2)}
+                        <p className="text-sm font-medium text-gray-900">
+                          Varejo
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Preço unitário
+                        <p className="text-base font-bold text-gray-900 mt-1">
+                          R$ {product.retailPrice.toFixed(2).replace(".", ",")}
                         </p>
                       </div>
                     </button>
                     <button
-                      className={`p-4 rounded-lg border-2 transition-all ${saleType === "atacado"
-                        ? "border-purple-600 bg-purple-50"
-                        : "border-gray-200 hover:border-gray-300"
-                        }`}
+                      className={`p-3 rounded-lg border-2 transition-all ${
+                        saleType === "atacado"
+                          ? "border-purple-600 bg-purple-50"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
                       onClick={() => setSaleType("atacado")}
                     >
                       <div className="text-center">
-                        <p className="font-semibold text-gray-900">Atacado</p>
-                        <p className="text-lg font-bold text-purple-600 mt-1">
-                          R$ {product.wholesalePrice.toFixed(2)}
+                        <p className="text-sm font-medium text-gray-900">
+                          Atacado
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Por unidade
+                        <p className="text-base font-bold text-gray-900 mt-1">
+                          R${" "}
+                          {product.wholesalePrice.toFixed(2).replace(".", ",")}
                         </p>
                       </div>
                     </button>
                   </div>
                 </div>
 
-                {/* Price Display */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Preço</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-normal text-gray-700">R$</span>
-                    <span className="text-4xl font-bold text-gray-900">
-                      {Math.floor(price)}
-                    </span>
-                    <span className="text-2xl font-bold text-gray-900">
-                      {(price % 1).toFixed(2).substring(1)}
+                <div className="border-t border-gray-200 pt-4">
+                  {/* Preço Atual */}
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span className="text-4xl font-light text-gray-900">
+                      R$ {price.toFixed(2).replace(".", ",")}
                     </span>
                   </div>
 
-                  {/* Parcelamento Simples */}
-                  <div className="mt-3 pt-3 border-t border-gray-200">
+                  {/* Parcelamento com Mercado Pago */}
+                  <div className="bg-blue-50 rounded-lg p-3 mb-3">
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                      <svg
+                        className="w-5 h-5 flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
                         <rect fill="#009EE3" height="24" rx="4" width="24" />
                         <path d="M13 8h3v8h-3V8z" fill="#fff" />
                         <path d="M8 12h3v4H8v-4z" fill="#fff" />
@@ -324,88 +299,85 @@ export default function ProductDetailPage() {
                   </div>
 
                   {quantity > 1 && (
-                    <p className="text-sm text-gray-600 mt-3 pt-3 border-t border-gray-200">
-                      Subtotal:{" "}
-                      <span className="font-bold text-gray-900">
-                        R$ {totalPrice.toFixed(2)}
-                      </span>
-                    </p>
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        Subtotal ({quantity}{" "}
+                        {quantity === 1 ? "unidade" : "unidades"}):{" "}
+                        <span className="font-bold text-gray-900">
+                          R$ {totalPrice.toFixed(2).replace(".", ",")}
+                        </span>
+                      </p>
+                    </div>
                   )}
                 </div>
 
                 {/* Quantity */}
                 {hasStock && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-3">
-                      Quantidade
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        isIconOnly
-                        isDisabled={quantity <= 1}
-                        size="lg"
-                        variant="bordered"
-                        onPress={() => handleQuantityChange(-1)}
-                      >
-                        <Minus size={18} />
-                      </Button>
-                      <Input
-                        className="w-24"
-                        classNames={{
-                          input: "text-center text-lg font-semibold",
-                        }}
-                        size="lg"
-                        type="number"
-                        value={quantity.toString()}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-sm text-gray-600">Quantidade:</span>
+                      <div className="flex items-center border border-gray-300 rounded-lg">
+                        <button
+                          className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={quantity <= 1}
+                          onClick={() => handleQuantityChange(-1)}
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <input
+                          className="w-16 text-center border-x border-gray-300 py-2 outline-none"
+                          max={product.quantity}
+                          min={1}
+                          type="number"
+                          value={quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
 
-                          if (val >= 1 && val <= product.quantity) {
-                            setQuantity(val);
-                          }
-                        }}
-                      />
-                      <Button
-                        isIconOnly
-                        isDisabled={quantity >= product.quantity}
-                        size="lg"
-                        variant="bordered"
-                        onPress={() => handleQuantityChange(1)}
-                      >
-                        <Plus size={18} />
-                      </Button>
+                            if (val >= 1 && val <= product.quantity) {
+                              setQuantity(val);
+                            }
+                          }}
+                        />
+                        <button
+                          className="px-3 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={quantity >= product.quantity}
+                          onClick={() => handleQuantityChange(1)}
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        ({product.quantity} disponíveis)
+                      </span>
                     </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3">
                   {hasStock ? (
                     <>
                       <Button
-                        className="w-full font-bold text-base"
-                        color="primary"
-                        size="lg"
-                        startContent={<ShoppingCart size={22} />}
-                        onPress={handleAddToCart}
-                      >
-                        Adicionar ao carrinho
-                      </Button>
-                      <Button
-                        className="w-full font-bold text-base bg-purple-600 text-white"
+                        className="w-full font-semibold text-base bg-blue-500 text-white hover:bg-blue-600"
                         size="lg"
                         onPress={handleBuyNow}
                       >
                         Comprar agora
                       </Button>
+                      <Button
+                        className="w-full font-semibold text-base"
+                        color="primary"
+                        size="lg"
+                        variant="bordered"
+                        onPress={handleAddToCart}
+                      >
+                        Adicionar ao carrinho
+                      </Button>
                     </>
                   ) : (
-                    <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 text-center">
-                      <p className="font-semibold text-red-700">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                      <p className="font-medium text-red-700">
                         Produto indisponível
-                      </p>
-                      <p className="text-sm text-red-600 mt-1">
-                        Entre em contato para saber quando estará disponível
                       </p>
                     </div>
                   )}
@@ -415,36 +387,70 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Product Description */}
-        {product.description && (
-          <Card className="mt-6">
+        {/* Características e Descrição */}
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Características do Produto */}
+          <div className="lg:col-span-7">
+            <Card>
+              <CardBody className="p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Características do produto
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex py-2 border-b border-gray-200">
+                    <span className="text-sm text-gray-600 w-40">
+                      Categoria
+                    </span>
+                    <span className="text-sm text-gray-900 font-medium">
+                      {categoryLabels[product.category]}
+                    </span>
+                  </div>
+                  {product.sku && (
+                    <div className="flex py-2 border-b border-gray-200">
+                      <span className="text-sm text-gray-600 w-40">SKU</span>
+                      <span className="text-sm text-gray-900 font-medium">
+                        {product.sku}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardBody>
+            </Card>
+
+            {/* Descrição */}
+            {product.description && (
+              <Card className="mt-6">
+                <CardBody className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Descrição
+                  </h2>
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
+                    {product.description}
+                  </p>
+                </CardBody>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Other Products */}
+        {otherProducts.length > 0 && (
+          <Card className="mt-8">
             <CardBody className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Descrição do Produto
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                Outros produtos
               </h2>
-              <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
-                {product.description}
-              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {otherProducts.map((otherProduct) => (
+                  <ProductCard
+                    key={otherProduct.id}
+                    product={otherProduct}
+                    saleType={saleType}
+                  />
+                ))}
+              </div>
             </CardBody>
           </Card>
-        )}
-
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Você também pode gostar
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard
-                  key={relatedProduct.id}
-                  product={relatedProduct}
-                  saleType={saleType}
-                />
-              ))}
-            </div>
-          </div>
         )}
       </div>
 

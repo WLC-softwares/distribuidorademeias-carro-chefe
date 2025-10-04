@@ -403,9 +403,7 @@ export default function ProductsPage() {
             <div className="lg:hidden divide-y divide-gray-200">
               {currentProducts.map((product) => {
                 const statusInfo = getStatusInfo(product);
-                const primaryImage = product.images?.find(
-                  (img) => img.primary,
-                );
+                const primaryImage = product.images?.find((img) => img.primary);
 
                 return (
                   <div
