@@ -124,6 +124,7 @@ export async function calculateShipping(
       body: JSON.stringify(params),
     });
 
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("❌ Melhor Envio API Error:", {
@@ -142,44 +143,59 @@ export async function calculateShipping(
       }
     }
 
-    const services: MelhorEnvioService[] = await response.json();
+    const servicesRaw: any[] = await response.json();
 
-    console.log(`✅ Melhor Envio: ${services.length} opções retornadas pela API`);
+    console.log(`✅ Melhor Envio: ${servicesRaw.length} opções retornadas pela API`);
 
-    if (services.length === 0) {
+    if (servicesRaw.length === 0) {
       console.warn("⚠️ API retornou 0 opções");
       throw new Error("Nenhuma opção de frete disponível para este endereço. Entre em contato conosco.");
     }
 
-    const results: ShippingOption[] = services
-      .map((service) => ({
-        codigo: service.id.toString(),
-        nome: service.name,
-        empresa: service.company.name,
-        valor: parseFloat(service.custom_price || service.price),
-        prazoEntrega: service.delivery_time,
-        logo: service.company.picture,
-      }))
-      .filter((option) => {
-        // Filtrar apenas: PAC, SEDEX (Correios) e Express (Jadlog)
-        const isCorreiosPAC = option.empresa === "Correios" && option.nome === "PAC";
-        const isCorreiosSEDEX = option.empresa === "Correios" && option.nome === "SEDEX";
-        const isJadlogExpress = option.empresa === "Jadlog" && option.nome === "Express";
+    // Filtrar serviços que retornaram erro (ex: "Transportadora não atende este trecho")
+    const servicesValid = servicesRaw.filter((service: any) => {
+      if (service.error) {
+        console.warn(`⚠️ ${service.company.name} ${service.name}: ${service.error}`);
+        return false;
+      }
+      return true;
+    });
 
-        return isCorreiosPAC || isCorreiosSEDEX || isJadlogExpress;
+    console.log(`📦 ${servicesValid.length} opções válidas (${servicesRaw.length - servicesValid.length} com erro)`);
+
+    const results: ShippingOption[] = servicesValid
+      .map((service: any) => {
+        // Tentar obter o preço customizado ou o preço padrão
+        const priceStr = service.custom_price || service.price || '0';
+        const price = parseFloat(priceStr);
+
+        return {
+          codigo: service.id.toString(),
+          nome: service.name,
+          empresa: service.company.name,
+          valor: price,
+          prazoEntrega: service.delivery_time,
+          logo: service.company.picture,
+        };
+      })
+      .filter((option) => {
+        // Filtrar opções com preço inválido (NaN ou <= 0) - backup de segurança
+        if (isNaN(option.valor) || option.valor <= 0) {
+          console.warn(`⚠️ Opção ${option.empresa} ${option.nome} ignorada (preço inválido: ${option.valor})`);
+          return false;
+        }
+        return true;
       });
 
-    // Verificar se restou alguma opção após o filtro
     if (results.length === 0) {
-      console.warn("⚠️ Nenhuma opção disponível após filtro (PAC, SEDEX, Jadlog Express)");
-      throw new Error("Nenhuma opção de frete disponível (PAC, SEDEX ou Jadlog Express) para este endereço.");
+      console.warn("⚠️ Nenhuma opção disponível após filtro");
+      throw new Error("Nenhuma opção de frete disponível para este endereço.");
     }
 
     // Ordenar por preço
     results.sort((a, b) => a.valor - b.valor);
 
     console.log("📊 Opções processadas:", results.map(r => `${r.empresa} ${r.nome} - R$ ${r.valor}`));
-    console.log(`🔍 Filtradas ${results.length} de ${services.length} opções`);
 
     return results;
   } catch (error) {
@@ -192,44 +208,6 @@ export async function calculateShipping(
     console.error("❌ Erro inesperado ao calcular frete:", error);
     throw new Error("Erro ao calcular frete. Tente novamente mais tarde.");
   }
-}
-
-/**
- * Calcula o frete simulado (para desenvolvimento)
- */
-export async function calculateShippingSimulated(
-  params: MelhorEnvioShippingParams,
-): Promise<ShippingOption[]> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  const peso = params.package.weight;
-
-  return [
-    {
-      codigo: "1",
-      nome: "PAC",
-      empresa: "Correios",
-      valor: Number((12 + peso * 4).toFixed(2)),
-      prazoEntrega: 7,
-      logo: "https://melhorenvio.com.br/images/shipping-companies/correios.png",
-    },
-    {
-      codigo: "2",
-      nome: "SEDEX",
-      empresa: "Correios",
-      valor: Number((22 + peso * 7).toFixed(2)),
-      prazoEntrega: 2,
-      logo: "https://melhorenvio.com.br/images/shipping-companies/correios.png",
-    },
-    {
-      codigo: "3",
-      nome: "Express",
-      empresa: "Jadlog",
-      valor: Number((18 + peso * 5).toFixed(2)),
-      prazoEntrega: 3,
-      logo: "https://melhorenvio.com.br/images/shipping-companies/jadlog.png",
-    },
-  ];
 }
 
 /**

@@ -11,7 +11,6 @@ import { Input, Textarea } from "@heroui/input";
 import { Spinner } from "@heroui/spinner";
 import {
   ArrowLeft,
-  MapPin,
   Package,
   ShoppingBag,
   User as UserIcon,
@@ -19,6 +18,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AddressSelector } from "@/components/address";
 import { ShippingCalculator } from "@/components/shipping";
 import { createSaleAction, getUserWithAddressesAction } from "@/controllers";
 import { useAuth, useCart } from "@/hooks";
@@ -29,7 +29,8 @@ export default function CheckoutPage() {
   const { items, getTotal, getTotalItems, isInitialized } = useCart();
   const [loading, setLoading] = useState(false);
   const [observacoes, setObservacoes] = useState("");
-  const [userAddress, setUserAddress] = useState<Address | null>(null);
+  const [userAddresses, setUserAddresses] = useState<Address[]>([]);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [addressLoaded, setAddressLoaded] = useState(false);
   const [selectedShipping, setSelectedShipping] = useState<{
     codigo: string;
@@ -57,22 +58,27 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, authLoading, items.length, router, isInitialized]);
 
-  // Effect separado para buscar endereço do usuário
+  // Effect separado para buscar endereços do usuário
   useEffect(() => {
     if (isAuthenticated && user?.id && !addressLoaded) {
       setAddressLoaded(true);
       getUserWithAddressesAction(user.id).then((userData) => {
         if (userData && userData.addresses && userData.addresses.length > 0) {
+          setUserAddresses(userData.addresses as Address[]);
           // Pegar endereço principal ou o primeiro
           const primaryAddress =
             userData.addresses.find((e: Address) => e.primary) ||
             userData.addresses[0];
 
-          setUserAddress(primaryAddress);
+          setSelectedAddress(primaryAddress);
         }
       });
     }
   }, [isAuthenticated, user?.id, addressLoaded]);
+
+  const handleAddressAdded = (address: Address) => {
+    setUserAddresses((prev) => [...prev, address]);
+  };
 
   const handleMercadoPagoCheckout = async () => {
     if (!user?.id) {
@@ -87,14 +93,30 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!selectedAddress) {
+      alert("Por favor, selecione um endereço de entrega.");
+
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // 1. Criar a venda no banco de dados
+      // 1. Criar a venda no banco de dados com o endereço selecionado
       const sale = await createSaleAction({
         usuarioId: user.id,
         items,
         observacoes: observacoes || undefined,
+        shippingAddress: {
+          zipCode: selectedAddress.zipCode,
+          street: selectedAddress.street,
+          number: selectedAddress.number,
+          complement: selectedAddress.complement || undefined,
+          neighborhood: selectedAddress.neighborhood,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          country: selectedAddress.country,
+        },
       });
 
       if (!sale || !sale.id) {
@@ -227,59 +249,23 @@ export default function CheckoutPage() {
               </CardBody>
             </Card>
 
-            {/* Endereço de Entrega */}
-            <Card>
-              <CardHeader className="flex items-center gap-2 pb-3">
-                <MapPin size={20} />
-                <h2 className="text-xl font-semibold">Endereço de Entrega</h2>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                {userAddress ? (
-                  <div className="space-y-2">
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <p className="font-medium text-gray-900">
-                        {userAddress.street}, {userAddress.number}
-                      </p>
-                      {userAddress.complement && (
-                        <p className="text-sm text-gray-600">
-                          {userAddress.complement}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-600">
-                        {userAddress.neighborhood}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {userAddress.city} - {userAddress.state}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        CEP: {userAddress.zipCode}
-                      </p>
-                    </div>
-                    <p className="text-xs text-gray-500 italic">
-                      * O endereço será confirmado com nossa equipe via WhatsApp
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600">
-                      Você ainda não possui um endereço cadastrado.
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      O endereço de entrega será solicitado via WhatsApp com
-                      nossa equipe.
-                    </p>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
+            {/* Seleção de Endereço */}
+            <AddressSelector
+              addresses={userAddresses}
+              selectedAddressId={selectedAddress?.id}
+              userId={user?.id || ""}
+              onAddressAdded={handleAddressAdded}
+              onAddressSelect={setSelectedAddress}
+            />
 
             {/* Cálculo de Frete */}
-            <ShippingCalculator
-              defaultCep={userAddress?.zipCode}
-              items={items}
-              onShippingSelect={setSelectedShipping}
-            />
+            {selectedAddress && (
+              <ShippingCalculator
+                cep={selectedAddress.zipCode}
+                items={items}
+                onShippingSelect={setSelectedShipping}
+              />
+            )}
 
             {/* Observações */}
             <Card>
@@ -342,11 +328,10 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </h4>
                           <Chip
-                            className={`mt-1 ${
-                              item.saleType === "atacado"
-                                ? "bg-purple-100 text-purple-700"
-                                : "bg-green-100 text-green-700"
-                            }`}
+                            className={`mt-1 ${item.saleType === "atacado"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-green-100 text-green-700"
+                              }`}
                             size="sm"
                             variant="flat"
                           >

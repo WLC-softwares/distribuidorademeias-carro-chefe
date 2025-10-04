@@ -188,15 +188,15 @@ export default function ShippingDebugPage() {
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <p className="font-bold text-lg">{option.nome}</p>
-                                                    <p className="text-sm text-gray-600">{option.empresa}</p>
+                                                    <p className="font-bold text-lg">{option.nome || "N/A"}</p>
+                                                    <p className="text-sm text-gray-600">{option.empresa || "N/A"}</p>
                                                     <p className="text-sm">
-                                                        Prazo: {option.prazoEntrega} dias úteis
+                                                        Prazo: {option.prazoEntrega || "N/A"} dias úteis
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-2xl font-bold text-green-600">
-                                                        R$ {option.valor.toFixed(2)}
+                                                        R$ {option.valor ? option.valor.toFixed(2) : "N/A"}
                                                     </p>
                                                 </div>
                                             </div>

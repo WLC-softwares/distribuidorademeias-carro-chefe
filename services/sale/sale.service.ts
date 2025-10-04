@@ -13,6 +13,16 @@ export interface CreateSaleData {
   usuarioId: string;
   items: CartItem[];
   observacoes?: string;
+  shippingAddress?: {
+    zipCode: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    country?: string;
+  };
 }
 
 export interface SaleResponse {
@@ -81,13 +91,30 @@ class SaleService {
         .toUpperCase();
       const saleNumber = `${dateStr}-${randomStr}`;
 
-      // Get user's primary address for shipping
-      const primaryAddress = await prisma.address.findFirst({
-        where: {
-          userId: data.usuarioId,
-          primary: true,
-        },
-      });
+      // Use provided shipping address or get user's primary address as fallback
+      let shippingData = data.shippingAddress;
+
+      if (!shippingData) {
+        const primaryAddress = await prisma.address.findFirst({
+          where: {
+            userId: data.usuarioId,
+            primary: true,
+          },
+        });
+
+        if (primaryAddress) {
+          shippingData = {
+            zipCode: primaryAddress.zipCode,
+            street: primaryAddress.street,
+            number: primaryAddress.number,
+            complement: primaryAddress.complement || undefined,
+            neighborhood: primaryAddress.neighborhood,
+            city: primaryAddress.city,
+            state: primaryAddress.state,
+            country: primaryAddress.country,
+          };
+        }
+      }
 
       // Create sale with items
       const sale = await prisma.sale.create({
@@ -100,15 +127,15 @@ class SaleService {
           paymentMethod: "PIX", // Default, will be confirmed via WhatsApp
           status: "PENDING",
           notes: data.observacoes || null,
-          // Copy shipping address from user's primary address
-          shippingZipCode: primaryAddress?.zipCode || null,
-          shippingStreet: primaryAddress?.street || null,
-          shippingNumber: primaryAddress?.number || null,
-          shippingComplement: primaryAddress?.complement || null,
-          shippingNeighborhood: primaryAddress?.neighborhood || null,
-          shippingCity: primaryAddress?.city || null,
-          shippingState: primaryAddress?.state || null,
-          shippingCountry: primaryAddress?.country || "Brasil",
+          // Copy shipping address
+          shippingZipCode: shippingData?.zipCode || null,
+          shippingStreet: shippingData?.street || null,
+          shippingNumber: shippingData?.number || null,
+          shippingComplement: shippingData?.complement || null,
+          shippingNeighborhood: shippingData?.neighborhood || null,
+          shippingCity: shippingData?.city || null,
+          shippingState: shippingData?.state || null,
+          shippingCountry: shippingData?.country || "Brasil",
           items: {
             create: data.items.map((item) => {
               const price =
