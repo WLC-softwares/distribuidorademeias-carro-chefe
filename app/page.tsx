@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@heroui/button";
+import { Card } from "@heroui/card";
+import { Checkbox } from "@heroui/checkbox";
 import { Input } from "@heroui/input";
+import { Pagination } from "@heroui/pagination";
 import { Select, SelectItem } from "@heroui/select";
-import { Spinner } from "@heroui/spinner";
-import { Package, Search, ShoppingBag, Store } from "lucide-react";
+import { Package, Search, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { BannerCarousel } from "@/components/banner";
 import { ProductCard } from "@/components/products";
@@ -24,16 +27,129 @@ export default function Home() {
     setSearchTerm,
   } = useProducts();
 
+  const [showFilters, setShowFilters] = useState(true);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  // const mockProdutos: Product[] = Array.from({ length: 100 }, (_, i) => {
+  //   const categories: ProductCategory[] = [
+  //     "MENS_SOCKS",
+  //     "WOMENS_SOCKS",
+  //     "KIDS_SOCKS",
+  //     "SPORTS_SOCKS",
+  //     "DRESS_SOCKS",
+  //     "THERMAL_SOCKS",
+  //     "ACCESSORIES",
+  //     "OTHER",
+  //   ];
+
+  //   const nomes = [
+  //     "Meias Cano Alto",
+  //     "Meias Invisíveis",
+  //     "Meias Esportivas",
+  //     "Meias Térmicas",
+  //     "Meias Sociais",
+  //     "Kit 3 Pares de Meias",
+  //     "Kit 6 Pares de Meias",
+  //     "Meias Antiderrapante",
+  //     "Meias Listradas",
+  //     "Meias Estampadas",
+  //     "Meias Básicas",
+  //     "Meias de Algodão",
+  //     "Meias de Lã",
+  //     "Meias Coloridas",
+  //     "Meias Brancas",
+  //     "Meias Pretas",
+  //     "Meias Cinza",
+  //     "Meias Infantis Divertidas",
+  //     "Meias Compressão",
+  //     "Meias Cano Médio",
+  //   ];
+
+  //   const marcas = ["Lupo", "Puma", "Nike", "Adidas", "Fila", "Mash", "Trifil", "Puket"];
+  //   const cores = ["Preta", "Branca", "Cinza", "Azul", "Vermelha", "Rosa", "Verde", "Amarela", "Laranja"];
+
+  //   const category = categories[i % categories.length];
+  //   const nome = nomes[i % nomes.length];
+  //   const marca = marcas[i % marcas.length];
+  //   const cor = cores[i % cores.length];
+
+  //   const retailPrice = parseFloat((Math.random() * 50 + 10).toFixed(2));
+  //   const wholesalePrice = parseFloat((retailPrice * 0.7).toFixed(2));
+
+  //   return {
+  //     id: `prod-${i + 1}`,
+  //     name: `${marca} ${nome} ${cor}`,
+  //     description: `${nome} ${cor} da marca ${marca}. Produto de alta qualidade, confortável e durável. Ideal para uso diário.`,
+  //     retailPrice,
+  //     wholesalePrice,
+  //     quantity: Math.floor(Math.random() * 200) + 10,
+  //     weight: parseFloat((Math.random() * 0.2 + 0.05).toFixed(3)),
+  //     status: "ACTIVE" as const,
+  //     category,
+  //     sku: `SKU-${marca.substring(0, 3).toUpperCase()}-${(i + 1).toString().padStart(5, "0")}`,
+  //     active: true,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //     images: [
+  //       {
+  //         id: `img-${i + 1}-1`,
+  //         url: `https://placehold.co/400x400/e5e7eb/6b7280?text=${encodeURIComponent(marca + " " + nome)}`,
+  //         alt: `${marca} ${nome} ${cor}`,
+  //         order: 0,
+  //         primary: true,
+  //         productId: `prod-${i + 1}`,
+  //         createdAt: new Date(),
+  //       },
+  //       {
+  //         id: `img-${i + 1}-2`,
+  //         url: `https://placehold.co/400x400/f3f4f6/9ca3af?text=${encodeURIComponent(marca)}`,
+  //         alt: `${marca} ${nome} ${cor} - detalhe`,
+  //         order: 1,
+  //         primary: false,
+  //         productId: `prod-${i + 1}`,
+  //         createdAt: new Date(),
+  //       },
+  //     ],
+  //   };
+  // });
+
+  // Exibir apenas o mock para teste
+  const displayProducts = products;
+
+  // Cálculo da paginação
+  const totalPages = Math.ceil(displayProducts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProducts = displayProducts.slice(startIndex, endIndex);
+
+  // Reset da página quando mudar filtros
+  const handleCategoryChange = (category: ProductCategory | "TODOS") => {
+    setCategoryFilter(category);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  // Scroll suave para o topo ao mudar de página
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
+
   const categorias = [
-    { value: "TODOS", label: "Todas as Categorias" },
-    { value: "MENS_SOCKS", label: "Meias Masculinas" },
-    { value: "WOMENS_SOCKS", label: "Meias Femininas" },
-    { value: "KIDS_SOCKS", label: "Meias Infantis" },
-    { value: "SPORTS_SOCKS", label: "Meias Esportivas" },
-    { value: "DRESS_SOCKS", label: "Meias Sociais" },
-    { value: "THERMAL_SOCKS", label: "Meias Térmicas" },
-    { value: "ACCESSORIES", label: "Acessórios" },
-    { value: "OTHER", label: "Outros" },
+    { value: "TODOS", label: "Todas as Categorias", emoji: "📦" },
+    { value: "MENS_SOCKS", label: "Meias Masculinas", emoji: "👔" },
+    { value: "WOMENS_SOCKS", label: "Meias Femininas", emoji: "👗" },
+    { value: "KIDS_SOCKS", label: "Meias Infantis", emoji: "👶" },
+    { value: "SPORTS_SOCKS", label: "Meias Esportivas", emoji: "⚽" },
+    { value: "DRESS_SOCKS", label: "Meias Sociais", emoji: "🎩" },
+    { value: "THERMAL_SOCKS", label: "Meias Térmicas", emoji: "🧥" },
+    { value: "ACCESSORIES", label: "Acessórios", emoji: "🎁" },
+    { value: "OTHER", label: "Outros", emoji: "📦" },
   ];
 
   const banners = [
@@ -54,233 +170,203 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       {/* Carrossel de Banners */}
       <BannerCarousel autoPlayInterval={10000} banners={banners} />
+      {/* Layout Principal com Sidebar */}
+      <div className="container mx-auto px-4 py-4 max-w-[1400px]">
+        <div className="flex gap-4">
+          {/* Sidebar de Filtros */}
+          <aside
+            className={`${
+              showFilters ? "w-64" : "w-0"
+            } transition-all duration-300 overflow-hidden flex-shrink-0`}
+          >
+            <Card className="p-4 sticky top-24">
+              {/* Título e Header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b">
+                <h3 className="font-bold text-gray-900">Filtros</h3>
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  onPress={() => setShowFilters(false)}
+                >
+                  ✕
+                </Button>
+              </div>
 
-      {/* Categorias em Destaque */}
-      <section className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 border-b border-gray-200">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Explore por Categoria
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {categorias.slice(1).map((cat) => (
-              <Button
-                key={cat.value}
-                className={`h-auto py-4 px-3 flex flex-col gap-2 ${categoryFilter === cat.value
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 border-2 border-gray-200"
-                  }`}
-                variant={categoryFilter === cat.value ? "solid" : "bordered"}
-                onPress={() =>
-                  setCategoryFilter(cat.value as ProductCategory | "TODOS")
-                }
-              >
-                <span className="text-2xl">
-                  {cat.value === "MENS_SOCKS" && "👔"}
-                  {cat.value === "WOMENS_SOCKS" && "👗"}
-                  {cat.value === "KIDS_SOCKS" && "👶"}
-                  {cat.value === "SPORTS_SOCKS" && "⚽"}
-                  {cat.value === "DRESS_SOCKS" && "🎩"}
-                  {cat.value === "THERMAL_SOCKS" && "🧥"}
-                  {cat.value === "ACCESSORIES" && "🎁"}
-                  {cat.value === "OTHER" && "📦"}
-                </span>
-                <span className="text-xs font-semibold text-center leading-tight">
-                  {cat.label}
-                </span>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Filtros Modernos */}
-      <section className="bg-white border-b border-gray-200 shadow-sm sticky top-[86px] z-40">
-        <div className="container mx-auto px-4 py-4 max-w-7xl">
-          {/* Toggle Varejo/Atacado - Moderno e arredondado */}
-          <div className="flex items-center justify-center mb-4 pb-4 border-b border-gray-200">
-            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full px-6 py-3 shadow-md border-2 border-gray-100">
-              <Button
-                className={`rounded-full font-bold transition-all ${saleType === "varejo"
-                  ? "bg-blue-600 text-white shadow-lg scale-105"
-                  : "bg-white text-gray-600"
-                  }`}
-                size="md"
-                startContent={<Store size={18} />}
-                onPress={() => setSaleType("varejo")}
-              >
-                Varejo
-              </Button>
-
-              <div className="h-8 w-px bg-gray-300" />
-
-              <Button
-                className={`rounded-full font-bold transition-all ${saleType === "atacado"
-                  ? "bg-purple-600 text-white shadow-lg scale-105"
-                  : "bg-white text-gray-600"
-                  }`}
-                size="md"
-                startContent={<Package size={18} />}
-                onPress={() => setSaleType("atacado")}
-              >
-                Atacado
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-3 items-center">
-            {/* Busca com botão lupa */}
-            <div className="flex-1 w-full">
-              <Input
-                classNames={{
-                  input: "text-sm",
-                  inputWrapper:
-                    "bg-gray-50 border-2 border-gray-300 hover:border-blue-400 shadow-sm",
-                }}
-                endContent={
-                  <Button
-                    isIconOnly
-                    className="bg-blue-600 text-white min-w-10"
+              {/* Tipo de Venda */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-sm text-gray-900 mb-3">
+                  Tipo de Venda
+                </h4>
+                <div className="flex flex-col gap-2">
+                  <Checkbox
+                    isSelected={saleType === "varejo"}
                     size="sm"
+                    onValueChange={() => setSaleType("varejo")}
                   >
-                    <Search size={18} />
-                  </Button>
-                }
-                placeholder="Buscar produtos..."
-                radius="lg"
-                size="lg"
-                value={searchTerm}
-                onValueChange={setSearchTerm}
-              />
-            </div>
+                    <span className="text-sm">Varejo</span>
+                  </Checkbox>
+                  <Checkbox
+                    isSelected={saleType === "atacado"}
+                    size="sm"
+                    onValueChange={() => setSaleType("atacado")}
+                  >
+                    <span className="text-sm">Atacado</span>
+                  </Checkbox>
+                </div>
+              </div>
 
-            {/* Filtro de Categoria - Mais evidente */}
-            <div className="w-full md:w-80">
-              <Select
-                classNames={{
-                  trigger:
-                    "bg-gray-50 border-2 border-gray-300 hover:border-blue-400 shadow-sm",
-                }}
-                label="Filtrar por categoria"
-                radius="lg"
-                selectedKeys={[categoryFilter]}
-                size="lg"
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  setCategoryFilter(
-                    e.target.value as ProductCategory | "TODOS",
-                  )
-                }
-              >
-                {categorias.map((cat) => (
-                  <SelectItem key={cat.value}>{cat.label}</SelectItem>
-                ))}
-              </Select>
-            </div>
-          </div>
+              {/* Categorias */}
+              <div className="mb-6">
+                <h4 className="font-semibold text-sm text-gray-900 mb-3">
+                  Categorias
+                </h4>
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                  {categorias.map((cat) => (
+                    <Button
+                      key={cat.value}
+                      className={`justify-start text-sm h-auto py-2 ${
+                        categoryFilter === cat.value
+                          ? "bg-blue-50 text-blue-600 font-semibold"
+                          : "bg-transparent text-gray-700"
+                      }`}
+                      variant="light"
+                      onPress={() =>
+                        handleCategoryChange(
+                          cat.value as ProductCategory | "TODOS",
+                        )
+                      }
+                    >
+                      <span className="mr-2">{cat.emoji}</span>
+                      {cat.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Indicadores */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="text-blue-600" size={18} />
-              <span className="text-sm font-semibold text-gray-700">
-                {products.length}{" "}
-                {products.length === 1
-                  ? "produto encontrado"
-                  : "produtos encontrados"}
-              </span>
-            </div>
-
-            {searchTerm && (
-              <Button
-                className="text-blue-600 font-semibold"
-                size="sm"
-                variant="light"
-                onPress={() => setSearchTerm("")}
-              >
-                Limpar busca
-              </Button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Grid de Produtos - Otimizado */}
-      <section className="container mx-auto px-4 py-6 max-w-7xl">
-        {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <Spinner color="primary" size="lg" />
-            <span className="ml-3 text-gray-700 font-medium">
-              Carregando produtos...
-            </span>
-          </div>
-        ) : error ? (
-          <div className="bg-gradient-to-br from-red-50 to-white rounded-xl shadow-md p-12 text-center border-2 border-red-100">
-            <p className="text-red-600 text-lg font-bold mb-4">{error}</p>
-            <Button
-              className="font-bold"
-              color="danger"
-              size="lg"
-              variant="shadow"
-              onPress={() => window.location.reload()}
-            >
-              Tentar novamente
-            </Button>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-md p-12 text-center border-2 border-gray-100">
-            <Package className="mx-auto text-gray-300 mb-4" size={80} />
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">
-              Nenhum produto encontrado
-            </h3>
-            <p className="text-gray-600 text-lg">
-              {searchTerm || categoryFilter !== "TODOS"
-                ? "Tente ajustar os filtros ou buscar por outros termos."
-                : "Nenhum produto disponível no momento."}
-            </p>
-            {(searchTerm || categoryFilter !== "TODOS") && (
-              <Button
-                className="mt-6 font-bold"
-                color="primary"
-                size="lg"
-                variant="shadow"
-                onPress={() => {
-                  setSearchTerm("");
-                  setCategoryFilter("TODOS");
-                }}
-              >
-                Ver Todos os Produtos
-              </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Título da seção de produtos */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {categoryFilter === "TODOS"
-                  ? "Todos os Produtos"
-                  : categorias.find((c) => c.value === categoryFilter)?.label}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Confira nossa seleção especial para você
-              </p>
-            </div>
-
-            {/* Grid otimizado - menos espaço, mais produtos visíveis */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  saleType={saleType}
+              {/* Busca */}
+              <div className="mb-4">
+                <Input
+                  classNames={{
+                    input: "text-sm",
+                    inputWrapper: "h-10",
+                  }}
+                  placeholder="Buscar..."
+                  size="sm"
+                  startContent={<Search size={16} />}
+                  value={searchTerm}
+                  onValueChange={handleSearchChange}
                 />
-              ))}
+              </div>
+            </Card>
+          </aside>
+
+          {/* Área Principal de Conteúdo */}
+          <main className="flex-1 min-w-0">
+            {/* Header com Título e Ordenação */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl font-normal text-gray-900">Meias</h1>
+                <p className="text-sm text-gray-600">
+                  {displayProducts.length}{" "}
+                  {displayProducts.length === 1 ? "resultado" : "resultados"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {!showFilters && (
+                  <Button
+                    size="sm"
+                    startContent={<SlidersHorizontal size={16} />}
+                    variant="bordered"
+                    onPress={() => setShowFilters(true)}
+                  >
+                    Filtros
+                  </Button>
+                )}
+
+                <Select
+                  classNames={{
+                    trigger: "h-10 min-w-[180px]",
+                  }}
+                  label="Ordenar por"
+                  selectedKeys={[sortBy]}
+                  size="sm"
+                  variant="bordered"
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <SelectItem key="relevance">Mais relevantes</SelectItem>
+                  <SelectItem key="price-asc">Menor preço</SelectItem>
+                  <SelectItem key="price-desc">Maior preço</SelectItem>
+                  <SelectItem key="newest">Mais recentes</SelectItem>
+                </Select>
+              </div>
             </div>
-          </>
-        )}
-      </section>
+
+            {/* Grid de Produtos */}
+            {displayProducts.length === 0 ? (
+              <div className="bg-white rounded-lg p-12 text-center border border-gray-200">
+                <Package className="mx-auto text-gray-300 mb-4" size={60} />
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  Nenhum produto encontrado
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm || categoryFilter !== "TODOS"
+                    ? "Tente ajustar os filtros ou buscar por outros termos."
+                    : "Nenhum produto disponível no momento."}
+                </p>
+                {(searchTerm || categoryFilter !== "TODOS") && (
+                  <Button
+                    color="primary"
+                    onPress={() => {
+                      setSearchTerm("");
+                      handleCategoryChange("TODOS");
+                    }}
+                  >
+                    Ver Todos os Produtos
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {paginatedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      saleType={saleType}
+                    />
+                  ))}
+                </div>
+
+                {/* Paginação */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-8">
+                    <Pagination
+                      showControls
+                      classNames={{
+                        cursor: "bg-blue-600 text-white",
+                      }}
+                      color="primary"
+                      page={currentPage}
+                      total={totalPages}
+                      onChange={setCurrentPage}
+                    />
+                    <p className="text-sm text-gray-600">
+                      Mostrando {startIndex + 1}-
+                      {Math.min(endIndex, displayProducts.length)} de{" "}
+                      {displayProducts.length} produtos
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

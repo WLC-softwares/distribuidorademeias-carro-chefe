@@ -107,10 +107,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.product.name}
                         </h4>
                         <Chip
-                          className={`mb-2 ${item.saleType === "atacado"
-                            ? "bg-purple-100 text-purple-700"
-                            : "bg-green-100 text-green-700"
-                            }`}
+                          className={`mb-2 ${
+                            item.saleType === "atacado"
+                              ? "bg-purple-100 text-purple-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
                           size="sm"
                           variant="flat"
                         >

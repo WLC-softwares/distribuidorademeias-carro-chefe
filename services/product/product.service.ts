@@ -84,13 +84,13 @@ export class ProductService {
         sku: data.sku,
         images: data.images
           ? {
-            create: data.images.map((img, index) => ({
-              url: img.url,
-              alt: img.alt,
-              order: img.order ?? index,
-              primary: img.primary ?? index === 0,
-            })),
-          }
+              create: data.images.map((img, index) => ({
+                url: img.url,
+                alt: img.alt,
+                order: img.order ?? index,
+                primary: img.primary ?? index === 0,
+              })),
+            }
           : undefined,
       });
 
@@ -163,7 +163,11 @@ export class ProductService {
   /**
    * Get product statistics
    */
-  async getProductStats(): Promise<{ total: number; active: number; stockValue: number }> {
+  async getProductStats(): Promise<{
+    total: number;
+    active: number;
+    stockValue: number;
+  }> {
     try {
       const [total, active, products] = await Promise.all([
         productRepository.count(),

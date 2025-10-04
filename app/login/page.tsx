@@ -14,24 +14,24 @@ export default function LoginPage() {
   return (
     <div className="flex">
       {/* Lado Esquerdo - Informações */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-12 flex-col justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 p-12 flex-col justify-center border-r border-gray-200">
         <div className="max-w-lg">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-12">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-900 shadow-lg">
               <span className="text-2xl font-bold text-white">DM</span>
             </div>
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-gray-900">
               Distribuidora Carro Chefe
             </span>
           </div>
 
           {/* Frase Principal */}
           <div className="space-y-6">
-            <h1 className="text-5xl font-bold text-white leading-tight">
+            <h1 className="text-5xl font-bold text-gray-900 leading-tight">
               Adquira já as melhores meias
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl text-gray-700">
               Entre na sua conta e continue comprando com os melhores preços
             </p>
           </div>
@@ -39,7 +39,7 @@ export default function LoginPage() {
           {/* Features */}
           <div className="mt-12 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -54,12 +54,12 @@ export default function LoginPage() {
                   />
                 </svg>
               </div>
-              <p className="text-white text-lg">
+              <p className="text-gray-800 text-lg">
                 Segurança e privacidade garantidas
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -74,7 +74,7 @@ export default function LoginPage() {
                   />
                 </svg>
               </div>
-              <p className="text-white text-lg">Rápido e fácil de usar</p>
+              <p className="text-gray-800 text-lg">Rápido e fácil de usar</p>
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Logo Mobile */}
           <div className="lg:hidden flex flex-col items-center mb-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 mb-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 mb-3">
               <span className="text-2xl font-bold text-white">DM</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800">
@@ -110,7 +110,6 @@ export default function LoginPage() {
                 <EmailStep
                   email={authHook.email}
                   setEmail={authHook.setEmail}
-                  onGoogleLogin={authHook.handleGoogleLogin}
                   onSubmit={authHook.handleContinue}
                 />
               ) : (
@@ -140,7 +139,7 @@ export default function LoginPage() {
             <p className="text-sm text-gray-600">
               Não tem uma conta?{" "}
               <Link
-                className="text-blue-600 hover:text-blue-700 font-semibold"
+                className="text-gray-900 hover:text-gray-700 font-semibold"
                 href="/register"
               >
                 Cadastre-se

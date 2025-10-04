@@ -14,15 +14,15 @@ export function useSession() {
 
   const user: User | null = session?.user
     ? {
-      id: session.user.id,
-      name: session.user.name || "",
-      email: session.user.email || "",
-      role: session.user.role,
-      avatar: session.user.avatar,
-      active: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
+        id: session.user.id,
+        name: session.user.name || "",
+        email: session.user.email || "",
+        role: session.user.role,
+        avatar: session.user.avatar,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
     : null;
 
   return {

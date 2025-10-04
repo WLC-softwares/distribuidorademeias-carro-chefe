@@ -40,24 +40,24 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen">
       {/* Lado Esquerdo - Informações */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-purple-600 to-indigo-700 p-12 flex-col justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 p-12 flex-col justify-center border-r border-gray-200">
         <div className="max-w-lg">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-12">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-900 shadow-lg">
               <span className="text-2xl font-bold text-white">DM</span>
             </div>
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-gray-900">
               Distribuidora Carro Chefe
             </span>
           </div>
 
           {/* Frase Principal */}
           <div className="space-y-6">
-            <h1 className="text-5xl font-bold text-white leading-tight">
+            <h1 className="text-5xl font-bold text-gray-900 leading-tight">
               Junte-se a nós e tenha acesso às melhores meias
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl text-gray-700">
               Crie sua conta e comece a comprar com os melhores preços
             </p>
           </div>
@@ -65,7 +65,7 @@ export default function RegisterPage() {
           {/* Features */}
           <div className="mt-12 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -80,10 +80,10 @@ export default function RegisterPage() {
                   />
                 </svg>
               </div>
-              <p className="text-white text-lg">Cadastro rápido e seguro</p>
+              <p className="text-gray-800 text-lg">Cadastro rápido e seguro</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -98,10 +98,12 @@ export default function RegisterPage() {
                   />
                 </svg>
               </div>
-              <p className="text-white text-lg">Melhores preços do mercado</p>
+              <p className="text-gray-800 text-lg">
+                Melhores preços do mercado
+              </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -116,7 +118,9 @@ export default function RegisterPage() {
                   />
                 </svg>
               </div>
-              <p className="text-white text-lg">Entrega rápida e eficiente</p>
+              <p className="text-gray-800 text-lg">
+                Entrega rápida e eficiente
+              </p>
             </div>
           </div>
         </div>
@@ -127,7 +131,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           {/* Logo Mobile */}
           <div className="lg:hidden flex flex-col items-center mb-8">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 mb-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-900 mb-3">
               <span className="text-2xl font-bold text-white">DM</span>
             </div>
             <h1 className="text-2xl font-bold text-gray-800">
@@ -147,13 +151,13 @@ export default function RegisterPage() {
                 {/* Progress Bar */}
                 <div className="mt-4 flex gap-2">
                   <div
-                    className={`h-1 flex-1 rounded-full ${registerHook.step === "personal" || registerHook.step === "document" || registerHook.step === "address" ? "bg-purple-600" : "bg-gray-200"}`}
+                    className={`h-1 flex-1 rounded-full ${registerHook.step === "personal" || registerHook.step === "document" || registerHook.step === "address" ? "bg-gray-900" : "bg-gray-200"}`}
                   />
                   <div
-                    className={`h-1 flex-1 rounded-full ${registerHook.step === "document" || registerHook.step === "address" ? "bg-purple-600" : "bg-gray-200"}`}
+                    className={`h-1 flex-1 rounded-full ${registerHook.step === "document" || registerHook.step === "address" ? "bg-gray-900" : "bg-gray-200"}`}
                   />
                   <div
-                    className={`h-1 flex-1 rounded-full ${registerHook.step === "address" ? "bg-purple-600" : "bg-gray-200"}`}
+                    className={`h-1 flex-1 rounded-full ${registerHook.step === "address" ? "bg-gray-900" : "bg-gray-200"}`}
                   />
                 </div>
               </div>
@@ -210,7 +214,7 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-600">
               Já tem uma conta?{" "}
               <Link
-                className="text-purple-600 hover:text-purple-700 font-semibold"
+                className="text-gray-900 hover:text-gray-700 font-semibold"
                 href="/login"
               >
                 Faça login

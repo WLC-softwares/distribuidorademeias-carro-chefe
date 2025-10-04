@@ -44,10 +44,7 @@ export function useProducts() {
       if (!product.active) return false;
 
       // Filter by category
-      if (
-        categoryFilter !== "TODOS" &&
-        product.category !== categoryFilter
-      ) {
+      if (categoryFilter !== "TODOS" && product.category !== categoryFilter) {
         return false;
       }
 

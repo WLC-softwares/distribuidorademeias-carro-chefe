@@ -99,10 +99,7 @@ export function ProductDrawer({
   };
 
   const handleAddImage = () => {
-    setImages([
-      ...images,
-      { url: "", alt: "", primary: images.length === 0 },
-    ]);
+    setImages([...images, { url: "", alt: "", primary: images.length === 0 }]);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -254,9 +251,7 @@ export function ProductDrawer({
                       }
                       variant="bordered"
                       onSelectionChange={(keys) => {
-                        const selected = Array.from(
-                          keys,
-                        )[0] as ProductCategory;
+                        const selected = Array.from(keys)[0] as ProductCategory;
 
                         setFormData({ ...formData, category: selected });
                       }}
@@ -318,6 +313,7 @@ export function ProductDrawer({
                     />
 
                     <Input
+                      description="Peso unitário em kg (ex: 0.080 = 80g)"
                       label="Peso (kg)"
                       min="0"
                       placeholder="0.080"
@@ -325,7 +321,6 @@ export function ProductDrawer({
                       type="number"
                       value={formData.weight}
                       variant="bordered"
-                      description="Peso unitário em kg (ex: 0.080 = 80g)"
                       onValueChange={(value) =>
                         setFormData({ ...formData, weight: value })
                       }

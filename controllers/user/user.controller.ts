@@ -92,3 +92,23 @@ export async function deleteUserAction(id: string) {
     throw error;
   }
 }
+
+/**
+ * Action: Alterar senha do usuário
+ */
+export async function changePasswordAction(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+) {
+  try {
+    return await userService.changePassword(
+      userId,
+      currentPassword,
+      newPassword,
+    );
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    throw error;
+  }
+}

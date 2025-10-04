@@ -67,6 +67,7 @@ CREATE TABLE "products" (
     "quantity" INTEGER NOT NULL DEFAULT 0,
     "status" "product_status" NOT NULL DEFAULT 'ACTIVE',
     "category" "product_category" NOT NULL,
+    "weight" DECIMAL(10,2) NOT NULL DEFAULT 0.08,
     "sku" TEXT,
     "active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

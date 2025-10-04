@@ -134,8 +134,9 @@ export default function EnderecosPage() {
           {addresses.map((address) => (
             <Card
               key={address.id}
-              className={`hover:shadow-lg transition-shadow ${address.primary ? "border-2 border-yellow-400" : ""
-                }`}
+              className={`hover:shadow-lg transition-shadow ${
+                address.primary ? "border-2 border-yellow-400" : ""
+              }`}
             >
               <CardHeader className="flex justify-between items-start">
                 <div className="flex gap-3 items-start">

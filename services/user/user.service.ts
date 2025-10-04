@@ -29,8 +29,7 @@ export class UserService {
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
       }));
-    } catch (error) {
-      console.error("Error fetching users:", error);
+    } catch (_error) {
       throw new Error("Unable to fetch users");
     }
   }
@@ -56,9 +55,7 @@ export class UserService {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       };
-    } catch (error) {
-      console.error("Error fetching user:", error);
-
+    } catch (_error) {
       return null;
     }
   }
@@ -85,9 +82,7 @@ export class UserService {
         updatedAt: user.updatedAt,
         addresses: user.addresses || [],
       };
-    } catch (error) {
-      console.error("Error fetching user with addresses:", error);
-
+    } catch (_error) {
       return null;
     }
   }
@@ -129,9 +124,10 @@ export class UserService {
         updatedAt: user.updatedAt,
       };
     } catch (error) {
-      console.error("Error creating user:", error);
-
-      if (error instanceof Error && error.message === "Email already registered") {
+      if (
+        error instanceof Error &&
+        error.message === "Email already registered"
+      ) {
         throw error;
       }
 
@@ -158,9 +154,7 @@ export class UserService {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       };
-    } catch (error) {
-      console.error("Error updating user:", error);
-
+    } catch (_error) {
       return null;
     }
   }
@@ -171,8 +165,7 @@ export class UserService {
   async deleteUser(id: string): Promise<void> {
     try {
       await userRepository.delete(id);
-    } catch (error) {
-      console.error("Error deleting user:", error);
+    } catch (_error) {
       throw new Error("Unable to delete user");
     }
   }
@@ -180,7 +173,11 @@ export class UserService {
   /**
    * Get user statistics
    */
-  async getUserStats(): Promise<{ total: number; active: number; admins: number }> {
+  async getUserStats(): Promise<{
+    total: number;
+    active: number;
+    admins: number;
+  }> {
     try {
       const [total, active, admins] = await Promise.all([
         userRepository.count(),
@@ -189,9 +186,58 @@ export class UserService {
       ]);
 
       return { total, active, admins };
-    } catch (error) {
-      console.error("Error fetching user stats:", error);
+    } catch (_error) {
       throw new Error("Unable to fetch user stats");
+    }
+  }
+
+  /**
+   * Change user password
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      // Get user with password
+      const user = await userRepository.findById(userId);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(
+        currentPassword,
+        user.password,
+      );
+
+      if (!isValidPassword) {
+        throw new Error("Current password is incorrect");
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await userRepository.update(userId, {
+        password: hashedPassword,
+      });
+
+      return {
+        success: true,
+        message: "Password changed successfully",
+      };
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "Current password is incorrect"
+      ) {
+        throw error;
+      }
+
+      throw new Error("Unable to change password");
     }
   }
 }

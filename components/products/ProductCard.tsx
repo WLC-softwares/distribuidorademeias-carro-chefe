@@ -25,17 +25,6 @@ export function ProductCard({ product, saleType }: ProductCardProps) {
   const price =
     saleType === "atacado" ? product.wholesalePrice : product.retailPrice;
 
-  const categoryLabels: Record<string, string> = {
-    MENS_SOCKS: "Masculinas",
-    WOMENS_SOCKS: "Femininas",
-    KIDS_SOCKS: "Infantis",
-    SPORTS_SOCKS: "Esportivas",
-    DRESS_SOCKS: "Sociais",
-    THERMAL_SOCKS: "Térmicas",
-    ACCESSORIES: "Acessórios",
-    OTHER: "Outros",
-  };
-
   const hasStock = product.quantity > 0 && product.status === "ACTIVE";
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -51,27 +40,39 @@ export function ProductCard({ product, saleType }: ProductCardProps) {
 
   return (
     <Card
-      className="group relative hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 cursor-pointer bg-white border border-gray-100"
-      shadow="md"
+      className="group relative hover:shadow-lg transition-all duration-300 bg-white border border-gray-200"
+      shadow="sm"
     >
-      <CardBody className="p-0" onClick={handleCardClick}>
+      <CardBody className="p-0">
         {/* Product Image */}
-        <div className="relative w-full aspect-square overflow-hidden bg-white">
+        <div
+          className="relative w-full aspect-square overflow-hidden bg-gray-50 cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onClick={handleCardClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleCardClick();
+            }
+          }}
+        >
           <Image
             removeWrapper
             alt={product.name}
-            className="w-full h-full object-contain p-6 z-0 group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 z-0"
             fallbackSrc="/placeholder-product.png"
             src={mainImage}
           />
 
-          {/* Sale Type Badge */}
-          <div className="absolute top-2 left-2">
+          {/* Sale Type Badge - Top Left */}
+          <div className="absolute top-2 left-2 z-10">
             <Chip
-              className={`text-xs font-bold shadow-md ${saleType === "atacado"
-                ? "bg-purple-600 text-white"
-                : "bg-blue-600 text-white"
-                }`}
+              className={`text-xs font-bold shadow-md ${
+                saleType === "atacado"
+                  ? "bg-purple-600 text-white"
+                  : "bg-blue-600 text-white"
+              }`}
               radius="sm"
               size="sm"
               variant="solid"
@@ -82,49 +83,58 @@ export function ProductCard({ product, saleType }: ProductCardProps) {
         </div>
 
         {/* Product Information */}
-        <div className="p-4 space-y-2">
-          {/* Price */}
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-green-600">R$</span>
-              <span className="text-4xl font-bold text-green-600">
-                {Math.floor(price)}
-              </span>
-              <span className="text-2xl font-bold text-green-600">
-                {(price % 1).toFixed(2).substring(1)}
-              </span>
-            </div>
-          </div>
-
+        <div className="p-3 space-y-2">
           {/* Product Name */}
-          <h3
-            className="text-sm text-gray-700 line-clamp-2 leading-tight font-medium"
+          <button
+            className="text-sm text-gray-700 line-clamp-2 leading-snug cursor-pointer hover:text-blue-600 transition-colors text-left w-full"
             style={{ minHeight: "2.5rem" }}
+            type="button"
+            onClick={handleCardClick}
           >
             {product.name}
-          </h3>
+          </button>
 
-          {/* Category */}
-          <p className="text-xs text-gray-500 font-medium">
-            {categoryLabels[product.category]}
-          </p>
+          {/* Current Price */}
+          <div
+            className="flex items-baseline gap-1 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={handleCardClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCardClick();
+              }
+            }}
+          >
+            <span className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors">
+              R$ {price.toFixed(2).replace(".", ",")}
+            </span>
+          </div>
 
           {/* Add to Cart Button */}
           {hasStock ? (
             <Button
-              className="w-full mt-3 font-bold"
-              color="success"
-              size="md"
-              startContent={<ShoppingCart size={18} />}
-              variant="shadow"
+              className="w-full mt-2 font-semibold"
+              color="primary"
+              size="sm"
+              startContent={<ShoppingCart size={16} />}
+              variant="flat"
               onClick={handleAddToCart}
             >
-              Adicionar
+              Adicionar ao Carrinho
             </Button>
           ) : (
-            <div className="mt-3">
-              <Chip className="text-xs w-full" color="danger" size="md" variant="flat">
-                {product.status === "OUT_OF_STOCK" ? "Esgotado" : "Indisponível"}
+            <div className="mt-2">
+              <Chip
+                className="text-xs w-full justify-center"
+                color="danger"
+                size="sm"
+                variant="flat"
+              >
+                {product.status === "OUT_OF_STOCK"
+                  ? "Esgotado"
+                  : "Indisponível"}
               </Chip>
             </div>
           )}
