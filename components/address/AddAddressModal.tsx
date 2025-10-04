@@ -287,7 +287,7 @@ export function AddAddressModal({
                                 }}
                             >
                                 {BRAZILIAN_STATES.map((state) => (
-                                    <SelectItem key={state.value} value={state.value}>
+                                    <SelectItem key={state.value}>
                                         {state.label}
                                     </SelectItem>
                                 ))}
