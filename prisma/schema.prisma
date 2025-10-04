@@ -139,6 +139,17 @@ model Sale {
   total         Decimal       @db.Decimal(10, 2)
   paymentMethod PaymentMethod @map("payment_method")
   notes         String?
+  
+  // Shipping Address (copied from user at sale creation)
+  shippingZipCode      String? @map("shipping_zip_code")
+  shippingStreet       String? @map("shipping_street")
+  shippingNumber       String? @map("shipping_number")
+  shippingComplement   String? @map("shipping_complement")
+  shippingNeighborhood String? @map("shipping_neighborhood")
+  shippingCity         String? @map("shipping_city")
+  shippingState        String? @map("shipping_state")
+  shippingCountry      String? @default("Brasil") @map("shipping_country")
+  
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   completedAt   DateTime?     @map("completed_at")

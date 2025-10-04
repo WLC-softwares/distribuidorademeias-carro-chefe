@@ -81,6 +81,14 @@ class SaleService {
         .toUpperCase();
       const saleNumber = `${dateStr}-${randomStr}`;
 
+      // Get user's primary address for shipping
+      const primaryAddress = await prisma.address.findFirst({
+        where: {
+          userId: data.usuarioId,
+          primary: true,
+        },
+      });
+
       // Create sale with items
       const sale = await prisma.sale.create({
         data: {
@@ -92,6 +100,15 @@ class SaleService {
           paymentMethod: "PIX", // Default, will be confirmed via WhatsApp
           status: "PENDING",
           notes: data.observacoes || null,
+          // Copy shipping address from user's primary address
+          shippingZipCode: primaryAddress?.zipCode || null,
+          shippingStreet: primaryAddress?.street || null,
+          shippingNumber: primaryAddress?.number || null,
+          shippingComplement: primaryAddress?.complement || null,
+          shippingNeighborhood: primaryAddress?.neighborhood || null,
+          shippingCity: primaryAddress?.city || null,
+          shippingState: primaryAddress?.state || null,
+          shippingCountry: primaryAddress?.country || "Brasil",
           items: {
             create: data.items.map((item) => {
               const price =
@@ -127,8 +144,7 @@ class SaleService {
           sale.saleNumber,
           sale.id,
         );
-      } catch (error) {
-        console.error("Error creating notification:", error);
+      } catch (_error) {
         // Don't block sale creation
       }
 
@@ -140,8 +156,7 @@ class SaleService {
         total: Number(sale.total),
         status: sale.status,
       };
-    } catch (error) {
-      console.error("Error creating sale:", error);
+    } catch (_error) {
       throw new Error("Unable to create sale");
     }
   }
@@ -197,7 +212,6 @@ class SaleService {
         })),
       };
     } catch (error) {
-      console.error("Error fetching sale:", error);
       throw error;
     }
   }

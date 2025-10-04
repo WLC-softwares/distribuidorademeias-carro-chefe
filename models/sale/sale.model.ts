@@ -17,6 +17,15 @@ export interface Sale {
   paymentMethod: PaymentMethod;
   notes?: string | null;
   userId: string;
+  // Shipping Address
+  shippingZipCode?: string | null;
+  shippingStreet?: string | null;
+  shippingNumber?: string | null;
+  shippingComplement?: string | null;
+  shippingNeighborhood?: string | null;
+  shippingCity?: string | null;
+  shippingState?: string | null;
+  shippingCountry?: string | null;
   createdAt: Date;
   updatedAt: Date;
   completedAt?: Date | null;
@@ -50,3 +59,4 @@ export interface CreateSaleItemDTO {
 }
 
 export { PaymentMethod, SaleStatus };
+

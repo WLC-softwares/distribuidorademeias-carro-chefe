@@ -101,7 +101,6 @@ export function ShippingCalculator({
         setError("Nenhuma opção de frete disponível para este CEP");
       }
     } catch (err) {
-      console.error("Erro ao calcular frete:", err);
       setError(
         err instanceof Error
           ? err.message
@@ -122,119 +121,169 @@ export function ShippingCalculator({
   };
 
   return (
-    <Card>
-      <CardBody className="p-6 space-y-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Truck className="text-blue-600" size={24} />
-          <h3 className="text-xl font-semibold text-gray-900">
+    <Card className="shadow-lg">
+      <CardBody className="p-6 space-y-6">
+        <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <Truck className="text-blue-600" size={24} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900">
             Calcular Frete
           </h3>
         </div>
 
         {/* CEP Input */}
-        <div className="flex gap-2">
-          <Input
-            errorMessage={error}
-            isDisabled={loading}
-            isInvalid={!!error}
-            label="CEP de destino"
-            maxLength={9}
-            placeholder="00000-000"
-            value={cep}
-            variant="bordered"
-            onValueChange={handleCepChange}
-          />
-          <Button
-            className="min-w-[100px]"
-            color="primary"
-            isDisabled={!cep || cep.replace(/\D/g, "").length !== 8}
-            isLoading={loading}
-            onPress={handleCalculate}
-          >
-            {loading ? "Calculando..." : "Calcular"}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-3">
+            <Input
+              classNames={{
+                input: "text-base",
+                inputWrapper: "border-2 hover:border-blue-400",
+              }}
+              isDisabled={loading}
+              isInvalid={!!error}
+              label="CEP de destino"
+              labelPlacement="outside"
+              maxLength={9}
+              placeholder="00000-000"
+              size="lg"
+              value={cep}
+              variant="bordered"
+              onValueChange={handleCepChange}
+            />
+            <Button
+              className="min-w-[120px] font-semibold mt-6"
+              color="primary"
+              isDisabled={!cep || cep.replace(/\D/g, "").length !== 8}
+              isLoading={loading}
+              size="lg"
+              onPress={handleCalculate}
+            >
+              {loading ? "Calculando..." : "Calcular"}
+            </Button>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border-2 border-red-300 rounded-lg p-3">
+              <p className="text-sm font-medium text-red-800">{error}</p>
+            </div>
+          )}
         </div>
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
             <Spinner color="primary" size="lg" />
-            <span className="ml-3 text-gray-600">Consultando Correios...</span>
+            <div className="text-center">
+              <p className="font-medium text-gray-700">Consultando transportadoras...</p>
+              <p className="text-sm text-gray-500">Aguarde um momento</p>
+            </div>
           </div>
         )}
 
         {/* Shipping Options */}
         {!loading && calculated && shippingOptions.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-700">
-              Opções de entrega:
-            </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-base font-semibold text-gray-800">
+                Opções de entrega:
+              </p>
+              <p className="text-xs text-gray-500">
+                {shippingOptions.length} opções disponíveis
+              </p>
+            </div>
             <RadioGroup
               value={selectedOption}
               onValueChange={handleOptionChange}
             >
-              {shippingOptions.map((option) => (
-                <Radio
-                  key={option.codigo}
-                  classNames={{
-                    base: "border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-colors",
-                    wrapper: "group-data-[selected=true]:border-blue-600",
-                  }}
-                  value={option.codigo}
-                >
-                  <div className="flex justify-between items-center w-full">
-                    <div className="flex items-center gap-3">
-                      {option.logo ? (
-                        <img
-                          alt={option.empresa}
-                          className="w-10 h-10 object-contain"
-                          src={option.logo}
-                        />
-                      ) : (
-                        <Package className="text-gray-600" size={20} />
-                      )}
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          {option.nome}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {option.empresa}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Entrega em até {option.prazoEntrega} dias úteis
+              <div className="space-y-3">
+                {shippingOptions.map((option) => (
+                  <Radio
+                    key={option.codigo}
+                    classNames={{
+                      base: "m-0 bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-blue-500 hover:shadow-md transition-all duration-200 cursor-pointer data-[selected=true]:border-blue-600 data-[selected=true]:bg-blue-50",
+                      wrapper: "group-data-[selected=true]:border-blue-600",
+                    }}
+                    value={option.codigo}
+                  >
+                    <div className="flex justify-between items-center w-full gap-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        {option.logo ? (
+                          <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-lg p-2">
+                            <img
+                              alt={option.empresa}
+                              className="w-full h-full object-contain"
+                              src={option.logo}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-lg">
+                            <Package className="text-gray-600" size={24} />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <p className="font-bold text-base text-gray-900 mb-0.5">
+                            {option.nome}
+                          </p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            {option.empresa}
+                          </p>
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <Truck size={14} />
+                            <span>
+                              Entrega em até {option.prazoEntrega} dias úteis
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500 mb-1">Frete</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          R$ {option.valor.toFixed(2).replace(".", ",")}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-green-600">
-                        R$ {option.valor.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </Radio>
-              ))}
+                  </Radio>
+                ))}
+              </div>
             </RadioGroup>
           </div>
         )}
 
         {/* No Options Message */}
         {!loading && calculated && shippingOptions.length === 0 && !error && (
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4 text-center">
-            <p className="text-sm text-yellow-800">
-              Nenhuma opção de frete disponível para este CEP.
+          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-5 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-full mb-3">
+              <Package className="text-yellow-600" size={24} />
+            </div>
+            <p className="font-semibold text-yellow-800 mb-1">
+              Nenhuma opção de frete disponível
             </p>
-            <p className="text-xs text-yellow-700 mt-1">
-              Por favor, entre em contato conosco para consultar o frete.
+            <p className="text-sm text-yellow-700">
+              Por favor, entre em contato conosco para consultar o frete para este CEP.
             </p>
           </div>
         )}
 
         {/* Info Message */}
-        {!calculated && !loading && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-800">
-              💡 Digite o CEP de entrega para ver as opções e valores de frete
-            </p>
+        {!calculated && !loading && !error && (
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Truck className="text-blue-600" size={20} />
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-blue-900 mb-1">
+                  Calcule o frete para sua região
+                </p>
+                <p className="text-sm text-blue-700">
+                  Digite o CEP de entrega acima para ver as opções e valores disponíveis
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </CardBody>

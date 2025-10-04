@@ -8,9 +8,9 @@ import {
   LogOut,
   Menu,
   ShoppingBag,
-  Store,
+  Truck,
   Users,
-  X,
+  X
 } from "lucide-react";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -38,6 +38,11 @@ const menuItems = [
     title: "Vendas",
     href: "/admin/sales",
     icon: ShoppingBag,
+  },
+  {
+    title: "Debug Frete",
+    href: "/admin/shipping-debug",
+    icon: Truck,
   },
 ];
 
@@ -75,10 +80,10 @@ export default function AdminLayout({
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-yellow-400 h-16 flex items-center justify-between px-4 z-40 shadow-md">
-        <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-primary h-16 flex items-center justify-between px-4 z-40 shadow-md">
+        <h1 className="text-xl font-bold text-white">Admin Panel</h1>
         <button
-          className="p-2 hover:bg-yellow-300 rounded-md transition-colors"
+          className="p-2 hover:bg-gray-800 rounded-md transition-colors text-white"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
@@ -88,27 +93,14 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside
         className={`
-                    fixed top-0 left-0 h-screen w-64 bg-white shadow-lg z-50 transition-transform duration-300
+                    fixed left-0 h-screen w-64 bg-white border-r border-gray-200 shadow-lg  transition-transform duration-300
                     lg:translate-x-0
                     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
                 `}
       >
         {/* Logo/Header */}
-        <div className="h-16 bg-yellow-400 flex items-center justify-center">
-          <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
-        </div>
-
-        {/* Botão Voltar para Loja */}
-        <div className="p-4 border-b border-gray-200">
-          <Link
-            as={NextLink}
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors font-semibold"
-            href="/"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Store size={20} />
-            <span>Voltar para Loja</span>
-          </Link>
+        <div className="h-16 flex items-center justify-center">
+          <h1 className="text-xl font-bold text-dark">Admin Panel</h1>
         </div>
 
         {/* Menu Items */}
@@ -123,11 +115,10 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${
-                                      isActive
-                                        ? "bg-yellow-100 text-yellow-700 font-semibold"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }
+                                    ${isActive
+                    ? "bg-primary text-white font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }
                                 `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
@@ -164,7 +155,7 @@ export default function AdminLayout({
       )}
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0">
+      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen bg-gray-50">
         <div className="p-6">{children}</div>
       </main>
     </>

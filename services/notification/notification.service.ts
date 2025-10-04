@@ -20,8 +20,8 @@ export class NotificationService {
     return this.repository.create({
       userId,
       type: "ORDER_CREATED" as NotificationType,
-      title: "🎉 Order placed successfully!",
-      message: `Your order #${orderNumber} has been received and is being processed.`,
+      title: "🎉 Pedido recebido!",
+      message: `Seu pedido #${orderNumber} foi recebido e está sendo processado.`,
       link: `/user/orders`,
       metadata: { saleId, orderNumber },
     });
