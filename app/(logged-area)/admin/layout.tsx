@@ -114,10 +114,9 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  ${isActive
+                    ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   }
                 `}
                 href={item.href}
@@ -171,10 +170,9 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                   flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  ${isActive
+                    ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
                   }
                 `}
                 href={item.href}
