@@ -117,6 +117,14 @@ export default function CheckoutPage() {
           state: selectedAddress.state,
           country: selectedAddress.country,
         },
+        shippingInfo: selectedShipping
+          ? {
+              serviceId: selectedShipping.codigo,
+              serviceName: selectedShipping.nome,
+              cost: selectedShipping.valor,
+              deliveryTime: selectedShipping.prazoEntrega,
+            }
+          : undefined,
       });
 
       if (!sale || !sale.id) {

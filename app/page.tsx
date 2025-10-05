@@ -17,8 +17,6 @@ import { ProductCategory } from "@/models";
 export default function Home() {
   const {
     products,
-    loading,
-    error,
     saleType,
     setSaleType,
     categoryFilter,
@@ -174,13 +172,12 @@ export default function Home() {
       {/* Carrossel de Banners */}
       <BannerCarousel autoPlayInterval={10000} banners={banners} />
       {/* Layout Principal com Sidebar */}
-      <div className="container mx-auto px-4 py-4 max-w-[1400px]">
+      <div className="container mx-auto px-2 sm:px-4 py-4 max-w-[1400px]">
         <div className="flex gap-4">
-          {/* Sidebar de Filtros */}
+          {/* Sidebar de Filtros - Desktop apenas */}
           <aside
-            className={`${
-              showFilters ? "w-64" : "w-0"
-            } transition-all duration-300 overflow-hidden flex-shrink-0`}
+            className={`hidden lg:block ${showFilters ? "w-64" : "w-0"
+              } transition-all duration-300 overflow-hidden flex-shrink-0`}
           >
             <Card className="p-4 sticky top-24">
               {/* Título e Header */}
@@ -228,11 +225,10 @@ export default function Home() {
                   {categorias.map((cat) => (
                     <Button
                       key={cat.value}
-                      className={`justify-start text-sm h-auto py-2 ${
-                        categoryFilter === cat.value
+                      className={`justify-start text-sm h-auto py-2 ${categoryFilter === cat.value
                           ? "bg-blue-50 text-blue-600 font-semibold"
                           : "bg-transparent text-gray-700"
-                      }`}
+                        }`}
                       variant="light"
                       onPress={() =>
                         handleCategoryChange(
@@ -267,18 +263,22 @@ export default function Home() {
           {/* Área Principal de Conteúdo */}
           <main className="flex-1 min-w-0">
             {/* Header com Título e Ordenação */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
-                <h1 className="text-2xl font-normal text-gray-900">Meias</h1>
+                <h1 className="text-xl sm:text-2xl font-normal text-gray-900">
+                  Meias
+                </h1>
                 <p className="text-sm text-gray-600">
                   {displayProducts.length}{" "}
                   {displayProducts.length === 1 ? "resultado" : "resultados"}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Botão de filtros - visível apenas em desktop quando sidebar está fechada */}
                 {!showFilters && (
                   <Button
+                    className="hidden lg:flex"
                     size="sm"
                     startContent={<SlidersHorizontal size={16} />}
                     variant="bordered"
@@ -288,9 +288,10 @@ export default function Home() {
                   </Button>
                 )}
 
+                {/* Select de ordenação */}
                 <Select
                   classNames={{
-                    trigger: "h-10 min-w-[180px]",
+                    trigger: "h-10 w-full sm:min-w-[180px]",
                   }}
                   label="Ordenar por"
                   selectedKeys={[sortBy]}
@@ -306,14 +307,87 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Filtros Mobile - Cards compactos */}
+            <div className="lg:hidden mb-4 space-y-3">
+              {/* Tipo de Venda Mobile */}
+              <Card className="p-3">
+                <h4 className="font-semibold text-sm text-gray-900 mb-2">
+                  Tipo de Venda
+                </h4>
+                <div className="flex gap-2">
+                  <Button
+                    className={
+                      saleType === "varejo" ? "bg-blue-600 text-white" : ""
+                    }
+                    size="sm"
+                    variant={saleType === "varejo" ? "solid" : "bordered"}
+                    onPress={() => setSaleType("varejo")}
+                  >
+                    Varejo
+                  </Button>
+                  <Button
+                    className={
+                      saleType === "atacado" ? "bg-blue-600 text-white" : ""
+                    }
+                    size="sm"
+                    variant={saleType === "atacado" ? "solid" : "bordered"}
+                    onPress={() => setSaleType("atacado")}
+                  >
+                    Atacado
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Categorias Mobile - Select compacto */}
+              <Card className="p-3">
+                <h4 className="font-semibold text-sm text-gray-900 mb-2">
+                  Categoria
+                </h4>
+                <Select
+                  classNames={{
+                    trigger: "h-10",
+                  }}
+                  selectedKeys={[categoryFilter]}
+                  size="sm"
+                  variant="bordered"
+                  onChange={(e) =>
+                    handleCategoryChange(
+                      e.target.value as ProductCategory | "TODOS",
+                    )
+                  }
+                >
+                  {categorias.map((cat) => (
+                    <SelectItem key={cat.value}>
+                      {cat.emoji} {cat.label}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </Card>
+
+              {/* Busca Mobile */}
+              <div>
+                <Input
+                  classNames={{
+                    input: "text-sm",
+                    inputWrapper: "h-10",
+                  }}
+                  placeholder="Buscar produtos..."
+                  size="sm"
+                  startContent={<Search size={16} />}
+                  value={searchTerm}
+                  onValueChange={handleSearchChange}
+                />
+              </div>
+            </div>
+
             {/* Grid de Produtos */}
             {displayProducts.length === 0 ? (
-              <div className="bg-white rounded-lg p-12 text-center border border-gray-200">
-                <Package className="mx-auto text-gray-300 mb-4" size={60} />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <div className="bg-white rounded-lg p-8 sm:p-12 text-center border border-gray-200">
+                <Package className="mx-auto text-gray-300 mb-4" size={48} />
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
                   Nenhum produto encontrado
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-sm sm:text-base text-gray-600 mb-4">
                   {searchTerm || categoryFilter !== "TODOS"
                     ? "Tente ajustar os filtros ou buscar por outros termos."
                     : "Nenhum produto disponível no momento."}
@@ -321,6 +395,7 @@ export default function Home() {
                 {(searchTerm || categoryFilter !== "TODOS") && (
                   <Button
                     color="primary"
+                    size="sm"
                     onPress={() => {
                       setSearchTerm("");
                       handleCategoryChange("TODOS");
@@ -332,7 +407,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                   {paginatedProducts.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -344,7 +419,7 @@ export default function Home() {
 
                 {/* Paginação */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-4 mt-8">
+                  <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <Pagination
                       showControls
                       classNames={{
@@ -352,13 +427,14 @@ export default function Home() {
                       }}
                       color="primary"
                       page={currentPage}
+                      size="sm"
                       total={totalPages}
                       onChange={setCurrentPage}
                     />
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       Mostrando {startIndex + 1}-
                       {Math.min(endIndex, displayProducts.length)} de{" "}
-                      {displayProducts.length} produtos
+                      {displayProducts.length}
                     </p>
                   </div>
                 )}

@@ -15,6 +15,7 @@ import {
   ChevronDown,
   LogOut,
   MapPin,
+  Menu,
   Package,
   Settings,
   ShoppingCart,
@@ -23,7 +24,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CartDrawer } from "@/components/cart";
@@ -32,9 +33,16 @@ import { useAuth, useCart } from "@/hooks";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated, loading, logout } = useAuth();
   const { getTotalItems } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const isAdminArea = pathname?.startsWith("/admin");
+
+  const handleOpenAdminSidebar = () => {
+    window.dispatchEvent(new CustomEvent("toggleAdminSidebar"));
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -111,6 +119,19 @@ export default function Header() {
         maxWidth="full"
       >
         <NavbarBrand className="flex-grow-0 mr-4">
+          {/* Botão hambúrguer para admin (apenas mobile) */}
+          {isAdminArea && (
+            <Button
+              isIconOnly
+              className="lg:hidden mr-2"
+              size="sm"
+              variant="light"
+              onPress={handleOpenAdminSidebar}
+            >
+              <Menu size={24} />
+            </Button>
+          )}
+
           <Link className="flex items-center gap-3" href="/">
             <div className="relative w-16 h-16">
               <Image

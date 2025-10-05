@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@heroui/button";
+import { Card, CardBody } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 import {
   Modal,
   ModalBody,
@@ -8,86 +10,40 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@heroui/modal";
-import { Radio, RadioGroup } from "@heroui/radio";
-import { Spinner } from "@heroui/spinner";
-import { Package, Truck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertCircle, CheckCircle, Package, Truck } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface CreateShipmentFromSaleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
   saleId: string;
   saleNumber: string;
   destinationCep: string;
-  onSuccess: () => void;
-}
-
-interface ShippingOption {
-  codigo: string;
-  nome: string;
-  empresa: string;
-  valor: number;
-  prazoEntrega: number;
-  logo?: string;
+  shippingService?: string | null;
+  shippingCompany?: string | null;
+  shippingCost?: number | null;
+  serviceId?: string | null;
 }
 
 export function CreateShipmentFromSaleModal({
   isOpen,
   onClose,
+  onSuccess,
   saleId,
   saleNumber,
   destinationCep,
-  onSuccess,
+  shippingService,
+  shippingCompany,
+  shippingCost,
+  serviceId,
 }: CreateShipmentFromSaleModalProps) {
   const [loading, setLoading] = useState(false);
-  const [loadingOptions, setLoadingOptions] = useState(false);
-  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [selectedService, setSelectedService] = useState<string>("");
-
-  // Carregar opções de frete ao abrir
-  useEffect(() => {
-    if (isOpen && destinationCep) {
-      loadShippingOptions();
-    }
-  }, [isOpen, destinationCep]);
-
-  const loadShippingOptions = async () => {
-    setLoadingOptions(true);
-    try {
-      const response = await fetch("/api/shipping/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cepDestino: destinationCep.replace(/\D/g, ""),
-          saleId: saleId, // Envia o ID da venda para calcular no backend
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-
-        throw new Error(errorData.error || "Erro ao calcular frete");
-      }
-
-      const data = await response.json();
-
-      setShippingOptions(data.shippingOptions || []);
-    } catch (error) {
-      console.error("Erro ao carregar opções:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Erro ao carregar opções de frete",
-      );
-    } finally {
-      setLoadingOptions(false);
-    }
-  };
 
   const handleCreateShipment = async () => {
-    if (!selectedService) {
-      toast.error("Selecione um serviço de transporte");
+    if (!shippingService) {
+      toast.error("Frete não foi selecionado pelo cliente");
 
       return;
     }
@@ -99,7 +55,7 @@ export function CreateShipmentFromSaleModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           saleId,
-          serviceId: parseInt(selectedService),
+          serviceId,
         }),
       });
 
@@ -123,97 +79,99 @@ export function CreateShipmentFromSaleModal({
   };
 
   return (
-    <Modal isOpen={isOpen} size="3xl" onClose={onClose}>
+    <Modal isOpen={isOpen} size="2xl" onClose={onClose}>
       <ModalContent>
         <ModalHeader>
           <div>
-            <h2 className="text-2xl font-bold">Criar Envio</h2>
+            <h2 className="text-2xl font-bold">Confirmar Criação de Envio</h2>
             <p className="text-sm text-gray-600 mt-1">Pedido #{saleNumber}</p>
           </div>
         </ModalHeader>
         <ModalBody>
-          {loadingOptions ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Spinner color="primary" size="lg" />
-              <p className="mt-4 text-gray-600">
-                Carregando opções de frete...
+          {/* Alerta informativo */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
+            <AlertCircle
+              className="text-blue-600 flex-shrink-0 mt-0.5"
+              size={20}
+            />
+            <div className="text-sm text-blue-800">
+              <p className="font-semibold mb-1">Frete escolhido pelo cliente</p>
+              <p>
+                Este é o serviço de frete que o cliente selecionou no checkout.
+                Confirme para criar o envio com essas informações.
               </p>
             </div>
-          ) : shippingOptions.length === 0 ? (
-            <div className="text-center py-8">
-              <Package className="mx-auto text-gray-400 mb-4" size={48} />
-              <p className="text-gray-600">Nenhuma opção de frete disponível</p>
-              <Button
-                className="mt-4"
-                color="primary"
-                variant="flat"
-                onPress={loadShippingOptions}
-              >
-                Tentar Novamente
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                Selecione o serviço de transporte para este envio:
-              </p>
-              <RadioGroup
-                value={selectedService}
-                onValueChange={setSelectedService}
-              >
-                <div className="space-y-3">
-                  {shippingOptions.map((option) => (
-                    <Radio
-                      key={option.codigo}
-                      classNames={{
-                        base: "m-0 bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:shadow-sm transition-all duration-200 cursor-pointer data-[selected=true]:border-blue-600 data-[selected=true]:bg-blue-50",
-                        wrapper: "group-data-[selected=true]:border-blue-600",
-                      }}
-                      value={option.codigo}
-                    >
-                      <div className="flex justify-between items-center w-full gap-4">
-                        <div className="flex items-center gap-3 flex-1">
-                          {option.logo ? (
-                            <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-md p-2">
-                              <img
-                                alt={option.empresa}
-                                className="w-full h-full object-contain"
-                                src={option.logo}
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-md">
-                              <Package className="text-gray-600" size={24} />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <p className="font-bold text-sm text-gray-900 mb-0.5">
-                              {option.nome}
-                            </p>
-                            <p className="text-xs text-gray-500 mb-0.5">
-                              {option.empresa}
-                            </p>
-                            <div className="flex items-center gap-1 text-xs text-gray-600">
-                              <Truck size={12} />
-                              <span>
-                                Entrega em até {option.prazoEntrega} dias úteis
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500 mb-0.5">Frete</p>
-                          <p className="text-xl font-bold text-green-600">
-                            R$ {option.valor.toFixed(2).replace(".", ",")}
-                          </p>
-                        </div>
+          </div>
+
+          {/* Informações do frete escolhido */}
+          {shippingService && shippingCompany ? (
+            <Card className="border-2 border-green-200 bg-green-50">
+              <CardBody className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 flex items-center justify-center bg-white rounded-lg shadow-sm">
+                    <Truck className="text-green-600" size={32} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Chip
+                        color="success"
+                        size="sm"
+                        startContent={<CheckCircle size={14} />}
+                      >
+                        Escolhido pelo cliente
+                      </Chip>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">
+                      {shippingService}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {shippingCompany}
+                    </p>
+                    {shippingCost !== null && shippingCost !== undefined && (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs text-gray-500">
+                          Valor do frete:
+                        </span>
+                        <span className="text-xl font-bold text-green-600">
+                          R$ {Number(shippingCost).toFixed(2).replace(".", ",")}
+                        </span>
                       </div>
-                    </Radio>
-                  ))}
+                    )}
+                  </div>
                 </div>
-              </RadioGroup>
-            </div>
+              </CardBody>
+            </Card>
+          ) : (
+            <Card className="border-2 border-red-200 bg-red-50">
+              <CardBody className="p-4">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="text-red-600" size={24} />
+                  <div>
+                    <p className="font-semibold text-red-900">
+                      Frete não selecionado
+                    </p>
+                    <p className="text-sm text-red-700">
+                      O cliente não selecionou um serviço de frete no checkout.
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
           )}
+
+          {/* Informações adicionais */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">CEP de destino:</span>
+              <span className="font-medium text-gray-900">
+                {destinationCep}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Pedido:</span>
+              <span className="font-medium text-gray-900">#{saleNumber}</span>
+            </div>
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button color="danger" variant="light" onPress={onClose}>
@@ -221,11 +179,12 @@ export function CreateShipmentFromSaleModal({
           </Button>
           <Button
             color="primary"
-            isDisabled={!selectedService || loading || loadingOptions}
+            isDisabled={!shippingService || loading}
             isLoading={loading}
+            startContent={!loading && <Package size={18} />}
             onPress={handleCreateShipment}
           >
-            Criar Envio
+            {loading ? "Criando envio..." : "Confirmar e Criar Envio"}
           </Button>
         </ModalFooter>
       </ModalContent>

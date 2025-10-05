@@ -1,14 +1,23 @@
 "use client";
 
 import { Button } from "@heroui/button";
-import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Spinner } from "@heroui/spinner";
-import { Eye, Filter, MapPin, Package, Search, Truck } from "lucide-react";
+import {
+  Eye,
+  Filter,
+  MapPin,
+  Package,
+  Search,
+  Truck,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Divider } from "@heroui/divider";
 
 import { CreateShipmentFromSaleModal } from "@/components/shipping";
 import { getAllSalesAction, updateSaleStatusAction } from "@/controllers";
@@ -30,6 +39,13 @@ interface Sale {
   items: {
     id: string;
     quantity: number;
+    unitPrice: number;
+    total: number;
+    product: {
+      id: string;
+      name: string;
+      images: { url: string }[];
+    };
   }[];
   shippingZipCode?: string | null;
   shippingStreet?: string | null;
@@ -43,6 +59,8 @@ interface Sale {
   trackingCode?: string | null;
   shippingService?: string | null;
   shippingCompany?: string | null;
+  shippingCost?: number | null;
+  serviceId?: string | null;
 }
 
 const statusOptions = [
@@ -67,11 +85,19 @@ export default function SalesPage() {
     saleId: string;
     saleNumber: string;
     destinationCep: string;
+    shippingService?: string | null;
+    shippingCompany?: string | null;
+    shippingCost?: number | null;
+    serviceId?: string | null;
   }>({
     isOpen: false,
     saleId: "",
     saleNumber: "",
     destinationCep: "",
+    shippingService: null,
+    shippingCompany: null,
+    shippingCost: null,
+    serviceId: null,
   });
 
   const fetchSales = async () => {
@@ -168,6 +194,10 @@ export default function SalesPage() {
       saleId: sale.id,
       saleNumber: sale.saleNumber,
       destinationCep: sale.shippingZipCode,
+      shippingService: sale.shippingService,
+      shippingCompany: sale.shippingCompany,
+      shippingCost: sale.shippingCost,
+      serviceId: sale.serviceId,
     });
   };
 
@@ -177,6 +207,10 @@ export default function SalesPage() {
       saleId: "",
       saleNumber: "",
       destinationCep: "",
+      shippingService: null,
+      shippingCompany: null,
+      shippingCost: null,
+      serviceId: null,
     });
   };
 
@@ -329,130 +363,155 @@ export default function SalesPage() {
         </Card>
       )}
 
-      {/* Sales Table */}
-      <Card className="shadow-md">
-        <CardHeader className="px-6 py-4 border-b border-gray-200">
+      {/* Sales Grid */}
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
             Vendas ({filteredSales.length})
           </h2>
-        </CardHeader>
-        <CardBody className="p-0">
-          {filteredSales.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+          {selectedSales.size > 0 && (
+            <Button
+              color="danger"
+              size="sm"
+              variant="light"
+              onPress={() => setSelectedSales(new Set())}
+            >
+              Limpar seleção ({selectedSales.size})
+            </Button>
+          )}
+        </div>
+
+        {filteredSales.length === 0 ? (
+          <Card className="shadow-md">
+            <CardBody className="text-center py-12 text-gray-500">
               Nenhuma venda encontrada
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left">
-                      <input
-                        checked={
-                          filteredSales.length > 0 &&
-                          selectedSales.size === filteredSales.length
-                        }
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                        type="checkbox"
-                        onChange={handleSelectAll}
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Número
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      E-mail
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Endereço
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Envio
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Itens
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Pagamento
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Data
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSales.map((sale) => (
-                    <tr
-                      key={sale.id}
-                      className={`hover:bg-gray-50 transition-colors ${
-                        selectedSales.has(sale.id) ? "bg-blue-50" : ""
-                      }`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
+            </CardBody>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {filteredSales.map((sale) => (
+              <Card
+                key={sale.id}
+                className={`shadow-md hover:shadow-lg transition-shadow ${
+                  selectedSales.has(sale.id) ? "ring-2 ring-blue-500" : ""
+                }`}
+              >
+                <CardBody className="p-6">
+                  <div className="space-y-4">
+                    {/* Header do Card */}
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-start gap-4">
                         <input
                           checked={selectedSales.has(sale.id)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          className="mt-1 w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                           type="checkbox"
                           onChange={() => handleSelectSale(sale.id)}
                         />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-800">
-                          #{sale.saleNumber}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-gray-800">
-                          {sale.user.name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {sale.user.email}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">
+                            Pedido #{sale.saleNumber}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {new Date(sale.createdAt).toLocaleString("pt-BR", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <Select
+                          className="w-48"
+                          classNames={{
+                            trigger: "h-9",
+                            value: "text-sm",
+                          }}
+                          isDisabled={updatingStatus === sale.id}
+                          selectedKeys={[sale.status]}
+                          size="sm"
+                          onChange={(e) =>
+                            handleStatusChange(sale.id, e.target.value)
+                          }
+                        >
+                          {statusOptions.map((option) => (
+                            <SelectItem key={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </Select>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-green-600">
+                            {formatCurrency(Number(sale.total))}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {sale.paymentMethod}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Divider />
+
+                    {/* Grid de Informações */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Coluna 1: Cliente */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                          <User className="text-blue-600" size={18} />
+                          Cliente
+                        </h4>
+                        <div className="space-y-1">
+                          <p className="font-medium text-gray-900">
+                            {sale.user.name}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {sale.user.email}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Coluna 2: Endereço */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                          <MapPin className="text-green-600" size={18} />
+                          Endereço de Entrega
+                        </h4>
                         {sale.shippingCity ? (
-                          <div className="flex gap-2">
-                            <MapPin
-                              className="text-gray-400 flex-shrink-0 mt-0.5"
-                              size={16}
-                            />
-                            <div className="text-sm text-gray-600">
-                              <div className="font-medium text-gray-800">
-                                {sale.shippingCity} - {sale.shippingState}
-                              </div>
-                              <div className="text-xs text-gray-500 max-w-xs truncate">
-                                {sale.shippingStreet}, {sale.shippingNumber}
-                                {sale.shippingComplement &&
-                                  ` - ${sale.shippingComplement}`}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {sale.shippingNeighborhood}
-                              </div>
-                            </div>
+                          <div className="text-sm space-y-1">
+                            <p className="font-medium text-gray-900">
+                              {sale.shippingCity} - {sale.shippingState}
+                            </p>
+                            <p className="text-gray-600">
+                              {sale.shippingStreet}, {sale.shippingNumber}
+                            </p>
+                            {sale.shippingComplement && (
+                              <p className="text-gray-600">
+                                {sale.shippingComplement}
+                              </p>
+                            )}
+                            <p className="text-gray-600">
+                              {sale.shippingNeighborhood}
+                            </p>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400 italic">
+                          <p className="text-sm text-gray-400 italic">
                             Sem endereço
-                          </span>
+                          </p>
                         )}
-                      </td>
-                      <td className="px-6 py-4">
+                      </div>
+
+                      {/* Coluna 3: Frete */}
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                          <Truck className="text-purple-600" size={18} />
+                          Informações de Envio
+                        </h4>
                         {sale.melhorEnvioOrderId ? (
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             <Chip
                               color="success"
                               size="sm"
@@ -462,8 +521,17 @@ export default function SalesPage() {
                               Envio Criado
                             </Chip>
                             {sale.shippingService && (
-                              <p className="text-xs text-gray-600">
-                                {sale.shippingCompany} - {sale.shippingService}
+                              <p className="text-sm text-gray-700">
+                                <span className="font-medium">
+                                  {sale.shippingCompany}
+                                </span>{" "}
+                                - {sale.shippingService}
+                              </p>
+                            )}
+                            {sale.shippingCost && (
+                              <p className="text-sm text-gray-600">
+                                Frete:{" "}
+                                {formatCurrency(Number(sale.shippingCost))}
                               </p>
                             )}
                             {sale.trackingCode && (
@@ -473,87 +541,113 @@ export default function SalesPage() {
                             )}
                           </div>
                         ) : sale.shippingZipCode ? (
-                          <Button
-                            color="primary"
-                            size="sm"
-                            startContent={<Package size={14} />}
-                            variant="flat"
-                            onPress={() => handleOpenCreateShipment(sale)}
-                          >
-                            Criar Envio
-                          </Button>
+                          <div className="space-y-2">
+                            {sale.shippingService && sale.shippingCompany ? (
+                              <>
+                                <p className="text-sm text-gray-700">
+                                  <span className="font-medium">
+                                    Frete escolhido:
+                                  </span>
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {sale.shippingCompany} -{" "}
+                                  {sale.shippingService}
+                                </p>
+                                {sale.shippingCost && (
+                                  <p className="text-sm text-gray-600">
+                                    {formatCurrency(Number(sale.shippingCost))}
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="text-sm text-gray-500 italic">
+                                Frete não selecionado
+                              </p>
+                            )}
+                            <Button
+                              color="primary"
+                              size="sm"
+                              startContent={<Package size={14} />}
+                              variant="flat"
+                              onPress={() => handleOpenCreateShipment(sale)}
+                            >
+                              Criar Envio
+                            </Button>
+                          </div>
                         ) : (
-                          <span className="text-xs text-gray-400 italic">
+                          <p className="text-sm text-gray-400 italic">
                             Sem endereço
-                          </span>
+                          </p>
                         )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-800">
-                          {sale.items.reduce(
-                            (acc, item) => acc + item.quantity,
-                            0,
-                          )}{" "}
-                          itens
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-gray-800">
-                          {formatCurrency(Number(sale.total))}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {sale.paymentMethod}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Select
-                          className="w-40"
-                          classNames={{
-                            trigger: "min-h-unit-8 h-8",
-                          }}
-                          isDisabled={updatingStatus === sale.id}
-                          selectedKeys={[sale.status]}
-                          size="sm"
-                          onSelectionChange={(keys) => {
-                            const newStatus = Array.from(keys)[0] as string;
+                      </div>
+                    </div>
 
-                            if (newStatus && newStatus !== sale.status) {
-                              handleStatusChange(sale.id, newStatus);
-                            }
-                          }}
-                        >
-                          {statusOptions.map((status) => (
-                            <SelectItem key={status.value}>
-                              {status.label}
-                            </SelectItem>
-                          ))}
-                        </Select>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">
-                          {new Date(sale.createdAt).toLocaleDateString("pt-BR")}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Button
-                          isIconOnly
-                          className="text-blue-600 hover:bg-blue-50"
-                          size="sm"
-                          variant="light"
-                        >
-                          <Eye size={16} />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardBody>
-      </Card>
+                    <Divider />
+
+                    {/* Produtos */}
+                    <div>
+                      <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <Package className="text-orange-600" size={18} />
+                        Produtos (
+                        {sale.items.reduce(
+                          (acc, item) => acc + item.quantity,
+                          0,
+                        )}{" "}
+                        itens)
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {sale.items.map((item) => (
+                          <div
+                            key={item.id}
+                            className="flex gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+                          >
+                            {item.product.images &&
+                            item.product.images.length > 0 ? (
+                              <img
+                                alt={item.product.name}
+                                className="w-16 h-16 object-cover rounded-md"
+                                src={item.product.images[0].url}
+                              />
+                            ) : (
+                              <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+                                <Package className="text-gray-400" size={24} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-gray-900 line-clamp-2">
+                                {item.product.name}
+                              </p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                Qtd: {item.quantity} x{" "}
+                                {formatCurrency(Number(item.unitPrice))}
+                              </p>
+                              <p className="text-sm font-semibold text-gray-900 mt-1">
+                                {formatCurrency(Number(item.total))}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        color="primary"
+                        size="sm"
+                        startContent={<Eye size={16} />}
+                        variant="bordered"
+                      >
+                        Ver Detalhes
+                      </Button>
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Modal de Criar Envio */}
       {createShipmentModal.isOpen && (
@@ -562,11 +656,23 @@ export default function SalesPage() {
           isOpen={createShipmentModal.isOpen}
           saleId={createShipmentModal.saleId}
           saleNumber={createShipmentModal.saleNumber}
-          onClose={handleCloseCreateShipment}
-          onSuccess={() => {
-            fetchSales();
-            handleCloseCreateShipment();
-          }}
+          serviceId={createShipmentModal.serviceId}
+          shippingCompany={createShipmentModal.shippingCompany}
+          shippingCost={createShipmentModal.shippingCost}
+          shippingService={createShipmentModal.shippingService}
+          onClose={() =>
+            setCreateShipmentModal({
+              isOpen: false,
+              saleId: "",
+              saleNumber: "",
+              destinationCep: "",
+              shippingService: null,
+              shippingCompany: null,
+              shippingCost: null,
+              serviceId: null,
+            })
+          }
+          onSuccess={fetchSales}
         />
       )}
     </div>

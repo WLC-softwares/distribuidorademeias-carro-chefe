@@ -23,6 +23,12 @@ export interface CreateSaleData {
     state: string;
     country?: string;
   };
+  shippingInfo?: {
+    serviceId: string;
+    serviceName: string;
+    cost: number;
+    deliveryTime: number;
+  };
 }
 
 export interface SaleResponse {
@@ -136,6 +142,10 @@ class SaleService {
           shippingCity: shippingData?.city || null,
           shippingState: shippingData?.state || null,
           shippingCountry: shippingData?.country || "Brasil",
+          // Save shipping info
+          serviceId: data.shippingInfo?.serviceId || null,
+          shippingService: data.shippingInfo?.serviceName || null,
+          shippingCost: data.shippingInfo?.cost || null,
           items: {
             create: data.items.map((item) => {
               const price =
@@ -158,7 +168,20 @@ class SaleService {
         include: {
           items: {
             include: {
-              product: true,
+              product: {
+                include: {
+                  images: true,
+                },
+              },
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              cpf: true,
             },
           },
         },
@@ -225,7 +248,6 @@ class SaleService {
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
-        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
         items: sale.items.map((item) => ({
           ...item,
           unitPrice: Number(item.unitPrice),
@@ -273,7 +295,6 @@ class SaleService {
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
-        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
         items: sale.items.map((item) => ({
           ...item,
           unitPrice: Number(item.unitPrice),
@@ -449,26 +470,31 @@ class SaleService {
         },
       });
 
-      // Convert Decimals to numbers
-      return sales.map((sale) => ({
-        ...sale,
-        subtotal: Number(sale.subtotal),
-        discount: Number(sale.discount),
-        total: Number(sale.total),
-        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
-        items: sale.items.map((item) => ({
-          ...item,
-          unitPrice: Number(item.unitPrice),
-          subtotal: Number(item.subtotal),
-          discount: Number(item.discount),
-          total: Number(item.total),
-          product: {
-            ...item.product,
-            retailPrice: Number(item.product.retailPrice),
-            wholesalePrice: Number(item.product.wholesalePrice),
-          },
-        })),
-      }));
+      // Convert Decimals to numbers using JSON serialization
+      return sales.map((sale) => {
+        // Serialize/deserialize to remove Decimal instances
+        const serialized = JSON.parse(JSON.stringify(sale));
+
+        return {
+          ...serialized,
+          subtotal: Number(sale.subtotal),
+          discount: Number(sale.discount),
+          total: Number(sale.total),
+          items: sale.items.map((item) => ({
+            ...item,
+            unitPrice: Number(item.unitPrice),
+            subtotal: Number(item.subtotal),
+            discount: Number(item.discount),
+            total: Number(item.total),
+            product: {
+              ...item.product,
+              retailPrice: Number(item.product.retailPrice),
+              wholesalePrice: Number(item.product.wholesalePrice),
+              weight: item.product.weight ? Number(item.product.weight) : null,
+            },
+          })),
+        };
+      });
     } catch (error) {
       console.error("Error listing all sales:", error);
       throw error;
@@ -497,10 +523,28 @@ class SaleService {
 
       // Convert Decimals to numbers
       return sales.map((sale) => ({
-        ...sale,
+        id: sale.id,
+        saleNumber: sale.saleNumber,
+        status: sale.status,
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
+        paymentMethod: sale.paymentMethod,
+        notes: sale.notes,
+        shippingZipCode: sale.shippingZipCode,
+        shippingStreet: sale.shippingStreet,
+        shippingNumber: sale.shippingNumber,
+        shippingComplement: sale.shippingComplement,
+        shippingNeighborhood: sale.shippingNeighborhood,
+        shippingCity: sale.shippingCity,
+        shippingState: sale.shippingState,
+        shippingCountry: sale.shippingCountry,
+        createdAt: sale.createdAt,
+        updatedAt: sale.updatedAt,
+        completedAt: sale.completedAt,
+        canceledAt: sale.canceledAt,
+        userId: sale.userId,
+        user: sale.user,
       }));
     } catch (error) {
       console.error("Error fetching recent sales:", error);

@@ -6,12 +6,12 @@ import {
   Box,
   LayoutDashboard,
   LogOut,
-  Menu,
   ShoppingBag,
   Truck,
   Users,
   X,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -63,6 +63,28 @@ export default function AdminLayout({
     }
   }, [user, isLoading, router]);
 
+  // Fechar sidebar ao mudar de rota
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  // Escutar evento de toggle do header
+  useEffect(() => {
+    const handleToggle = () => {
+      setSidebarOpen((prev) => !prev);
+    };
+
+    window.addEventListener("toggleAdminSidebar", handleToggle);
+
+    return () => window.removeEventListener("toggleAdminSidebar", handleToggle);
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/");
+    router.refresh();
+  };
+
   // Mostrar loading enquanto verifica
   if (isLoading) {
     return (
@@ -78,33 +100,10 @@ export default function AdminLayout({
   }
 
   return (
-    <>
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-primary h-16 flex items-center justify-between px-4 z-40 shadow-md">
-        <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-        <button
-          className="p-2 hover:bg-gray-800 rounded-md transition-colors text-white"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`
-                    fixed left-0 h-screen w-64 bg-white border-r border-gray-200 shadow-lg  transition-transform duration-300
-                    lg:translate-x-0
-                    ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-                `}
-      >
-        {/* Logo/Header */}
-        <div className="h-16 flex items-center justify-center">
-          <h1 className="text-xl font-bold text-dark">Admin Panel</h1>
-        </div>
-
-        {/* Menu Items */}
-        <nav className="p-4 space-y-2">
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar Desktop */}
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:pt-20 bg-white border-r border-gray-200 shadow-sm z-40">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto pt-6">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -114,13 +113,70 @@ export default function AdminLayout({
                 key={item.href}
                 as={NextLink}
                 className={`
-                                    flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${
-                                      isActive
-                                        ? "bg-primary text-white font-semibold"
-                                        : "text-gray-700 hover:bg-gray-100"
-                                    }
-                                `}
+                  flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  }
+                `}
+                href={item.href}
+              >
+                <Icon size={20} />
+                <span>{item.title}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200"
+            onClick={handleLogout}
+          >
+            <LogOut size={20} />
+            <span className="font-medium">Sair</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between h-20 px-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700">
+          <h1 className="text-lg font-bold text-white">Admin Panel</h1>
+          <button
+            className="p-2 text-white hover:bg-blue-800 rounded-lg transition-colors"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Menu Items */}
+        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-160px)]">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                as={NextLink}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-blue-50 text-blue-700 font-semibold shadow-sm"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+                  }
+                `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -132,18 +188,21 @@ export default function AdminLayout({
         </nav>
 
         {/* Logout Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <button className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            className="flex items-center gap-3 px-4 py-3 w-full text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200"
+            onClick={handleLogout}
+          >
             <LogOut size={20} />
-            <span>Sair</span>
+            <span className="font-medium">Sair</span>
           </button>
         </div>
       </aside>
 
-      {/* Overlay for mobile */}
+      {/* Overlay para Mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           role="button"
           tabIndex={0}
           onClick={() => setSidebarOpen(false)}
@@ -155,10 +214,12 @@ export default function AdminLayout({
         />
       )}
 
-      {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen bg-gray-50">
-        <div className="p-6">{children}</div>
+      {/* Main Content - Scroll natural */}
+      <main className="lg:pl-64 pt-20">
+        <div className="container mx-auto px-4 md:px-6 max-w-7xl py-6">
+          {children}
+        </div>
       </main>
-    </>
+    </div>
   );
 }
