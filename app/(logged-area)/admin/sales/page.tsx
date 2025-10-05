@@ -2,13 +2,15 @@
 
 import { Button } from "@heroui/button";
 import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Chip } from "@heroui/chip";
 import { Input } from "@heroui/input";
 import { Select, SelectItem } from "@heroui/select";
 import { Spinner } from "@heroui/spinner";
-import { Eye, Filter, MapPin, Search } from "lucide-react";
+import { Eye, Filter, MapPin, Package, Search, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { CreateShipmentFromSaleModal } from "@/components/shipping";
 import { getAllSalesAction, updateSaleStatusAction } from "@/controllers";
 import { formatCurrency } from "@/utils";
 
@@ -37,6 +39,10 @@ interface Sale {
   shippingCity?: string | null;
   shippingState?: string | null;
   shippingCountry?: string | null;
+  melhorEnvioOrderId?: string | null;
+  trackingCode?: string | null;
+  shippingService?: string | null;
+  shippingCompany?: string | null;
 }
 
 const statusOptions = [
@@ -56,6 +62,17 @@ export default function SalesPage() {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [selectedSales, setSelectedSales] = useState<Set<string>>(new Set());
   const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [createShipmentModal, setCreateShipmentModal] = useState<{
+    isOpen: boolean;
+    saleId: string;
+    saleNumber: string;
+    destinationCep: string;
+  }>({
+    isOpen: false,
+    saleId: "",
+    saleNumber: "",
+    destinationCep: "",
+  });
 
   const fetchSales = async () => {
     try {
@@ -91,20 +108,25 @@ export default function SalesPage() {
   const handleBulkStatusUpdate = async () => {
     if (selectedSales.size === 0) {
       toast.error("Selecione pelo menos uma venda");
+
       return;
     }
     if (!bulkStatus) {
       toast.error("Selecione um status");
+
       return;
     }
 
     try {
       setUpdatingStatus("bulk");
       const promises = Array.from(selectedSales).map((saleId) =>
-        updateSaleStatusAction(saleId, bulkStatus)
+        updateSaleStatusAction(saleId, bulkStatus),
       );
+
       await Promise.all(promises);
-      toast.success(`${selectedSales.size} venda(s) atualizada(s) com sucesso!`);
+      toast.success(
+        `${selectedSales.size} venda(s) atualizada(s) com sucesso!`,
+      );
       setSelectedSales(new Set());
       setBulkStatus("");
       await fetchSales();
@@ -125,12 +147,37 @@ export default function SalesPage() {
 
   const handleSelectSale = (saleId: string) => {
     const newSelected = new Set(selectedSales);
+
     if (newSelected.has(saleId)) {
       newSelected.delete(saleId);
     } else {
       newSelected.add(saleId);
     }
     setSelectedSales(newSelected);
+  };
+
+  const handleOpenCreateShipment = (sale: Sale) => {
+    if (!sale.shippingZipCode) {
+      toast.error("Venda sem endereço de entrega");
+
+      return;
+    }
+
+    setCreateShipmentModal({
+      isOpen: true,
+      saleId: sale.id,
+      saleNumber: sale.saleNumber,
+      destinationCep: sale.shippingZipCode,
+    });
+  };
+
+  const handleCloseCreateShipment = () => {
+    setCreateShipmentModal({
+      isOpen: false,
+      saleId: "",
+      saleNumber: "",
+      destinationCep: "",
+    });
   };
 
   const filteredSales = sales.filter(
@@ -259,6 +306,7 @@ export default function SalesPage() {
                   variant="bordered"
                   onSelectionChange={(keys) => {
                     const status = Array.from(keys)[0] as string;
+
                     setBulkStatus(status || "");
                   }}
                 >
@@ -322,6 +370,9 @@ export default function SalesPage() {
                       Endereço
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Envio
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Itens
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -345,8 +396,9 @@ export default function SalesPage() {
                   {filteredSales.map((sale) => (
                     <tr
                       key={sale.id}
-                      className={`hover:bg-gray-50 transition-colors ${selectedSales.has(sale.id) ? "bg-blue-50" : ""
-                        }`}
+                      className={`hover:bg-gray-50 transition-colors ${
+                        selectedSales.has(sale.id) ? "bg-blue-50" : ""
+                      }`}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
@@ -374,14 +426,18 @@ export default function SalesPage() {
                       <td className="px-6 py-4">
                         {sale.shippingCity ? (
                           <div className="flex gap-2">
-                            <MapPin className="text-gray-400 flex-shrink-0 mt-0.5" size={16} />
+                            <MapPin
+                              className="text-gray-400 flex-shrink-0 mt-0.5"
+                              size={16}
+                            />
                             <div className="text-sm text-gray-600">
                               <div className="font-medium text-gray-800">
                                 {sale.shippingCity} - {sale.shippingState}
                               </div>
                               <div className="text-xs text-gray-500 max-w-xs truncate">
                                 {sale.shippingStreet}, {sale.shippingNumber}
-                                {sale.shippingComplement && ` - ${sale.shippingComplement}`}
+                                {sale.shippingComplement &&
+                                  ` - ${sale.shippingComplement}`}
                               </div>
                               <div className="text-xs text-gray-500">
                                 {sale.shippingNeighborhood}
@@ -390,6 +446,44 @@ export default function SalesPage() {
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400 italic">
+                            Sem endereço
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {sale.melhorEnvioOrderId ? (
+                          <div className="space-y-1">
+                            <Chip
+                              color="success"
+                              size="sm"
+                              startContent={<Truck size={14} />}
+                              variant="flat"
+                            >
+                              Envio Criado
+                            </Chip>
+                            {sale.shippingService && (
+                              <p className="text-xs text-gray-600">
+                                {sale.shippingCompany} - {sale.shippingService}
+                              </p>
+                            )}
+                            {sale.trackingCode && (
+                              <p className="text-xs font-mono text-gray-500">
+                                {sale.trackingCode}
+                              </p>
+                            )}
+                          </div>
+                        ) : sale.shippingZipCode ? (
+                          <Button
+                            color="primary"
+                            size="sm"
+                            startContent={<Package size={14} />}
+                            variant="flat"
+                            onPress={() => handleOpenCreateShipment(sale)}
+                          >
+                            Criar Envio
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">
                             Sem endereço
                           </span>
                         )}
@@ -460,6 +554,21 @@ export default function SalesPage() {
           )}
         </CardBody>
       </Card>
+
+      {/* Modal de Criar Envio */}
+      {createShipmentModal.isOpen && (
+        <CreateShipmentFromSaleModal
+          destinationCep={createShipmentModal.destinationCep}
+          isOpen={createShipmentModal.isOpen}
+          saleId={createShipmentModal.saleId}
+          saleNumber={createShipmentModal.saleNumber}
+          onClose={handleCloseCreateShipment}
+          onSuccess={() => {
+            fetchSales();
+            handleCloseCreateShipment();
+          }}
+        />
+      )}
     </div>
   );
 }

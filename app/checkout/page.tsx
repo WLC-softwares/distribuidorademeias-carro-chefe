@@ -328,10 +328,11 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </h4>
                           <Chip
-                            className={`mt-1 ${item.saleType === "atacado"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-green-100 text-green-700"
-                              }`}
+                            className={`mt-1 ${
+                              item.saleType === "atacado"
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
                             size="sm"
                             variant="flat"
                           >

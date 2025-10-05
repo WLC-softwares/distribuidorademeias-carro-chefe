@@ -128,7 +128,9 @@ export function ShippingCalculator({
           <div className="flex flex-col items-center justify-center py-4 gap-2">
             <Spinner color="primary" size="md" />
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">Consultando transportadoras...</p>
+              <p className="text-sm font-medium text-gray-700">
+                Consultando transportadoras...
+              </p>
               <p className="text-xs text-gray-500">Aguarde um momento</p>
             </div>
           </div>
@@ -213,7 +215,8 @@ export function ShippingCalculator({
               Nenhuma opção de frete disponível
             </p>
             <p className="text-xs text-yellow-700">
-              Por favor, entre em contato conosco para consultar o frete para este CEP.
+              Por favor, entre em contato conosco para consultar o frete para
+              este CEP.
             </p>
           </div>
         )}
@@ -232,7 +235,8 @@ export function ShippingCalculator({
                   Selecione um endereço
                 </p>
                 <p className="text-xs text-blue-700">
-                  Selecione um endereço acima para calcular o frete automaticamente
+                  Selecione um endereço acima para calcular o frete
+                  automaticamente
                 </p>
               </div>
             </div>

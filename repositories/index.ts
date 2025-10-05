@@ -9,4 +9,3 @@ export * from "./dashboard/dashboard.repository";
 export * from "./notification/notification.repository";
 export * from "./product/product.repository";
 export * from "./user/user.repository";
-

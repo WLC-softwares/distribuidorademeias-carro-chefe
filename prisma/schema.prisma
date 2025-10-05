@@ -150,6 +150,14 @@ model Sale {
   shippingState        String? @map("shipping_state")
   shippingCountry      String? @default("Brasil") @map("shipping_country")
   
+  // Melhor Envio Integration
+  melhorEnvioOrderId   String? @map("melhor_envio_order_id") // ID do pedido no Melhor Envio
+  trackingCode         String? @map("tracking_code") // Código de rastreio
+  shippingService      String? @map("shipping_service") // Nome do serviço (PAC, SEDEX, etc)
+  shippingCompany      String? @map("shipping_company") // Transportadora
+  shippingCost         Decimal? @db.Decimal(10, 2) @map("shipping_cost") // Custo do frete
+  labelUrl             String? @map("label_url") // URL da etiqueta
+  
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   completedAt   DateTime?     @map("completed_at")

@@ -225,6 +225,7 @@ class SaleService {
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
+        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
         items: sale.items.map((item) => ({
           ...item,
           unitPrice: Number(item.unitPrice),
@@ -272,6 +273,7 @@ class SaleService {
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
+        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
         items: sale.items.map((item) => ({
           ...item,
           unitPrice: Number(item.unitPrice),
@@ -453,6 +455,7 @@ class SaleService {
         subtotal: Number(sale.subtotal),
         discount: Number(sale.discount),
         total: Number(sale.total),
+        shippingCost: sale.shippingCost ? Number(sale.shippingCost) : null,
         items: sale.items.map((item) => ({
           ...item,
           unitPrice: Number(item.unitPrice),

@@ -38,6 +38,11 @@ interface SaleDetails {
   updatedAt: Date;
   completedAt: Date | null;
   canceledAt: Date | null;
+  melhorEnvioOrderId?: string | null;
+  trackingCode?: string | null;
+  shippingService?: string | null;
+  shippingCompany?: string | null;
+  shippingCost?: number | null;
   items: {
     id: string;
     quantity: number;
@@ -507,6 +512,74 @@ export default function OrderDetailsPage() {
                   {address.city} - {address.state}
                 </p>
                 <p className="text-sm text-gray-600">CEP: {address.zipCode}</p>
+              </CardBody>
+            </Card>
+          )}
+
+          {/* Informações de Envio/Rastreamento */}
+          {sale.melhorEnvioOrderId && (
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardHeader className="flex flex-row items-center gap-2">
+                <Truck className="text-blue-600" size={20} />
+                <h3 className="text-lg font-bold text-blue-900">
+                  Informações de Envio
+                </h3>
+              </CardHeader>
+              <Divider />
+              <CardBody className="p-6 space-y-3">
+                {sale.shippingCompany && sale.shippingService && (
+                  <div>
+                    <p className="text-xs text-blue-700 font-medium mb-1">
+                      Transportadora
+                    </p>
+                    <p className="text-sm font-semibold text-blue-900">
+                      {sale.shippingCompany} - {sale.shippingService}
+                    </p>
+                  </div>
+                )}
+
+                {sale.trackingCode && (
+                  <div>
+                    <p className="text-xs text-blue-700 font-medium mb-1">
+                      Código de Rastreamento
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-sm font-mono bg-white px-3 py-1.5 rounded border border-blue-300">
+                        {sale.trackingCode}
+                      </code>
+                      <Button
+                        color="primary"
+                        size="sm"
+                        variant="flat"
+                        onPress={() => {
+                          navigator.clipboard.writeText(sale.trackingCode!);
+                          toast.success("Código copiado!");
+                        }}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {sale.shippingCost && (
+                  <div>
+                    <p className="text-xs text-blue-700 font-medium mb-1">
+                      Valor do Frete
+                    </p>
+                    <p className="text-sm font-semibold text-green-700">
+                      {formatCurrency(sale.shippingCost)}
+                    </p>
+                  </div>
+                )}
+
+                <div className="bg-white/70 border border-blue-300 rounded-lg p-3 mt-4">
+                  <p className="text-xs text-blue-800">
+                    📦 <strong>Status:</strong> Seu pedido será enviado em
+                    breve. Você receberá um email com o código de rastreamento
+                    quando o envio for postado.
+                  </p>
+                </div>
               </CardBody>
             </Card>
           )}

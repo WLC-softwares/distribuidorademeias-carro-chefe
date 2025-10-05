@@ -10,7 +10,7 @@ import {
   ShoppingBag,
   Truck,
   Users,
-  X
+  X,
 } from "lucide-react";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -40,8 +40,8 @@ const menuItems = [
     icon: ShoppingBag,
   },
   {
-    title: "Debug Frete",
-    href: "/admin/shipping-debug",
+    title: "Frete",
+    href: "/admin/shippings",
     icon: Truck,
   },
 ];
@@ -115,10 +115,11 @@ export default function AdminLayout({
                 as={NextLink}
                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                                    ${isActive
-                    ? "bg-primary text-white font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
-                  }
+                                    ${
+                                      isActive
+                                        ? "bg-primary text-white font-semibold"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                    }
                                 `}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}

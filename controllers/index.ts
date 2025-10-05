@@ -11,4 +11,3 @@ export * from "./notification/notification.controller";
 export * from "./product/product.controller";
 export * from "./sale/sale.controller";
 export * from "./user/user.controller";
-
